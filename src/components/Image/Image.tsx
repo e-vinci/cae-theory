@@ -1,4 +1,5 @@
 import { Box } from "@mui/material";
+import { useRouter } from 'next/router';
 
 interface ImageProps {
   height?: number;
@@ -8,6 +9,10 @@ interface ImageProps {
 }
 
 const Image = ({ height, width, src, alt = "Image" }: ImageProps) => {
+  const { basePath } = useRouter();
+
+  
+
   return (
     <Box
       height={height ? `${height}px` : "100%"}
@@ -17,7 +22,7 @@ const Image = ({ height, width, src, alt = "Image" }: ImageProps) => {
       alignItems="center"
     >
       <img
-        src={src}
+        src={`${basePath}${src}`}
         alt={alt}
         style={{
           maxHeight: height ? "100%" : "auto",
