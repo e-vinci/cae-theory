@@ -1,0 +1,109 @@
+---
+title: Intro
+description: Introduction to this course
+date: 20/01/2025
+---
+
+<InternalPageMenu>
+  <PathViewer>
+    <PathViewerItem to="/"> CAE : Projets </PathViewerItem>
+    <PathViewerItem to="/intro"> Introduction </PathViewerItem>
+  </PathViewer>
+  <InternalPageMenuItem> Qu'est-ce que l'on attend d'une application d'entreprise ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Qu'est-ce que les développeurs attendent d'une application d'entreprise ? </InternalPageMenuItem>
+   <InternalPageMenuItem> Qu'est-ce qu'une architecture 3-tiers ? </InternalPageMenuItem>
+    <InternalPageMenuItem> Comment augmenter la scalabilité de la base de données ? </InternalPageMenuItem>
+  
+</InternalPageMenu>
+
+# <InternalPageTitle> Qu'est-ce que l'on attend d'une application d'entreprise ? </InternalPageTitle>
+
+Une application d'entreprise doit répondre à plusieurs critères pour être considérée comme efficace et utile. La qualité est un aspect transversal qui apparaît dans plusieurs de ces critères. Voici quelques attentes courantes :
+
+1. **Fiabilité** : L'application doit être stable et fonctionner correctement sans erreurs fréquentes. La qualité du code et des tests contribue grandement à la fiabilité.
+2. **Scalabilité et performance** : Elle doit pouvoir gérer une augmentation du nombre d'utilisateurs et de données sans perte de performance. Une architecture bien conçue et une optimisation continue sont des aspects clés de la qualité.
+3. **Sécurité** : La protection des données sensibles et la prévention des accès non autorisés sont essentielles. La qualité des mécanismes de sécurité intégrés dans l'application est cruciale.
+4. **Facilité d'utilisation** : Une interface utilisateur intuitive et une bonne expérience utilisateur sont cruciales. La qualité de la conception UX/UI joue un rôle important ici.
+5. **Intégration et maintenance** : Elle doit pouvoir s'intégrer facilement avec d'autres systèmes et services utilisés par l'entreprise et être facile à maintenir et à mettre à jour. La qualité de la documentation et du code facilite l'intégration et la maintenance.
+
+Ces critères sont essentiels pour garantir que l'application répond aux besoins de l'entreprise et de ses utilisateurs tout en maintenant un haut niveau de performance et de sécurité.
+
+# <InternalPageTitle> Qu'est-ce que les développeurs attendent d'une application d'entreprise ? </InternalPageTitle>
+
+Les développeurs ont également des attentes spécifiques lorsqu'ils travaillent sur des applications d'entreprise. Voici quelques-unes de leurs attentes courantes :
+
+1. **Code propre et bien structuré** : Les développeurs attendent un code qui soit facile à lire, à comprendre et à maintenir. Un code propre et bien structuré facilite les modifications et les ajouts de nouvelles fonctionnalités.
+2. **Documentation complète** : Une documentation claire et complète est essentielle pour comprendre le fonctionnement de l'application et pour faciliter le développement et la maintenance.
+3. **Outils et environnements de développement** : Les développeurs attendent des outils et des environnements de développement efficaces qui les aident à être productifs. Cela inclut des IDE, des systèmes de gestion de versions, des outils de débogage et des environnements de test.
+4. **Tests automatisés** : Les tests automatisés sont cruciaux pour garantir la qualité du code et pour détecter les régressions rapidement. Les développeurs attendent une suite de tests complète qui couvre les différentes parties de l'application.
+5. **Collaboration et communication** : Les développeurs attendent des processus et des outils qui facilitent la collaboration et la communication au sein de l'équipe. Cela inclut des systèmes de gestion de projet, des outils de communication et des pratiques de développement collaboratif comme le code review.
+
+Ces attentes sont essentielles pour garantir que les développeurs peuvent travailler efficacement et produire un code de haute qualité.
+
+# <InternalPageTitle> Quelles architectures possibles pour une application d'entreprise ? </InternalPageTitle>
+
+Il existe plusieurs architectures possibles pour concevoir une application d'entreprise, chacune ayant ses propres avantages et inconvénients. Voici quelques-unes des principales architectures :
+
+1. **Architecture monolithique** : Toutes les fonctionnalités de l'application sont regroupées dans un seul et même codebase. Cette architecture est simple à mettre en place mais peut devenir difficile à maintenir et à faire évoluer à mesure que l'application grandit.
+2. **Architecture en couches (Layered Architecture)** : L'application est divisée en couches logiques (présentation, logique métier, accès aux données, etc.). Chaque couche a une responsabilité spécifique et communique avec les autres couches via des interfaces bien définies.
+3. **Microservices** : Une évolution de l'architecture orientée services (SOA) où chaque service est déployé indépendamment et peut être développé, testé et déployé de manière autonome. Cette architecture favorise la scalabilité et la résilience, mais peut introduire une complexité supplémentaire en termes de gestion et de communication entre services.
+4. **Architecture événementielle (Event-Driven Architecture)** : L'application est basée sur la production, la détection et la consommation d'événements. Les composants de l'application réagissent aux événements en temps réel, ce qui permet une grande flexibilité et une réactivité accrue.
+5. **Architecture serverless** : L'application est déployée sur une infrastructure cloud où les ressources sont allouées dynamiquement en fonction des besoins. Les développeurs n'ont pas à gérer les serveurs, ce qui permet de se concentrer sur le code métier. Cette architecture peut réduire les coûts et améliorer la scalabilité.
+
+
+Ces architectures offrent différentes approches pour concevoir des applications d'entreprise robustes, évolutives et maintenables. Le choix de l'architecture dépend des besoins spécifiques de l'entreprise et des contraintes techniques du projet.
+
+# <InternalPageTitle> Qu'est-ce qu'une architecture 3-tiers ? </InternalPageTitle>
+
+## Généralités
+L'architecture 3-tiers est une architecture classique et éprouvée pour les applications d'entreprise. Elle divise l'application en trois couches distinctes :
+
+1. **Présentation** : Cette couche est responsable de l'interface utilisateur et de l'expérience utilisateur. Dans le cadre de ce cours, nous utiliserons React pour créer une Single Page Application (SPA) qui offre une interface utilisateur dynamique et réactive.
+2. **Logique métier** : Cette couche contient la logique métier de l'application. Elle traite les requêtes de la couche de présentation et interagit avec la couche de données. Nous utiliserons Spring pour créer une API REST qui gère la logique métier et expose des endpoints pour les opérations CRUD.
+3. **Accès aux données** : Cette couche est responsable de la gestion des données. Elle interagit avec la base de données pour stocker, récupérer et manipuler les données. Spring Data peut être utilisé pour simplifier l'accès aux données et les opérations de base de données.
+
+## Pourquoi l'architecture 3-tiers est un bon choix pour une application d'entreprise ?
+
+- **Séparation des préoccupations** : En divisant l'application en trois couches distinctes, chaque couche peut se concentrer sur une responsabilité spécifique, ce qui facilite la maintenance et l'évolution de l'application.
+- **Scalabilité** : Chaque couche peut être mise à l'échelle indépendamment en fonction des besoins. Par exemple, la couche de présentation peut être mise à l'échelle horizontalement pour gérer un grand nombre d'utilisateurs, tandis que la couche de données peut être optimisée pour les performances de la base de données.
+- **Flexibilité** : L'architecture 3-tiers permet de remplacer ou de mettre à jour une couche sans affecter les autres couches. Par exemple, vous pouvez remplacer la couche de présentation par une nouvelle technologie sans modifier la logique métier ou l'accès aux données.
+- **Sécurité** : En isolant la logique métier et l'accès aux données de la couche de présentation, il est plus facile de mettre en œuvre des mesures de sécurité pour protéger les données sensibles et prévenir les accès non autorisés.
+
+## Application de l'architecture 3-tiers à notre projet
+
+<PlantUML src="diagrams/3-tier-arch.puml" alt="Architecture 3-tiers"/>
+
+## Quels avantages concrets de cette architecture ?
+
+- Nouveau frontend ? Pas de problème, on peut le changer sans toucher au backend. Je crée une app mobile ? Pas de problème, je peux réutiliser le backend.
+- Nouvelle base de données ? Pas de problème, on peut la changer sans toucher au frontend.
+- Nouvelle API ? Pas de problème, on peut la changer sans toucher au frontend.
+
+Scalabilité ? 
+- On peut mettre à l'échelle chaque couche indépendamment.
+- API REST : pas de session, donc facile à mettre à l'échelle horizontalement. Si on a besoin de plus de puissance, on peut ajouter des instances de l'API REST derrière un simple load balancer.
+Comme il n'y a pas de session, on ne doit pas retenir avec quelle instance un utilisateur est connecté.
+
+# <InternalPageTitle> Comment augmenter la scalabilité de la base de données ? </InternalPageTitle>
+
+Pour augmenter la capacité de la base de données, plusieurs stratégies peuvent être mises en œuvre :
+
+1. **Scaling vertical (Scale-up)** :
+   - Augmenter les ressources matérielles du serveur de base de données, telles que la mémoire RAM, le CPU et le stockage. Cela permet à la base de données de gérer plus de requêtes et de stocker plus de données.
+   - Cette approche est simple à mettre en œuvre mais a des limites physiques et peut devenir coûteuse.
+
+2. **Scaling horizontal (Scale-out)** :
+   - **Sharding** : Diviser la base de données en plusieurs fragments (shards), chaque fragment étant stocké sur un serveur différent. Chaque shard contient une partie des données, ce qui permet de répartir la charge de travail.
+   - **Réplication** : Créer des copies de la base de données sur plusieurs serveurs. Les lectures peuvent être réparties entre les réplicas pour améliorer les performances, tandis que les écritures sont généralement dirigées vers le serveur principal (master).
+   - **Bases de données distribuées** : Utiliser des bases de données distribuées comme Apache Cassandra, MongoDB ou Amazon DynamoDB, qui sont conçues pour gérer de grandes quantités de données et de trafic en répartissant les données sur plusieurs nœuds.
+
+3. **Optimisation des requêtes et des index** :
+   - **Indexation** : Créer des index sur les colonnes fréquemment utilisées dans les requêtes pour accélérer les opérations de lecture.
+   - **Optimisation des requêtes** : Analyser et optimiser les requêtes SQL pour réduire le temps d'exécution et la charge sur la base de données.
+   - **Caching** : Utiliser des mécanismes de mise en cache pour stocker les résultats des requêtes fréquemment exécutées, réduisant ainsi la charge sur la base de données.
+
+4. **Partitionnement des tables** :
+   - Diviser les grandes tables en partitions plus petites basées sur des critères spécifiques (par exemple, la date, l'ID utilisateur). Cela permet d'améliorer les performances des requêtes en réduisant la quantité de données à scanner.
+
+Ces stratégies peuvent être combinées pour répondre aux besoins spécifiques de l'application et garantir une base de données performante et évolutive.
+

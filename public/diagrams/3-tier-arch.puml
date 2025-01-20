@@ -1,0 +1,22 @@
+@startuml
+!include <C4/C4_Container>
+
+title Architecture 3 tiers
+
+System_Boundary(hmi, "Presentation Layer") {
+    Container(spa, "React SPA + TS", "Web Browser", "Provides the user interface")
+}
+
+System_Boundary(biz, "Business Logic Layer") {
+    Container(api, "Spring API (REST)", "Application", "Handles business logic and exposes REST API")
+}
+
+System_Boundary(data, "Data Access Layer") {
+    Container(db, "Postgres Database", "Database", "Stores application data")
+}
+
+
+spa -- api : HTTP
+api -- db : JDBC
+
+@enduml
