@@ -1,0 +1,176 @@
+---
+title: "Frontend : style guide"
+description: "Style guide pour le frontend"
+---
+
+<InternalPageMenu>
+  <PathViewer>
+   <PathViewerItem to="/"> CAE : Projets </PathViewerItem>
+    <PathViewerItem to="/quality"> Qualité </PathViewerItem>
+     <PathViewerItem to="/quality/frontend"> Qualité du frontend</PathViewerItem>    
+    <PathViewerItem selected> Google TS Style Guide </PathViewerItem>
+  </PathViewer>
+  <InternalPageMenuItem> Introduction à Google TypeScript Style Guide   </InternalPageMenuItem>
+  <InternalPageMenuItem> Résumé du style guide </InternalPageMenuItem>
+  <InternalPageMenuItem> Mise en place du linter et du formatter </InternalPageMenuItem>
+  <InternalPageMenuItem> Utilisation du linter et du formatter </InternalPageMenuItem>
+  <InternalPageMenuItem> Que se passe-t-il si on dépasse les 80 caractères par ligne ? </InternalPageMenuItem>
+</InternalPageMenu>
+
+# <InternalPageTitle> Introduction à Google TypeScript Style Guide  </InternalPageTitle>
+
+Le style guide de Google est une référence pour les conventions de code et de nommage en TypeScript. Il fournit des recommandations pour écrire un code propre, lisible et cohérent. En suivant les conventions du style guide de Google, vous pouvez améliorer la qualité de votre code et faciliter la collaboration au sein de l'équipe de développement.
+
+Il est disponible en ligne à l'adresse suivante : [Google TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html).
+
+Le style guide de Google pour TypeScript couvre plusieurs aspects du développement, tels que la syntaxe, le formatage, les conventions de nommage, les bonnes pratiques et les recommandations pour la documentation du code. Il est conçu pour être utilisé avec l'outil de formatage de code Prettier, qui permet de formater automatiquement le code selon les conventions du style guide.
+
+Il est aussi possible d'utiliser le linter ESLint avec le plugin `@typescript-eslint/eslint-plugin` pour vérifier le respect des conventions du style guide de Google. Le plugin `@typescript-eslint/eslint-plugin` fournit des règles spécifiques pour TypeScript qui permettent de détecter les erreurs et les problèmes potentiels dans le code.
+
+# <InternalPageTitle> Résumé du style guide  </InternalPageTitle>
+
+Voici un résumé des principaux points du style guide de Google pour TypeScript :
+
+1. **Nommage des variables et des fonctions** :
+   - Utiliser le camelCase pour les noms de variables et de fonctions.
+   - Utiliser PascalCase pour les noms de classes et d'interfaces.
+   - Les constantes globales doivent être en UPPER_SNAKE_CASE.
+
+2. **Types et interfaces** :
+   - Préférer les interfaces aux types pour définir des objets et des fonctions.
+   - Utiliser des types pour les unions et les intersections.
+   - Toujours annoter les types des paramètres et des retours de fonctions.
+
+3. **Commentaires** :
+   - Utiliser des commentaires JSDoc pour documenter les fonctions, les classes et les interfaces.
+   - Les commentaires doivent être clairs et concis, expliquant le pourquoi et non le comment.
+
+4. **Imports et exports** :
+   - Utiliser des imports et exports explicites plutôt que des imports et exports par défaut.
+   - Grouper les imports par type : bibliothèques tierces, modules internes, styles, etc.
+
+5. **Formatage du code** :
+   - Utiliser des outils de formatage automatique comme Prettier pour assurer la cohérence du code.
+   - Respecter une largeur de ligne maximale de 80 caractères.
+   - Utiliser des espaces pour l'indentation, avec une taille de tabulation de 2 espaces.
+
+6. **Gestion des erreurs** :
+   - Toujours gérer les erreurs de manière appropriée, en utilisant des blocs try/catch ou des promesses.
+   - Ne jamais ignorer les erreurs silencieusement.
+
+7. **Utilisation des modules** :
+   - Préférer les modules ES6 aux modules CommonJS.
+   - Utiliser des chemins relatifs pour les imports internes et des chemins absolus pour les bibliothèques tierces.
+
+8. **Tests** :
+   - Écrire des tests unitaires pour toutes les fonctions et classes.
+   - Utiliser des frameworks de test comme Vitest ou Jest.
+   - Les tests doivent être clairs, concis et couvrir tous les cas d'utilisation possibles.
+
+9. **Utilisation des fonctionnalités TypeScript** :
+   - Utiliser les fonctionnalités avancées de TypeScript comme les génériques, les types conditionnels et les types utilitaires pour écrire du code plus robuste et réutilisable.
+   - Toujours activer les options strictes dans le fichier tsconfig.json pour bénéficier des vérifications de type les plus strictes.
+
+
+
+# <InternalPageTitle> Mise en place du linter et du formatter   </InternalPageTitle>
+
+## Installation des dépendances
+
+Pour ce tutoriel, veuillez créer un nouveau projet nommé `style-guide` sur base du tutoriel précédent.
+
+Veuillez installer les dépendances suivantes :
+```sh
+npm install -D eslint prettier eslint-config-google eslint-plugin-prettier eslint-config-prettier
+```
+
+Veuillez ensuite mettre à jour le fichier de configuration de eslint `.eslintrc.cjs` avec ces ajouts :
+
+```js {8-9,15-16} showLineNumbers
+module.exports = {
+  root: true,
+  env: { browser: true, es2020: true },
+  extends: [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react-hooks/recommended",
+    "google",
+     "plugin:prettier/recommended",
+  ],
+  ignorePatterns: ["dist", ".eslintrc.cjs"],
+  parser: "@typescript-eslint/parser",
+  plugins: ["react-refresh"],
+  rules: {
+    "prettier/prettier": "error",
+    "require-jsdoc": "off",
+    "react-refresh/only-export-components": [
+      "warn",
+      { allowConstantExport: true },
+    ],
+  },
+};
+```
+
+Veuillez ensuite créer le fichier de configuration du formatter `.prettierrc` avec le contenu suivant :
+
+```json
+{
+  "singleQuote": true,
+  "trailingComma": "all",
+  "printWidth": 80
+}
+```
+
+Veuillez ensuite mettre à `package.json` pour ajouter le script "format" (et vous assurer que le script "lint" est bien présent) :
+
+```json {4,6}
+"scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview",
+    "format": "prettier --write ."
+  },
+```
+
+Ici on n'autorise aucun warning avec `--max-warnings 0`. Cela permet de forcer le respect des règles de formatage.
+
+# <InternalPageTitle> Utilisation du linter et du formatter   </InternalPageTitle>
+
+Vous pouvez voir tous les fichiers qui ne respectent pas les règles de formatage :
+
+```bash
+npm run lint
+```
+Vous devriez voir dans votre projet qu'il y a environ une centaine d'erreurs.
+
+Vous pouvez réparer les erreurs de formatage avec prettier :
+
+```bash
+npm run format
+```
+
+Si vous avez installé l'extension Prettier dans VSCode, vous pouvez formater le fichier en appuyant sur `SHIFT + ALT + F`.
+
+Il est possible qu'il reste encore une ou l'autre erreur à régler manuellement.
+Par exemple, dans le fichier `vite-env.d.ts`, vous pouvez ajouter un commentaire pour désactiver le linter :
+
+```ts
+// eslint-disable-next-line spaced-comment
+/// <reference types="vite/client" />
+```
+
+# <InternalPageTitle> Que se passe-t-il si on dépasse les 80 caractères par ligne ?  </InternalPageTitle>
+
+Dans le composant `Header`, veuillez ajouter un texte long pour dépasser les 80 caractères par ligne :
+
+```tsx
+console.log(`value of menuPrinted before clickssssssssssssssssssssss : ${menuPrinted}`);
+```
+
+Lancez la commande `npm run lint` pour voir le warning.
+
+Vous pouvez régler le problème de plusieurs façons :
+- Vous pouvez utiliser l'option `Quick Fix` de VSCode pour formater le fichier.
+- Si vous avez installé l'extension Prettier dans VSCode, vous pouvez formater le fichier en appuyant sur `SHIFT + ALT + F`.
+- Vous pouvez aussi utiliser la commande `npm run format` pour formater tous les fichiers.

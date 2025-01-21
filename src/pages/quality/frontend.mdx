@@ -1,0 +1,57 @@
+---
+title: Qualité frontend
+description: Qualité d'un frontend
+date: 20/01/2025
+---
+
+<InternalPageMenu>
+  <PathViewer>
+    <PathViewerItem to="/"> CAE : Projets </PathViewerItem>
+    <PathViewerItem to="/quality"> Qualité </PathViewerItem>
+    <PathViewerItem selected> Qualité du frontend </PathViewerItem>
+  </PathViewer>
+  <InternalPageMenuItem> Comment gérer la qualité du frontend ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Quelle librairie UI ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Quel style guide ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment gérer l'état ? </InternalPageMenuItem>
+</InternalPageMenu>
+
+
+
+# <InternalPageTitle> Comment gérer la qualité du frontend ? </InternalPageTitle>
+
+La qualité du frontend est essentielle pour offrir une expérience utilisateur optimale et maintenir la cohérence et la maintenabilité du code. Voici quelques pratiques clés pour gérer la qualité du frontend :
+
+1. **Librairie UI** :
+   - Utiliser une librairie UI comme Material-UI (MUI) pour créer des composants uniformes avec un look professionnel. MUI offre une large gamme de composants réutilisables et personnalisables qui respectent les principes de conception Material Design.
+   - [Material-UI](https://mui.com/)
+
+2. **Style guide de Google** :
+   - Utiliser le style guide de Google pour les conventions de code et de nommage. Cela permet de maintenir un code propre, lisible et cohérent à travers toute l'équipe de développement.
+   - [Google TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html)
+
+3. **Architecture modulaire du code** :
+   - Adopter une architecture modulaire pour le code frontend. Utiliser React Context pour gérer l'état de l'application de manière découplée de la présentation. Cela permet de rendre le code plus maintenable et de faciliter les tests et les mises à jour.
+   - [React Context](https://reactjs.org/docs/context.html)
+
+4. **Tests unitaires avec Vitest** :
+   - Écrire des tests unitaires pour vérifier le bon fonctionnement des composants et des fonctions. Utiliser Vitest, un framework de test rapide et léger, pour exécuter les tests unitaires.
+   - [Vitest](https://vitest.dev/)
+
+
+   # <InternalPageTitle> Quelle librairie UI ? </InternalPageTitle>
+
+   **👉 CONSIGNE** : Veuillez réaliser le [Tutoriel sur MUI](ui-library).
+
+   # <InternalPageTitle> Quel style guide ? </InternalPageTitle>
+
+   **👉 CONSIGNE** : Veuillez réaliser le [Tutoriel sur Google JavaScript Style Guide](front-style-guide).
+
+   # <InternalPageTitle> Comment gérer l'état ? </InternalPageTitle>
+   Pour simplifier les tests unitaires, il est important de découpler la logique métier de la présentation. Pour cela, React propose un mécanisme appelé Context qui permet de gérer l'état de l'application de manière centralisée et de le partager entre les composants sans passer par les props.
+
+   **👉 CONSIGNE** : Veuillez réaliser le [Tutoriel sur React Context](context).
+
+   # <InternalPageTitle> Comment gérer les tests unitaires ? </InternalPageTitle>
+
+   

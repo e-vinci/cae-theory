@@ -10,6 +10,7 @@ import PathViewerItem from "@/components/PathViewer/PathViewerItem";
 import InternalPageMenu from "@/components/InternalPageMenu/InternalPageMenu";
 import InternalPageMenuItem from "@/components/InternalPageMenu/InternalPageMenuItem";
 import InternalPageTitle from "@/components/InternalPageTitle/InternalPageTitle";
+import LinkFile from "@/components/LinkFile/LinkFile";
 
 import { Frontmatter, SiteMetaData } from "@/types";
 
@@ -64,6 +65,7 @@ const components = {
   InternalPageMenu,
   InternalPageMenuItem,
   InternalPageTitle,
+  LinkFile,
   // pre: CodeBlock
 };
 
@@ -73,12 +75,8 @@ interface PageProps {
 }
 
 const Page = ({ frontmatter, body }: PageProps) => {
-  console.log("PAGE:", body);
-  console.log("Type of body:", typeof body);
-  // const MDXContent = useMDXComponent(body);
   const MDXContent = useMDXComponent(body);
 
-  console.log("END");
   return (
     <MdxLayout frontmatter={frontmatter} siteMetaData={siteMetaData}>
       <MDXContent components={components} />

@@ -12,7 +12,7 @@ date: 20/01/2025
   </PathViewer>
   <InternalPageMenuItem> Comment gérer la qualité des applications d'entreprise ? </InternalPageMenuItem>
   <InternalPageMenuItem> Quels sont les différents types de tests ? </InternalPageMenuItem>
-  <InternalPageMenuItem> Comment gérer la qualité du frontend ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Quels tests réaliser pour le Projet CAE ? </InternalPageMenuItem>
 </InternalPageMenu>
 
 
@@ -47,13 +47,43 @@ En mettant en œuvre ces pratiques, les entreprises peuvent améliorer la qualit
 
 Les tests sont une composante essentielle de la gestion de la qualité des applications d'entreprise. Voici les différents types de tests couramment utilisés dans le développement logiciel :
 
+1. **Tests unitaires** :
+   - Ces tests vérifient le bon fonctionnement des plus petites unités de code, comme les fonctions ou les méthodes. Ils sont généralement écrits par les développeurs et exécutés fréquemment pour détecter les régressions rapidement.
+
+2. **Tests d'intégration** :
+   - Ces tests vérifient que les différentes unités de code fonctionnent correctement ensemble. Ils sont utilisés pour détecter les problèmes d'interaction entre les modules ou les composants.
+
+3. **Tests de bout en bout (E2E)** :
+   - Ces tests vérifient le bon fonctionnement de l'application dans son ensemble, du début à la fin. Ils simulent les actions des utilisateurs et vérifient que toutes les parties de l'application fonctionnent correctement ensemble.
+
+4. **Tests de performance** :
+   - Ces tests évaluent les performances de l'application, comme le temps de réponse, la capacité de traitement et la stabilité sous charge. Ils sont utilisés pour identifier les goulots d'étranglement et optimiser les performances.
 
 
-# <InternalPageTitle> Comment gérer la qualité du frontend ? </InternalPageTitle># 
-
-Pour une application web, la qualité du frontend est tout aussi importante que celle du backend. Voici quelques pratiques clés pour gérer la qualité du frontend :
+En utilisant ces différents types de tests, les entreprises peuvent s'assurer que leurs applications sont robustes, performantes et répondent aux attentes des utilisateurs.
 
 
+# <InternalPageTitle> Quels tests réaliser pour le Projet CAE ? </InternalPageTitle>
+
+Nous allons considérer les tests suivants pour le Projet CAE.
+Nous souhaitons garantir la qualité des applications développées pour le Projet CAE sans pour autant ralentir le processus de développement en imposant une couverture de code de 100% par des tests. 
+
+Voici les tests que nous réaliserons :
+1. **Tests unitaires** : 
+   - Pour le frontend : Tester les composants React qui sont "intelligents", les hooks, les services et les fonctions utilitaires. On ne teste donc pas les composants "présentationnels" qui ne contiennent pas de logique métier. On teste la gestion de l'état.
+   - Pour l'API : On teste les services qui contiennent la logique métier. 
+2. **Tests d'intégration** : 
+   - Pour l'API : On test chaque endpoint de l'API pour vérifier que les données sont correctement récupérées et modifiées. 
+   - Cela permet d'assurer que l'API fonctionne correctement avant de la connecter au frontend.
+   - On ne réalise pas d'autres tests d'intégration particuliers pour le Projet CAE. Les tests E2E couvrent déjà les interactions entre les différentes parties de l'application.
+3. **Tests E2E** :
+   - On réalise des tests E2E pour vérifier le bon fonctionnement de l'application dans son ensemble. 
+   - On teste les scénarios utilisateurs les plus importants notamment pour automatiser la présentation des fonctionnalités au client.
+4. **Tests de performance** :
+   - Selon l'avancement du projet, il est possible que l'on réalise des tests de performance pour évaluer la réactivité de l'application et sa capacité à supporter un grand nombre d'utilisateurs simultanés. 
 
 
-x
+
+
+
+
