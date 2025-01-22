@@ -8,7 +8,6 @@
     "start": "next start",
     "lint": "next lint",
     "deploy": "npm run build && cp .nojekyll out/ && gh-pages -d out -t"
-
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

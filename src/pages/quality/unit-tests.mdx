@@ -1,0 +1,571 @@
+---
+title: "React Unit Tests"
+description: "Tests unitaires avec React"
+---
+
+<InternalPageMenu>
+  <PathViewer>
+   <PathViewerItem to="/"> CAE </PathViewerItem>
+    <PathViewerItem to="/quality"> Qualité </PathViewerItem>
+     <PathViewerItem to="/quality/frontend"> Qualité du frontend</PathViewerItem>    
+    <PathViewerItem selected> Unit Tests </PathViewerItem>
+  </PathViewer>
+  <InternalPageMenuItem> Mise en place des tests unitaires avec Vitest </InternalPageMenuItem>
+  <InternalPageMenuItem> Où enregistrer les spécifications de test ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment tester un composant simple ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment mocker un contexte ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment mocker un useNavigate ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment lancer une exception à l'aide d'un mock ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment créer des rapports de tests ?  </InternalPageMenuItem>
+</InternalPageMenu>
+
+
+# <InternalPageTitle> Mise en place des tests unitaires avec Vitest </InternalPageTitle>
+
+## Installation des dépendances
+Nous allons réaliser les tests unitaires de nos applications React avec `Vitest`.
+
+Pour ce tutoriel, veuillez créer un nouveau projet nommé `unit-tests` sur base d'un copier/coller du dossier `front`de votre tutoriel `context`. Si nécessaire, vous pouvez trouver le code associé au dossier `front` ici : [dossier front du tuto context](https://github.com/e-vinci/ts-demos/tree/main/front/context/front).
+
+Pour ajouter `Vitest` à votre projet, vous pouvez exécuter la commande suivante :
+
+```bash
+npm install -D vitest @testing-library/react jsdom @vitest/coverage-v8
+```
+
+`jsdom` est un environnement de test JavaScript qui simule un navigateur web. Il est utilisé par `Vitest` pour exécuter les tests unitaires.
+
+`@testing-library/react` est une bibliothèque de test qui fournit des utilitaires pour tester les composants React.
+
+`@vitest/coverage-v8` est un plugin de couverture de code pour `Vitest` qui génère des rapports de couverture de code.
+
+Veuillez configurer votre application Vite pour exécuter les tests unitaires avec `Vitest`. Pour cela, vous devez modifier votre fichier `vite.config.ts` :
+
+```ts {1-2,10-14} showLineNumbers
+// eslint-disable-next-line spaced-comment
+/// <reference types="vitest/config" />
+
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react-swc';
+import checker from 'vite-plugin-checker';
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/setupTests.ts',
+  },
+
+  plugins: [
+    react(),
+    checker({
+      typescript: true,
+    }),
+  ],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
+  },
+});
+```
+
+## Exécution des tests
+
+Pour écrire des tests unitaires avec `Vitest`, vous pouvez créer un fichier `*.test.tsx` à côté de votre composant ou fonction à tester.
+
+Par défaut, `Vitest` recherche les fichiers contenant **`.test`** ou **`.spec`** dans le nom de fichier pour exécuter les tests.
+
+Pour exécuter les tests à l'aide d'une commande, vous devez ajouter un script dans votre fichier `package.json` :
+
+```json
+{
+  "scripts": {
+    "test": "vitest",
+    "coverage": "vitest run --coverage"
+  }
+}
+```
+
+Vous pouvez exécuter les tests en utilisant la commande suivante :
+
+```bash
+npm test
+```
+
+Pour générer un rapport de couverture de code, vous pouvez exécuter la commande suivante :
+
+```bash
+npm run coverage
+```
+
+Pour exécuter les tests directement au sein de VS Code, vous pouvez installer l'extension `Vitest` : [Vitest](https://marketplace.visualstudio.com/items?itemName=alexjoverm.vitest)
+
+# <InternalPageTitle> Où enregistrer les spécifications de test ? </InternalPageTitle>
+
+Il existe trois principales approches pour enregistrer les spécifications de test :
+- **Approche intégrée** : Les spécifications de test sont enregistrées dans le même fichier que le composant ou la fonction à tester. Cela permet de garder les tests à proximité du code source et de les maintenir ensemble.
+- **Approche séparée dans répertoire du composant** : Les spécifications de test sont enregistrées dans des fichiers séparés avec l'extension `.test.tsx` ou `.spec.tsx`. Cela permet de garder les tests séparés du code source, mais proche. 
+- **Approche séparée dans un répertoire dédié** : Les spécifications de test sont enregistrées dans un répertoire dédié, par exemple `/src/unit-tests`. Cela permet de garder les tests complètement séparés du code source.
+
+Chaque approche a ses avantages et ses inconvénients. Il est important de choisir celle qui convient le mieux à votre projet et à votre équipe.  Il est recommandé de garder les tests à proximité du code source pour faciliter la maintenance et la compréhension du code. 
+
+Pour le Projet CAE, nous vous demandons de suivre **l'approche séparée dans répertoire du composant**.
+
+
+Plus d'information sur `Vitest` : [Vitest](https://vitest.dev/)
+
+
+# <InternalPageTitle> Comment tester un composant simple ? </InternalPageTitle>
+
+Dans un premier temps, nous allons tester le composant `LoginPage` qui est un composant intelligent dont ses dépendances à la gestion de l'état sont injectées à l'aide d'un contexte.
+
+Nous allons réaliser un premier simple test unitaire pour vérifier que le composant `LoginPage` affiche deux labels ("Username" et "Password").
+
+Veuillez créer un nouveau script nommé `/src/components/pages/LoginPage.tests.tsx` :
+
+```tsx
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { describe, test, expect } from 'vitest';
+import LoginPage from '../../components/pages/LoginPage';
+
+describe('LoginPage', () => {
+  test('renders a form with username and password inputs', () => {
+    render(
+      <MemoryRouter>
+        <LoginPage />
+      </MemoryRouter>,
+    );
+    const usernameInput = screen.getByLabelText('Username');
+    const passwordInput = screen.getByLabelText('Password');
+
+    expect(usernameInput).toBeTruthy();
+    expect(passwordInput).toBeTruthy();
+  });
+});
+```
+
+
+**`describe`** : 
+- permet de regrouper des tests liés entre eux. Ici, elle regroupe les tests pour le composant `LoginPage`.
+- 'LoginPage' est le nom du groupe de tests, ce qui aide à organiser et à identifier les tests dans les rapports de test.
+
+**`test`** (ou **`it`**) : 
+- est une fonction qui définit un cas de test individuel.
+- 'renders a form with username and password inputs' : est une description du cas de test. Elle explique ce que le test vérifie.
+- La fonction fléchée **`() => { ... }`** contient le code du test.
+- Est un synonyme de **`it`**.
+
+
+**`render`** :
+- est une fonction qui rend un composant React dans un environnement de test.
+
+**`<MemoryRouter>`** : 
+- est un composant de `react-router-dom` qui simule un environnement de routage en mémoire.
+- Il est utilisé ici pour fournir le contexte de routage nécessaire au composant LoginPage.
+**`<LoginPage />`** est le composant à tester.
+
+**`screen`** :
+- est un objet qui représente le DOM rendu.
+
+**`getByLabelText`** :
+- est une méthode de screen qui recherche un élément dans le DOM par son texte de label associé. Ici, il recherche un élément avec le label 'Username'.
+
+**`expect`** :
+- est une fonction qui crée une assertion.
+
+**`toBeTruthy`** :
+- est une méthode d'assertion qui vérifie que la valeur est "truthy" (c'est-à-dire qu'elle n'est pas null, undefined, false, 0, NaN, ou une chaîne vide).
+- **`expect(passwordInput).toBeTruthy();`** : cette assertion vérifie que l'élément `passwordInput` existe dans le DOM.
+
+Pour exécuter ce test unitaire, vous pouvez utiliser la commande suivante :
+
+```bash
+npm run test
+```
+
+Il est bien sûr possible de le faire dans VS Code avec l'extension `Vitest`, en cliquant sur le bouton "Run Test" à côté de la description du test.
+
+
+# <InternalPageTitle> Comment mocker un contexte ? </InternalPageTitle>
+
+Pour tester un composant qui dépend d'un contexte, vous pouvez utiliser la fonction `render` de `@testing-library/react` pour envelopper le composant dans un `Provider` qui fournit les valeurs du contexte.
+
+Voici le code que nous souhaitons tester :
+```tsx {11} showLineNumbers
+const LoginPage = () => {
+  const { loginUser }: UserContextType = useContext(UserContext);
+
+  const navigate = useNavigate();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = async (e: SyntheticEvent) => {
+    e.preventDefault();
+    try {
+      await loginUser({ username, password });
+      navigate('/');
+    } catch (err) {
+      console.error('LoginPage::error: ', err);
+    }
+  };
+//...
+}
+```
+
+Nous souhaitons ici injecter un contexte `UserContext` qui contient une fonction `loginUser` et vérifier que le composant `LoginPage` appelle correctement cette fonction lors de la soumission du formulaire.
+
+Voici un nouveau test unitaire à ajouter dans le fichier `/src/components/pages/LoginPage.tests.tsx` :
+
+```tsx {1,3,5,21-52} showLineNumbers
+import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { describe, test, expect, vi } from 'vitest';
+import LoginPage from '../../components/pages/LoginPage';
+import { UserContext } from '../../contexts/UserContext';
+
+describe('LoginPage', () => {
+  test('renders a form with username and password inputs', () => {
+    render(
+      <MemoryRouter>
+        <LoginPage />
+      </MemoryRouter>,
+    );
+    const usernameInput = screen.getByLabelText('Username');
+    const passwordInput = screen.getByLabelText('Password');
+
+    expect(usernameInput).toBeTruthy();
+    expect(passwordInput).toBeTruthy();
+  });
+
+  test('calls loginUser when the form is submitted', async () => {
+    const loginUserMock = vi.fn();
+    const mockContextValue = {
+      authenticatedUser: undefined,
+      registerUser: vi.fn(),
+      loginUser: loginUserMock,
+      clearUser: vi.fn(),
+    };
+
+    render(
+      <MemoryRouter>
+        <UserContext.Provider value={mockContextValue}>
+          <LoginPage />
+        </UserContext.Provider>
+      </MemoryRouter>,
+    );
+
+    const usernameInput = screen.getByLabelText('Username');
+    const passwordInput = screen.getByLabelText('Password');
+    const submitButton = screen.getByRole('button', {
+      name: /s'authentifier/i,
+    });
+
+    fireEvent.change(usernameInput, { target: { value: 'testuser' } });
+    fireEvent.change(passwordInput, { target: { value: 'password' } });
+    fireEvent.click(submitButton);
+
+    expect(loginUserMock).toHaveBeenCalledWith({
+      username: 'testuser',
+      password: 'password',
+    });
+  });
+});
+```
+
+**`vi.fn()`** :  
+- est une fonction de `Vitest` qui crée un mock de fonction. 
+- Elle est utilisée ici pour créer un mock de la fonction `loginUser` du contexte `UserContext`.
+- Un mock est une fonction simulée qui enregistre les appels et les arguments passés à la fonction simulée.
+
+**`<UserContext.Provider>`** :
+- est un composant de `React` qui injecte les valeurs du contexte aux composants enfants.
+
+**`fireEvent.change`** :
+- est une fonction de `@testing-library/react` qui simule un événement de changement sur un élément du DOM.
+- Elle est utilisée ici pour simuler la saisie de valeurs dans les champs de formulaire.
+
+**`fireEvent.click`** :
+- est une fonction de `@testing-library/react` qui simule un événement de clic sur un élément du DOM.
+- Elle est utilisée ici pour simuler le clic sur le bouton de soumission du formulaire.
+
+**`expect(loginUserMock).toHaveBeenCalledWith({ ... })`** :
+- est une assertion qui vérifie que la fonction `loginUserMock` a été appelée avec les arguments spécifiés.
+
+Pour exécuter les deux tests unitaires existants, vous pouvez utiliser la commande suivante :
+
+```bash
+npm run test
+```
+
+# <InternalPageTitle> Comment mocker un useNavigate ? </InternalPageTitle>
+
+Pour tester un composant qui utilise `useNavigate` de `react-router-dom`, vous pouvez utiliser la fonction `vi.mock` pour mocker le module `react-router-dom`.
+
+Si l'on reprend le composant `LoginPage` que nous souhaitons tester :
+```tsx {12} showLineNumbers
+const LoginPage = () => {
+  const { loginUser }: UserContextType = useContext(UserContext);
+
+  const navigate = useNavigate();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = async (e: SyntheticEvent) => {
+    e.preventDefault();
+    try {
+      await loginUser({ username, password });
+      navigate('/');
+    } catch (err) {
+      console.error('LoginPage::error: ', err);
+    }
+  };
+//...
+}
+```
+
+Dans notre précédent test, nous avons déjà vérifié que la fonction `loginUser` est appelée correctement. Pour être complet dans notre deuxième test unitaire, nous allons vérifier que la fonction `navigate` est appelée avec le chemin '/' après l'appel à `loginUser`.
+
+Voici le test unitaire à modifier dans le fichier `/src/components/pages/LoginPage.tests.tsx` :
+
+```tsx {1,2,7-13,29,31,39,64-66} showLineNumbers
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { MemoryRouter, useNavigate } from 'react-router-dom';
+import { describe, test, expect, vi } from 'vitest';
+import LoginPage from '../../components/pages/LoginPage';
+import { UserContext } from '../../contexts/UserContext';
+
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: vi.fn(),
+  };
+});
+
+describe('LoginPage', () => {
+  test('renders a form with username and password inputs', () => {
+    render(
+      <MemoryRouter>
+        <LoginPage />
+      </MemoryRouter>,
+    );
+    const usernameInput = screen.getByLabelText('Username');
+    const passwordInput = screen.getByLabelText('Password');
+
+    expect(usernameInput).toBeTruthy();
+    expect(passwordInput).toBeTruthy();
+  });
+
+  test('calls loginUser and navigates to HomePage when the form is submitted', async () => {
+    const loginUserMock = vi.fn();
+    const navigateMock = vi.fn();
+    const mockContextValue = {
+      authenticatedUser: undefined,
+      registerUser: vi.fn(),
+      loginUser: loginUserMock,
+      clearUser: vi.fn(),
+    };
+
+    vi.mocked(useNavigate).mockReturnValue(navigateMock);
+
+    render(
+      <MemoryRouter>
+        <UserContext.Provider value={mockContextValue}>
+          <LoginPage />
+        </UserContext.Provider>
+      </MemoryRouter>,
+    );
+
+    const usernameInput = screen.getByLabelText('Username');
+    const passwordInput = screen.getByLabelText('Password');
+    const submitButton = screen.getByRole('button', {
+      name: /s'authentifier/i,
+    });
+
+    fireEvent.change(usernameInput, { target: { value: 'testuser' } });
+    fireEvent.change(passwordInput, { target: { value: 'password' } });
+    fireEvent.click(submitButton);
+
+    expect(loginUserMock).toHaveBeenCalledWith({
+      username: 'testuser',
+      password: 'password',
+    });
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith('/');
+    });
+  });
+});
+  ```
+
+Voici comment nous avons mocké `useNavigate` :
+```tsx
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: vi.fn(),
+  };
+});
+```
+
+**`vi.mock`** : 
+- est une fonction de `Vitest` qui permet de mocker un module.
+- Elle est utilisée ici pour mocker le module `react-router-dom` et remplacer la fonction `useNavigate` par un mock.
+- **`vi.importActual`** est une fonction qui permet d'importer le module réel pour le mocker. 
+- On récupère ici le module `react-router-dom` et on remplace uniquement la fonction `useNavigate` par un mock. On veut par exemple, garder la vrai fonction `MemoryRouter` pour ne pas la mocker.
+- Si l'on avait souhaité mocker l'ensemble du module `react-router-dom`, on aurait pu simplement écrire **`vi.mock('react-router-dom', vi.fn())`**. Mais nous aurions eu le problème de ne pas pouvoir utiliser `MemoryRouter`...  ?   
+
+Pour info, dans le composant `LoginPage`, voici comment nous utilisons `useNavigate` :
+```tsx
+const navigate = useNavigate();
+```
+
+**`useNavigate`** :
+- est une fonction de `react-router-dom`, un hook, qui permet de naviguer vers une autre page.
+- ce hook renvoie une fonction `navigate` qui peut être appelée pour naviguer vers une autre page.
+
+Voici comment nous avons créé une nouvelle implémentations pour `useNavigate`, afin de renvoyer notre propre mock de la fonction `navigate` :
+```tsx
+const navigateMock = vi.fn();
+//...
+vi.mocked(useNavigate).mockReturnValue(navigateMock);
+```
+
+**`vi.mocked(useNavigate).mockReturnValue(navigateMock)`** :
+- est une fonction de `Vitest` qui permet de mocker une méthode d'un module.
+- Elle est utilisée ici pour mocker la méthode `useNavigate` du module `react-router-dom` et lui faire renvoyer notre mock `navigateMock`. C'est en fait l'équivalent de la fonction `navigate` que nous avons utilisée dans le composant `LoginPage`.
+
+**`await waitFor(() => { ... })`** :
+- est une fonction de `@testing-library/react` qui attend que la fonction de rappel passe un test.
+- Elle est utilisée ici pour attendre que le mock `navigateMock` soit appelé avec le chemin '/'.
+
+Veuillez exécuter vos deux tests unitaires.
+
+# <InternalPageTitle> Comment lancer une exception à l'aide d'un mock ? </InternalPageTitle>
+
+Si l'on reprend le composant `LoginPage` que nous souhaitons tester :
+```tsx {11,13-15} showLineNumbers
+const LoginPage = () => {
+  const { loginUser }: UserContextType = useContext(UserContext);
+
+  const navigate = useNavigate();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = async (e: SyntheticEvent) => {
+    e.preventDefault();
+    try {
+      await loginUser({ username, password });
+      navigate('/');
+    } catch (err) {
+      console.error('LoginPage::error: ', err);
+    }
+  };
+//...
+}
+```
+
+Nous souhaiterions tester le cas où la fonction `loginUser` lance une exception. Pour cela, nous allons mocker la fonction `loginUser` pour qu'elle lance une exception.
+
+Nous allons aussi vérifier que la fonction `console.error` est appelée avec le message d'erreur. Pour ce faire, nous allons mocker `console.error` et vérifier que cette fonction est appelée avec le message d'erreur.
+
+Voici le test unitaire à ajouter dans le fichier `/src/components/pages/LoginPage.tests.tsx` :
+
+```tsx {1,2,7-13,29,31,39,64-66} showLineNumbers
+test('calls console.error when loginUser throws an error', async () => {
+    const loginUserMock = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Login failed'));
+    const consoleErrorMock = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    const mockContextValue = {
+      authenticatedUser: undefined,
+      registerUser: vi.fn(),
+      loginUser: loginUserMock,
+      clearUser: vi.fn(),
+    };
+
+    render(
+      <MemoryRouter>
+        <UserContext.Provider value={mockContextValue}>
+          <LoginPage />
+        </UserContext.Provider>
+      </MemoryRouter>,
+    );
+
+    const usernameInput = screen.getByLabelText('Username');
+    const passwordInput = screen.getByLabelText('Password');
+    const submitButton = screen.getByRole('button', {
+      name: /s'authentifier/i,
+    });
+
+    fireEvent.change(usernameInput, { target: { value: 'testuser' } });
+    fireEvent.change(passwordInput, { target: { value: 'password' } });
+    fireEvent.click(submitButton);
+
+    expect(loginUserMock).toHaveBeenCalledWith({
+      username: 'testuser',
+      password: 'password',
+    });
+
+    await waitFor(() => {
+      expect(consoleErrorMock).toHaveBeenCalledWith(
+        'LoginPage::error: ',
+        expect.any(Error),
+      );
+    });
+
+    consoleErrorMock.mockRestore();
+  });
+```
+
+**`vi.fn().mockRejectedValueOnce(new Error('Login failed'))`** :
+- est une fonction de `Vitest` qui crée un mock de fonction qui lance une exception.
+- Elle est utilisée ici pour créer un mock de la fonction `loginUser` qui lance une exception avec le message 'Login failed'.
+
+**`vi.spyOn(console, 'error').mockImplementation(() => {})`** :
+- est une fonction de `Vitest` qui crée un mock de la méthode `console.error`.
+- Elle est utilisée ici pour créer un mock de la méthode `console.error` qui ne fait rien.
+
+**`expect(consoleErrorMock).toHaveBeenCalledWith('LoginPage::error: ', expect.any(Error))`** :
+- est une assertion qui vérifie que la méthode `console.error` a été appelée avec le message 'LoginPage::error: ' et une instance de la classe `Error`.
+
+**`consoleErrorMock.mockRestore()`** :
+- est une méthode qui restaure la méthode `console.error` à sa valeur d'origine.
+- Elle est utilisée ici pour restaurer la méthode `console.error` après le test.
+
+Veuillez exécuter vos trois tests unitaires.
+
+Pour en savoir plus sur les tests, notamment pour éviter les redondances de code (`beforeAll`, `beforeEach`...), vous pouvez consulter la documentation de l'API de `Vitest` : [Vitest API](https://vitest.dev/api/)
+
+
+
+# <InternalPageTitle> Comment créer des rapports de tests ? </InternalPageTitle>
+
+## Génération de rapport de tests
+
+Pour générer des rapports de tests, vous pouvez exécuter la commande suivante :
+
+```bash
+npm run coverage
+```
+
+Cette commande génère un rapport de couverture de code dans le répertoire `/coverage`. Vous pouvez ouvrir le fichier `index.html` dans votre navigateur pour visualiser le rapport de couverture de code.
+
+## Visualisation des tests via une UI
+
+Pour visualiser les tests via une interface utilisateur, vous pouvez exécuter la commande suivante dans le répertoire de votre projet contenant des tests unitaires :
+
+```bash
+npx vitest --ui
+```
+

@@ -16,7 +16,7 @@ import { Frontmatter, SiteMetaData } from "@/types";
 
 const siteMetaData: SiteMetaData = {
   version: "", // "2.0.0",
-  title: "siteTitle",
+  title: "CAE",
   description: "siteDescription",
   url: "siteURL",
   youtubeUrl: "youtubeUrl",
