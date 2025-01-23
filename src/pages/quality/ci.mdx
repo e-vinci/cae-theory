@@ -10,16 +10,16 @@ date: 20/01/2025
     <PathViewerItem to="/quality"> Qualité </PathViewerItem>
     <PathViewerItem selected> Intégration Continue </PathViewerItem>
   </PathViewer>
-  <InternalPageMenuItem> Comment gérer la qualité de l'API ? </InternalPageMenuItem>
-  <InternalPageMenuItem> Comment résumer le style guide de Google ? </InternalPageMenuItem>
-  <InternalPageMenuItem> Comment mettre en place le Checkstyle dans IntelliJ ? </InternalPageMenuItem>
-  <InternalPageMenuItem> Comment mettre en place le PMD ? </InternalPageMenuItem>
-  <InternalPageMenuItem> Comment gérer les tests unitaires avec Mockito ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment démarrer l'intégration continue de code au sein de Gitlab ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment mettre en place un pipeline ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment gérer des tâches en parallèle dans un pipeline ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment sauvegarder des rapports dans Gitlab ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment sauvegarder des rapports dans Gitlab ? </InternalPageMenuItem>
 </InternalPageMenu>
 
 
 
-# <InternalPageTitle> Comment gérer l'intégration continue de code au sein de Gitlab ? </InternalPageTitle>
+# <InternalPageTitle> Comment démarrer l'intégration continue de code au sein de Gitlab ? </InternalPageTitle>
 
 Nous allons dans un premier temps définir ce qu'est l'intégration continue, puis nous verrons comment la mettre en place au sein de Gitlab.
 
@@ -74,7 +74,7 @@ Merge requests can't be merged if the latest pipeline did not succeed or is stil
 2. Vous devez indiquer vos vraies informations, notamment votre nom et prénom, et votre adresse email **`@student.vinci.be`**! Les étudiants et les enseignants doivent pouvoir vous retrouver avec vos informations officielles ! L'email doit aussi être officiel, sinon vous ne pourrez pas obtenir les services gratuits offerts par Gitlab Education.
 3. Votre username doit être : `vinci-prenom-nom` (sans accent, sans espace, sans majuscule, sans caractères spéciaux)
 
-
+TBC
 
 ## Création de votre projet sous Gitlab
 
@@ -88,15 +88,363 @@ Merge requests can't be merged if the latest pipeline did not succeed or is stil
 5. Cliquez sur `Create project`.
  
 **👉 CONSIGNE** : Veuillez ajouter tous vos enseignants à votre projet ainsi que les membres de votre équipe.
-1. TBD
+1. TBC
 
-Veuillez cloner votre projet sur votre machine locale.
 
-Pour l'ajout du boilerplate de votre API Spring, veuillez commencer avec ce projet de base :
-https://github.com/e-vinci/cae-exercices-demo
+## Configuration de votre projet sous Gitlab
 
-**👉 CONSIGNE** : Tapez cette commande au sein du repository associé à votre projet. Votre Api doit se trouver dans le répertoire **`/api`** de votre repository :
+### Protection de la branche principale
+
+Pour protéger la branche principale, vous ne devez normalement rien changer si vous avez bien créé votre projet dans le bon groupe. 
+
+Pour vérifier que tout est en ordre, veuillez suivre les étapes suivantes :
+1. Accédez aux paramètres du projet dans Gitlab (`Settings`).
+2. Cliquez sur `Repository` dans le menu de gauche.
+3. Cliquez sur `Protected branches`.
+4. La branche principale est `main` par défaut (il n'y a rien à changer)
+5. Assurez que cela est sélectionné : `Protect this branch`.
+   - `Allowed to merge` : `Developers + Maintainers`.
+   - `Allowed to push and merge` : `No one` 
+
+Ainsi, les développeurs ne pourront pas pousser directement sur la branche principale, mais devront passer par des *merge requests*.
+
+### Meilleure gestion des MR
+
+#### Historique des commits plus propre
+
+1. Accédez aux paramètres du projet dans Gitlab (`Settings`).
+2. Cliquez sur `Merge requests` dans le menu de gauche.
+3. Cochez l'option `Fast-forward merge`.`No merge commits are created.
+Fast-forward merges only.
+When there is a merge conflict, the user is given the option to rebase.
+If merge trains are enabled, merging is only possible if the branch can be rebased without conflicts. `
+
+#### Approbation des MR
+
+1. Accédez aux paramètres du projet dans Gitlab (`Settings`).
+2. Cliquez sur `Merge requests` dans le menu de gauche.
+3. Veuillez ajouter au moins un membre de votre équipe pour approuver les *merge requests* :
+`Approval required` : `1` (ou plus si vous le souhaitez)
+4. Cliquez sur `Save changes`.
+
+## Résumé du workflow actuel pour l'intégration continue
+
+1. Un développeur crée une nouvelle feature branche à partir de la branche principale.
+2. Le développeur travaille sur sa feature et pousse ses modifications sur la branche distante.
+3. Le développeur crée une *merge request* pour fusionner sa branche avec la branche principale.
+4. Un autre membre de l'équipe approuve la *merge request*.
+
+## Ajout du boilerplate de votre API Spring
+Veuillez cloner votre projet Gitlab sur votre machine locale.
+
+Vous devriez créer une nouvelle branche à partir de la branche principale pour ajouter le boilerplate de votre API Spring. Nous vous proposons de l'appeler `api-init`.
+
+Pour l'ajout du boilerplate de votre API Spring, vous devez avoir fait tous les tutoriels qui sont demandés dans la page [Qualité de l'API](/quality/api).
+Le boilerplate de votre API Spring doit être ajouté à la racine de votre projet Gitlab, dans un dossier nommé **`api`**.
+Si vous avez suivi les tutoriels, vous devriez avoir un projet Spring Boot avec les dépendances nécessaires pour démarrer votre API. En cas de souci, vous pouvez utiliser le dossier `api` fourni dans ce repository : [cae-project-boilerplate](https://github.com/e-vinci/cae-project-boilerplate).
+
+Pensez à ajouter un fichier `.gitignore` à la racine de votre projet (votre repository) pour ignorer les fichiers inutiles.
+
+```txt
+### Mac
+.DS_Store
+### Windows
+Thumbs.db
+### Linux
+lost+found
+.env
+*.env
+```
+
+Après avoir fait ces modifications, vous devez pousser votre branche `api-init` sur votre dépôt distant.
+
+Comment créer une Merge Request ? [Voir la documentation](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
+
+Sur votre projet Gitlab, vous devriez voir un bouton `Create merge request` pour créer une *merge request*.
+
+TBC : Vérifier les consignes qui suivent.
+Veuillez compléter le formulaire de *merge request* en indiquant les informations suivantes :
+- **Title** : `Ajout du boilerplate de l'API Spring`
+- **Description** : 
+  ```
+  Ajout du boilerplate de l'API Spring.
+  ```
+- **Assign to** : Assign to me
+- **Reviewers** : Sélectionnez un membre de votre équipe pour approuver la *merge request*.
+- **Merge options** : 
+  - `Delete source branch when merge request is accepted.` : Cochez cette option pour supprimer la branche `boilerplate-init` après la fusion. On garde malgré tout l'historique complet des commits.
+  - `Squash commits when merge request is accepted.` : On pourrait cocher cette option pour fusionner tous les commits de la branche `boilerplate-init` en un seul commit. Néanmoins, pour pouvoir suivre tous vos commits, nous vous demandons de ne pas cocher cette option.
+- **Labels** : Ajoutez le label `boilerplate`.
+- Cliquez sur `Create merge request`.
+
+
+TBC : Vérifier les consignes qui suivent.
+Veuillez demander à un autre membre de votre équipe de revoir et d'approuver votre *merge request*.
+
+Comment approuver une Merge Request ? [Voir la documentation](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
+
+Une fois la *merge request* approuvée, vous ne pouvez toujours pas fusionner la branche `boilerplate-init` avec la branche principale.
+
+Vous avez le message suivant : `Merge blocked: 1 check failed. The pipeline for this merge request failed.`
+Cela signifie que le pipeline d'intégration continue a échoué. 
+
+Et c'est normal, car nous n'avons pas encore configuré le pipeline d'intégration continue pour exécuter les tests et vérifier la qualité du code.
+
+# <InternalPageTitle> Comment mettre en place un pipeline ? </InternalPageTitle>
+
+## C'est quoi un pipeline ?
+
+Un pipeline est un ensemble de **jobs** qui sont exécutés dans un ordre spécifique pour automatiser le processus de construction, de test et de déploiement d'une application.
+
+Nous allons voir comment configurer un pipeline dans Gitlab pour exécuter les tests unitaires et vérifier la qualité du code de notre API.
+
+## Configuration du pipeline
+
+Pour configurer un pipeline dans Gitlab, vous devez créer un fichier **`.gitlab-ci.yml`** à la racine de votre projet. Ce fichier contient les instructions pour exécuter les différents jobs du pipeline.
+
+Au niveau de la Merge requests, il y a un bouton `Try out GitLab Pipelines` qui permet de tester le pipeline avant de la fusionner.
+
+A la racine de votre Projet Gitlab (votre repository), dans la branche `api-init`, créez un fichier `.gitlab-ci.yml` avec le contenu suivant :
+
+```yaml
+api test:
+  image: maven:3.9.9-amazoncorretto-21
+  script:
+    - cd api
+    - mvn clean test
+```
+
+Ce fichier définit un job nommé `api test` qui utilise l'image Docker `maven:3.9.9-amazoncorretto-21` pour exécuter les tests unitaires de l'API Spring. Le script exécute les commandes suivantes :
+- `cd api` : se déplace dans le dossier `api` où se trouve le code de l'API Spring.
+- `mvn clean test` : exécute tous les checks que nous avons configurés dans l'API Spring. Il s'agit du Checkstyle, du PMD, du CPD et des tests unitaires.
+
+Veuillez pousser votre fichier `.gitlab-ci.yml` sur votre dépôt distant.
+
+Maintenant que vous avez ajouté le fichier `.gitlab-ci.yml`, vous devriez voir un pipeline se déclencher automatiquement à chaque *push* sur la branche `api-init`.
+
+## Vérification du pipeline
+
+Pour vérifier que le pipeline a été exécutée avec succès, vous pouvez accéder à l'onglet `Build`, `Pipelines` de votre projet Gitlab.
+
+Là, vous devriez voir un pipeline avec le job `api test` qui a été exécuté avec succès ou qui est toujours en cours.
+
+Si vous cliquez sur le numéro du pipeline, vous pouvez voir les détails de l'exécution du job `api test`. Puis vous pouvez voir les logs de l'exécution du job. On voit ici que tous les tests ont exécutés avec succès et que le build est réussi.
+
+Nous savons donc que la qualité du commit est bonne et que nous pouvons fusionner la branche `api-init` avec la branche principale.
+
+## Fusion de la branche `api-init` avec la branche principale
+
+Maintenant que le pipeline a été exécutée avec succès, vous pouvez fusionner la branche `api-init` avec la branche principale. Pour cela, vous devez approuver la *merge request*.
+
+Une fois la *merge request* approuvée, vous pouvez cliquer sur le bouton `Merge` pour fusionner la branche `api-init` avec la branche principale.
+
+Attention, une fois la MR fusionnée, un nouveau pipeline sera déclenché pour la branche principale. Vous devez vous assurer que ce pipeline est exécuté avec succès avant de continuer.
+
+## Terminer la fusion de la branche `api-init` avec la branche principale
+Tout est bien géré sur le gitlab distant.
+Il reste à terminer la fusion de la branche `api-init` avec la branche principale sur votre machine locale.
+Pour ce faire, vous devez vous placer sur la branche principale et récupérer les dernières modifications. Par exemple, si vous êtes sur la branche `api-init`, vous pouvez exécuter les commandes suivantes :
 
 ```bash
-git clone https://github.com/e-vinci/cae-exercices-demo api
+git checkout main
+git pull
 ```
+
+## Résumé du workflow actuel pour l'intégration continue
+
+1. Un développeur crée une nouvelle feature branche à partir de la branche principale.
+2. Le développeur travaille sur sa feature et pousse ses modifications sur la branche distante.
+3. Le pipeline d'intégration continue est déclenché automatiquement. Si le pipeline échoue, le développeur doit corriger les erreurs avant de continuer.
+4. Le développeur crée une *merge request* pour fusionner sa branche avec la branche principale.
+5. Un autre membre de l'équipe approuve la *merge request*.
+6. La *merge request* est fusionnée avec la branche principale.
+
+# <InternalPageTitle> Comment gérer des tâches en parallèle dans un pipeline ? </InternalPageTitle>
+
+## Introduction
+
+Comment gérer des tâches en parallèle dans un pipeline ? Par exemple, comment exécuter les tests du frontend et de l'API en parallèle dans un pipeline ?
+
+En fait, dans Gitlab, vous pouvez définir plusieurs jobs dans un pipeline et les exécuter en parallèle.
+
+Si vous avez plusieurs jobs qui ne dépendent pas les uns des autres, vous pouvez les exécuter en parallèle pour gagner du temps.
+
+Nous allons donc ajouter notre frontend React dans le pipeline et exécuter les tests du frontend et de l'API en parallèle.
+
+## Ajout du boilerplate de votre frontend
+
+Pour l'ajout du boilerplate de votre frontend, vous devez avoir fait tout ce qui est demandé dans la page [Qualité du Frontend](/quality/frontend).
+A la fin de ces tutoriels (le dernier s'appelle `unit-tests`), vous devriez avoir un projet React avec les dépendances nécessaires pour démarrer un frontend. Néanmoins, ce frontend n'intègre pas la librairie MUI.
+
+Pour vous aider, nous avons créé un boilerplate pour le frontend qui reprend les tutoriels précédents et qui intègre la librairie MUI. Vous pouvez le trouver ici : [cae-project-boilerplate](https://github.com/e-vinci/cae-project-boilerplate).
+
+Vous devriez créer une nouvelle branche à partir de la branche principale pour ajouter le boilerplate de votre frontend React dans un dossier nommé **`/frontend`**. Nous vous proposons d'appeler votre nouvelle branche `frontend-init`.
+
+## Mise à jour du pipeline
+
+Veuillez mettre à jour votre fichier `.gitlab-ci.yml` pour exécuter les tests du frontend et de l'API en parallèle :
+
+```yaml {7-13}
+api test:
+  image: maven:3.9.9-amazoncorretto-21
+  script:
+    - cd api
+    - mvn clean test
+
+frontend test:
+  image: node:20
+  script:
+    - cd frontend
+    - npm install
+    - npm run lint
+    - npm run coverage
+```
+
+Ce fichier définit deux jobs `api test` et `frontend test` qui exécutent les tests de l'API Spring et du frontend React en parallèle.
+
+Ici, pour le frontend, nous souhaitons d'abord exécuter les tests du linter, puis les tests unitaires pour générer un rapport de couverture de code.
+
+Veuillez pousser tous vos modifications sur votre repo distant.
+
+## Vérification du pipeline
+
+Après avoir poussé vos modifications, vous devriez voir un nouveau pipeline se déclencher automatiquement à chaque *push* sur la branche `frontend-init`.
+
+Vous devriez voir deux jobs `api test` et `frontend test` qui sont exécutés en
+parallèle.
+
+Une fois le pipeline exécuté avec succès, nous pourrions fusionner la branche `frontend-init` avec la branche principale.
+
+Mais avant cela, nous souhaitons découvrir un nouveau concept, la notion d'artefacts pour stocker les rapports de tests générés par les jobs du pipeline.
+
+# <InternalPageTitle> Comment sauvegarder des rapports dans Gitlab ? </InternalPageTitle>
+
+## Introduction
+
+Dans un pipeline, il est souvent nécessaire de générer des rapports de tests, de couverture de code, de qualité du code, etc. Ces rapports peuvent être stockés dans Gitlab en tant qu'artefacts pour les consulter ultérieurement.
+
+Nous allons voir comment sauvegarder les rapports de tests générés par les jobs `api test` et `frontend test` dans Gitlab.
+
+## Sauvegarde des rapports
+
+Pour sauvegarder les rapports de tests dans Gitlab, vous devez utiliser l'option `artifacts` dans le fichier `.gitlab-ci.yml`.
+
+Voici comment mettre à jour votre fichier `.gitlab-ci.yml` pour sauvegarder les rapports de tests :
+
+```yaml {6-10,19-21} showLineNumbers
+api test:
+  image: maven:3.9.9-amazoncorretto-21
+  script:
+    - cd api
+    - mvn clean test
+  artifacts:
+    paths:
+      - api/target/reports/
+      - api/target/site/
+      - api/target/surefire-reports/
+
+frontend test:
+  image: node:20
+  script:
+    - cd frontend
+    - npm install
+    - npm run lint
+    - npm run coverage
+  artifacts:
+    paths:
+      - frontend/coverage/
+```
+
+Ce fichier définit deux jobs `api test` et `frontend test` qui exécutent les tests de l'API Spring et du frontend React en parallèle. Les rapports de tests générés par ces jobs sont sauvegardés dans Gitlab en tant qu'artefacts.
+
+Pour l'API Spring, nous sauvegardons les rapports dans les dossiers `api/target/reports/`, `api/target/site/` et `api/target/surefire-reports/`. Pour le frontend React, nous sauvegardons les rapports dans le dossier `frontend/coverage/`.
+
+Pour retrouver ces documents dans Gitlab, vous pouvez accéder à l'onglet `Build`, `Pipelines` de votre projet Gitlab. Vous devriez voir un pipeline avec les jobs `api test` et `frontend test` qui ont été exécutés avec succès.
+
+Si vous cliquez sur le numéro du pipeline, vous pouvez voir les détails de l'exécution du job `api test` ou `frontend test`. 
+En cliquant sur le job, vous pouvez télécharger ou voir les artefacts générés par le job.
+
+Pour voir les artefacts générés par le job `api test`, vous pouvez cliquer sur le job `api test` dans le pipeline. Cliquez ensuite sur le bouton `Browse` pour voir les artefacts générés par le job.
+
+Idem pour le job `frontend test`. Allez dans le pipeline, cliquez sur le job `frontend test` et cliquez sur le bouton `Browse` pour voir les artefacts générés par le job.
+
+## Intégration des changements dans la branche principale
+
+Maintenant que vous avez ajouté les artefacts dans votre pipeline, vous pouvez fusionner la branche `frontend-init` avec la branche principale.
+
+Pour cela, vous devez créer une *merge request* pour fusionner la branche `frontend-init` avec la branche principale. Une fois la *merge request* approuvée, vous pouvez cliquer sur le bouton `Merge` pour fusionner la branche `frontend-init` avec la branche principale.
+
+N'oubliez pas de mettre à jour votre branche principale sur votre machine locale après la fusion.
+
+# <InternalPageTitle> Est-ce que cette intégration continue est vraiment utile ? </InternalPageTitle>
+
+## Intro
+
+Imaginons que quelqu'un vient à changer le code du frontend ou de l'API. Il est possible que ces changements affectent le bon fonctionnement de l'application.
+
+L'intégration continue permet de détecter ces problèmes le plus tôt possible, en exécutant automatiquement les tests et en vérifiant la qualité du code à chaque modification du code.
+
+Pour ce tutoriel, veuillez créer un souci au niveau du frontend.
+
+## Création d'un souci au niveau du frontend
+
+Vous savez qu'il est impossible de faire un `push` directement sur la branche principale. Vous devez passer par une *merge request*.
+
+Veuillez donc créer une nouvelle branche au niveau du frontend que nous allons appeler `update-login-color`.
+
+Veuillez mettre à jour le fichier `src/components/pages/LoginPage.tsx` pour changer la couleur du formulaire de connexion (de 'secondary.light' vers "primary.light").
+
+```tsx {6}
+return (
+    <Box
+      sx={{
+        margin: 2,
+        padding: 3,
+        backgroundColor: "primary.light",
+        borderRadius: 4,
+        boxShadow: 2,
+      }}
+    >
+```
+
+Faite un `commit` et un `push` sur votre branche `update-login-color`.
+
+## Vérification du pipeline
+
+Après avoir poussé vos modifications, vous devriez voir un nouveau pipeline se déclencher automatiquement à chaque *push* sur la branche `update-login-color`.
+
+Vous devriez voir deux jobs `api test` et `frontend test` qui sont exécutés en parallèle.
+
+Et finalement, vous devriez voir que le job `frontend test` a échoué. En cliquant sur le job `frontend test`, vous pouvez voir les détails de l'échec.
+Voici le message d'erreur que vous devriez voir :
+
+```txt
+eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0
+/builds/e-vinci/cae-projects/2025-cae-projects/cae-xy/frontend/src/components/pages/LoginPage.tsx
+  40:26  error  Replace `"primary.light"` with `'primary.light'`  prettier/prettier
+✖ 1 problem (1 error, 0 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+```
+
+On voit ici que le linter ESLint a détecté une erreur dans le fichier `src/components/pages/LoginPage.tsx`. Nous avons utilisé des guillemets doubles au lieu de simples pour la couleur du formulaire de connexion !!!
+
+## Correction de l'erreur
+
+Pour corriger cette erreur, vous devez mettre à jour le fichier `src/components/pages/LoginPage.tsx` pour changer la couleur du formulaire de connexion de `"primary.light"` vers `'primary.light'`.
+
+```tsx {6}
+return (
+    <Box
+      sx={{
+        margin: 2,
+        padding: 3,
+        backgroundColor: 'primary.light',
+        borderRadius: 4,
+        boxShadow: 2,
+      }}
+    >
+```
+
+Faite un `commit` et un `push` sur votre branche `update-login-color`.
+
+Cette fois-ci, le job `frontend test` devrait être exécuté avec succès ! 🎉
