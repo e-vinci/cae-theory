@@ -1,0 +1,102 @@
+---
+title: CI
+description: Intégration continue
+date: 20/01/2025
+---
+
+<InternalPageMenu>
+  <PathViewer>
+    <PathViewerItem to="/"> CAE </PathViewerItem>
+    <PathViewerItem to="/quality"> Qualité </PathViewerItem>
+    <PathViewerItem selected> Intégration Continue </PathViewerItem>
+  </PathViewer>
+  <InternalPageMenuItem> Comment gérer la qualité de l'API ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment résumer le style guide de Google ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment mettre en place le Checkstyle dans IntelliJ ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment mettre en place le PMD ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment gérer les tests unitaires avec Mockito ? </InternalPageMenuItem>
+</InternalPageMenu>
+
+
+
+# <InternalPageTitle> Comment gérer l'intégration continue de code au sein de Gitlab ? </InternalPageTitle>
+
+Nous allons dans un premier temps définir ce qu'est l'intégration continue, puis nous verrons comment la mettre en place au sein de Gitlab.
+
+## Définition de l'intégration continue
+
+L'intégration continue est une pratique de développement logiciel qui consiste à **automatiser l'intégration du code produit par les développeurs dans un référentiel partagé**. L'objectif est de détecter et de corriger les problèmes d'intégration le plus tôt possible, afin de garantir une qualité de code constante et de faciliter le déploiement continu.
+
+## Mise en place de l'intégration continue avec Gitlab
+
+Gitlab propose des fonctionnalités intégrées pour mettre en place l'intégration continue de code. Voici les étapes à suivre pour configurer l'intégration continue dans Gitlab :
+- Protéger la branche principale : pour éviter les modifications directes sur la branche principale, il est recommandé de protéger la branche `main` ou `master` et 
+d'exiger des *merge requests* pour intégrer les modifications.
+- Créer un fichier `.gitlab-ci.yml` : ce fichier contient les instructions pour exécuter les tests, le build et le déploiement du code. Il définit les *jobs* et les *stages* à exécuter lors de l'intégration continue.
+
+Les paramètres pour configurer la protection de la branche principale, la gestion des MR et des builds sont accessibles dans les paramètres du projet, ou dans les paramètres du groupe pour appliquer des règles à plusieurs projets.
+
+Nous indiquons ici les paramètres que nous voulons que vous utilisiez sur votre projet.
+Nous vous demandons de protéger la branche principale, de configurer les *merge requests* pour qu'elles soient validées par un autre membre de l'équipe avant d'être fusionnées, et de configurer un pipeline d'intégration continue qui exécute les tests unitaires et vérifie la qualité du code.
+
+Pour les étudiants Vinci, nous avons tenté de paramétrer tout cela au niveau du groupe `cae-project`. Si tout va bien, lorsque vous créerez un projet au sein de ce groupe, ces paramètres seront déjà configurés et vous n'aurez donc rien à faire.
+
+## Protection de la branche principale
+
+Pour protéger la branche principale, vous pouvez suivre les étapes suivantes :
+1. Accédez aux paramètres du projet dans Gitlab (`Settings`).
+2. Cliquez sur `Repository` dans le menu de gauche.
+3. Cliquez sur `Default branch`.
+4. La branche principale est `main` par défaut (il n'y a rien à changer)
+5. Assurez que l'option `Protected` est activée.
+6. Cochez les options :
+   - Allowed to push : `No one` 
+   - Allowed to merge : `Developers + Maintainers`.
+7. Cliquez sur `Save changes`.
+
+Ainsi, les développeurs ne pourront pas pousser directement sur la branche principale, mais devront passer par des *merge requests*.
+
+
+## Meilleure gestion des MR
+1. Accédez aux paramètres du projet dans Gitlab (`Settings`).
+2. Cliquez sur `General` dans le menu de gauche.
+3. Cliquez sur `Merge requests`.
+4. Cochez l'option `Pipelines must succeed
+Merge requests can't be merged if the latest pipeline did not succeed or is still running.`.
+5. Cochez l'option `All threads must be resolved`.
+6. Cliquez sur `Save changes`.
+
+
+## Création de votre compte sous Gitlab
+
+**👉 CONSIGNE** : 
+1. Créez un compte sur Gitlab en vous rendant sur https://gitlab.com/users/sign_up
+2. Vous devez indiquer vos vraies informations, notamment votre nom et prénom, et votre adresse email **`@student.vinci.be`**! Les étudiants et les enseignants doivent pouvoir vous retrouver avec vos informations officielles ! L'email doit aussi être officiel, sinon vous ne pourrez pas obtenir les services gratuits offerts par Gitlab Education.
+3. Votre username doit être : `vinci-prenom-nom` (sans accent, sans espace, sans majuscule, sans caractères spéciaux)
+
+
+
+## Création de votre projet sous Gitlab
+
+**👉 CONSIGNE** : Créez un nouveau projet sur Gitlab nommé `cae-xy` et suivez les étapes pour protéger la branche principale et configurer les *merge requests*.
+
+1. Rendez-vous sur https://gitlab.com/e-vinci/cae-projects/2025-cae-projects
+2. Cliquez sur `New project` en haut à droite.
+3. Sélectionnez `Create blank project`.
+4. Nommez votre projet `cae-xy` (remplacez `xy` par votre numéro de groupe).
+5. Assurez vous que le projet est `Private`.
+5. Cliquez sur `Create project`.
+ 
+**👉 CONSIGNE** : Veuillez ajouter tous vos enseignants à votre projet ainsi que les membres de votre équipe.
+1. TBD
+
+Veuillez cloner votre projet sur votre machine locale.
+
+Pour l'ajout du boilerplate de votre API Spring, veuillez commencer avec ce projet de base :
+https://github.com/e-vinci/cae-exercices-demo
+
+**👉 CONSIGNE** : Tapez cette commande au sein du repository associé à votre projet. Votre Api doit se trouver dans le répertoire **`/api`** de votre repository :
+
+```bash
+git clone https://github.com/e-vinci/cae-exercices-demo api
+```

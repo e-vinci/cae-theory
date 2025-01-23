@@ -43,14 +43,6 @@ const siteMetaData: SiteMetaData = {
       ],
     },
     {
-      name: "SubMenu",
-      link: "",
-      subMenu: [
-        { name: "Sub1", link: "/sub/one" },
-        { name: "Sub2", link: "/sub/two" },
-      ],
-    },
-    {
       name: `About`,
       link: `/about`,
     },
