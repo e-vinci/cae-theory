@@ -40,10 +40,11 @@ jobs:
       - name: Deploy to GitHub Pages
         run: |          
           git init
+          git config --global init.defaultBranch main
           git config --global --add safe.directory /__w/cae-project/cae-project
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
           git fetch origin
           if git show-ref --verify --quiet refs/heads/gh-pages; then
             git worktree add gh-pages origin/gh-pages
