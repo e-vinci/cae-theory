@@ -51,6 +51,7 @@ jobs:
           else
             git worktree add -b gh-pages gh-pages
           fi
+          git rm -rf .
           cp .nojekyll out/
           cp -r out/* gh-pages/
           cd gh-pages
