@@ -37,21 +37,12 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Deploy to GitHub Pages
-        run: |
-          cd $GITHUB_WORKSPACE
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-          git fetch origin
-          if git show-ref --verify --quiet refs/heads/gh-pages; then
-            git worktree add gh-pages origin/gh-pages
-          else
-            git worktree add -b gh-pages gh-pages
-          fi
-          cp .nojekyll out/
-          cp -r out/* gh-pages/
-          cd gh-pages
-          git add --all
-          git commit -m "Deploy to GitHub Pages"
-          git push origin gh-pages
+      - name: Deploy to Github Pages
+        uses: devops-infra/action-commit-push@master
+        with:
+          github_token: "${{ secrets.GITHUB_TOKEN }}"
+          add_timestamp: true
+          commit_prefix: "[AUTO]"
+          commit_message: "Automatic commit on merge to main"
+          force: false
+          target_branch: gh-pages
