@@ -7,8 +7,6 @@ import React from "react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { Container } from "@mui/material";
-import "prism-themes/themes/prism-vsc-dark-plus.css"; // Import Prism CSS
-import "./code-block.css";
 
 const theme = createTheme({
   palette: {
@@ -34,14 +32,15 @@ interface MdxLayoutProps {
  */
 const MdxLayout = ({ children, siteMetaData }: MdxLayoutProps) => {
   return (
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <Header siteMetaData={siteMetaData} />
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Header siteMetaData={siteMetaData} />
 
-        <Container style={{ padding: "1rem", wordWrap:"break-word" }}>{children}</Container>
-        <ScrollToTop />
-      </ThemeProvider>
-   
+      <Container style={{ padding: "1rem", wordWrap: "break-word" }}>
+        {children}
+      </Container>
+      <ScrollToTop />
+    </ThemeProvider>
   );
 };
 
