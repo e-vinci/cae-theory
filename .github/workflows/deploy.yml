@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: node:20-alpine
+      image: node:20-bullseye
 
     env:
       BASE_PATH: /cae-project
