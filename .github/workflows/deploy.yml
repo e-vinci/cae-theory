@@ -76,7 +76,7 @@ jobs:
         with:
           path: ./out
 
-  # Deployment job
+  # Deployment job 1
   deploy:
     environment:
       name: github-pages
