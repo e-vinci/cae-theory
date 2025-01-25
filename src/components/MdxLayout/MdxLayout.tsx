@@ -38,7 +38,7 @@ const MdxLayout = ({ children, siteMetaData }: MdxLayoutProps) => {
         <CssBaseline />
         <Header siteMetaData={siteMetaData} />
 
-        <Container style={{ padding: "1rem" }}>{children}</Container>
+        <Container style={{ padding: "1rem", wordWrap:"break-word" }}>{children}</Container>
         <ScrollToTop />
       </ThemeProvider>
    

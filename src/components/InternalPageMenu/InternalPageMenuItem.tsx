@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { snakeCase } from "lodash";
-import MenuItem from "@mui/material/MenuItem";
+import ListItem from "@mui/material/ListItem";
+import ListItemText from "@mui/material/ListItemText";
 import MUILink from "@mui/material/Link";
 
 interface InternalPageMenuItemProps {
@@ -8,19 +9,23 @@ interface InternalPageMenuItemProps {
   to: string;
 }
 
-
-const InternalPageMenuItem = ({
-  children,
-  to,
-}: InternalPageMenuItemProps) => {
+const InternalPageMenuItem = ({ children, to }: InternalPageMenuItemProps) => {
   const itemTextInSnakeCase = snakeCase(children);
 
-    return (
-    <MenuItem>
-      <MUILink href={to ? to : "#" + itemTextInSnakeCase} underline="hover" color="inherit" component={Link}>
-        {children}
+  return (
+    <ListItem
+      component="div"
+      sx={{ paddingTop: 0, paddingBottom: 0 }}
+    >
+      <MUILink
+        href={to ? to : "#" + itemTextInSnakeCase}
+        underline="hover"
+        color="inherit"
+        component={Link}
+      >
+        <ListItemText primary={children} />
       </MUILink>
-    </MenuItem>
+    </ListItem>
   );
 };
 

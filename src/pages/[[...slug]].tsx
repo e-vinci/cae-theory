@@ -39,7 +39,8 @@ const siteMetaData: SiteMetaData = {
         { name: "Qualité générale", link: "/quality/general" },
         { name: "Qualité du frontend", link: "/quality/frontend" },
         { name: "Qualité de l'API", link: "/quality/api" },
-        { name: "CI", link: "/quality/ci" },
+        { name: "Intégration", link: "/quality/ci" },
+        { name: "Tests e2e", link: "/quality/e2e" },
       ],
     },
     {
