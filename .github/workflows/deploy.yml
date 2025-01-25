@@ -15,6 +15,9 @@ jobs:
     container:
       image: node:20-alpine
 
+    env:
+      BASE_PATH: /cae-project
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -27,6 +30,9 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      - name: Lint code
+        run: npm run lint || true
 
       - name: Deploy project
         run: npm run deploy
