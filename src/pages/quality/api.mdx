@@ -413,52 +413,51 @@ PMD se concentre sur la détection des erreurs de programmation et des mauvaises
 Pour commencer, ajoutez le plugin PMD à votre fichier `pom.xml` dans la section `<plugins>` :
 
 ```xml
-<plugin>
-   <groupId>org.apache.maven.plugins</groupId>
-   <artifactId>maven-pmd-plugin</artifactId>
-   <version>3.26.0</version>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>3.26.0</version>
 
-   <configuration>
+        <configuration>
 
-      <rulesets>
-      <ruleset>rulesets/java/quickstart.xml</ruleset>
-      </rulesets>
+          <failOnViolation>true</failOnViolation>
+          <printFailingErrors>true</printFailingErrors>
+          <minimumTokens>40</minimumTokens>
 
+          <rulesets>
+            <ruleset>rulesets/java/quickstart.xml</ruleset>
+          </rulesets>
 
-      <compileSourceRoots>
-      <compileSourceRoot>target/generated-sources/delombok</compileSourceRoot>
-      </compileSourceRoots>
-
-   </configuration>
-   <executions>
-      <execution>
-      <id>pmd-check</id>
-      <phase>test</phase>
-      <goals>
-         <goal>check</goal>
-      </goals>
-      <configuration>
-         <maxAllowedViolations>0</maxAllowedViolations>
-      </configuration>
-      </execution>
-      <execution>
-      <id>pmd-cpd-check</id>
-      <phase>test</phase>
-      <goals>
-         <goal>cpd-check</goal>
-      </goals>
-      <configuration>
-         <maxAllowedViolations>0</maxAllowedViolations>
-      </configuration>
-      </execution>
-   </executions>
-</plugin>
+        </configuration>
+        <executions>
+          <execution>
+            <id>pmd-check</id>
+            <phase>test</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+              <maxAllowedViolations>0</maxAllowedViolations>
+            </configuration>
+          </execution>
+          <execution>
+            <id>pmd-cpd-check</id>
+            <phase>test</phase>
+            <goals>
+              <goal>cpd-check</goal>
+            </goals>
+            <configuration>
+              <maxAllowedViolations>0</maxAllowedViolations>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
 ```
 
 Le ruleset `rulesets/java/quickstart.xml` contient des règles de base pour détecter les erreurs de programmation courantes.
 
 Voici une brève description d'autres rulesets PMD que nous aurions pu intégrer :
-- **basic.xml **: Contient des règles de base pour détecter les erreurs courantes de programmation.
+- **basic.xml**: Contient des règles de base pour détecter les erreurs courantes de programmation.
 - **braces.xml** : Vérifie l'utilisation correcte des accolades dans le code.
 - **unusedcode.xml**: Détecte le code non utilisé, comme les variables et méthodes inutilisées.
 - **design.xml** : Contient des règles pour améliorer la conception du code.
@@ -512,9 +511,184 @@ mvn test -P no-build-failure
 
 Vous devriez voir un rapport HTML des violations de code généré dans le répertoire **`/target/reports/pmd.html`**. Vous pouvez ouvrir ce fichier dans un navigateur pour visualiser les violations de code dans votre projet Java.
 
+PMD a détecté 2 violations de code dans notre projet, dans les classes **`DemoApplication.java`** et **`JwtAuthenticationFilter.java`**. Vous pouvez ouvrir le rapport HTML pour voir les détails des violations et les recommandations pour les corriger.
+
+Pour **`DemoApplication.java`**, PMD signale une violation de la règle `UseUtilityClass	: This utility class has a non-private constructor`. Cela signifie que la classe `DemoApplication` est une classe utilitaire mais qu'elle a un constructeur non privé. Pour corriger cette violation, vous pouvez rendre le constructeur de la classe `DemoApplication` privé. Plutôt que de le faire manuellement, il existe une annotation `@UtilityClass` de Lombok qui permet de déclarer une classe comme une classe utilitaire. Vous pouvez ajouter cette annotation à la classe `DemoApplication` pour résoudre cette violation :
+
+```java {3,10}
+package be.vinci.ipl.cae.demo;
+
+import lombok.experimental.UtilityClass;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+/**
+ * Main class of the application.
+ */
+@UtilityClass
+@SpringBootApplication
+public class DemoApplication {
+
+  /**
+   * Main method of the application.
+   *
+   * @param args the arguments
+   */
+  public static void main(String[] args) {
+    SpringApplication.run(DemoApplication.class, args);
+  }
+
+}
+```
+
+Lorsque vous ajoutez cette annotation à une classe, Lombok génère automatiquement un constructeur privé pour la classe, ce qui résout la violation de la règle `UseUtilityClass`.
+
+Pour **`JwtAuthenticationFilter.java`**, PMD signale une violation de la règle `LiteralsFirstInComparisons :	Position literals first in String comparisons`. Cela signifie que la classe `JwtAuthenticationFilter` utilise des littéraux dans des comparaisons de chaînes de caractères, ce qui peut entraîner des erreurs si les littéraux sont `null`. Pour corriger cette violation, vous pouvez inverser l'ordre des littéraux et des variables dans les comparaisons de chaînes de caractères :
+
+
+```java {34} showLineNumbers
+@Configuration
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+  private final UserService userService;
+
+  /**
+   * Constructor for JwtAuthenticationFilter.
+   *
+   * @param userService the injected UserService.
+   */
+  public JwtAuthenticationFilter(UserService userService) {
+    this.userService = userService;
+  }
+
+  /**
+   * Filter to handle user authentication.
+   *
+   * @param request     the request.
+   * @param response    the response.
+   * @param filterChain the filter chain.
+   * @throws ServletException the servlet exception.
+   * @throws IOException      the IO exception.
+   */
+  @Override
+  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+      FilterChain filterChain) throws ServletException, IOException {
+    String token = request.getHeader("Authorization");
+    if (token != null) {
+      String username = userService.verifyJwtToken(token);
+      if (username != null) {
+        User user = userService.readOneFromUsername(username);
+        if (user != null) {
+          List<GrantedAuthority> authorities = new ArrayList<>();
+          if ("admin".equals(username)) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+          }
+          UsernamePasswordAuthenticationToken authentication =
+              new UsernamePasswordAuthenticationToken(
+                  user, null, authorities);
+          authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+          SecurityContextHolder.getContext().setAuthentication(authentication);
+        }
+      }
+    }
+    filterChain.doFilter(request, response);
+  }
+}
+```
+
+Actuellement, notre code ne contient plus de violations de code détectées par PMD 🎉 !
+
+Nous pouvons donc passer à l'étape suivante : la correction des duplications de code détectées par CPD.
+
+N'hésitez pas à relancer les tests pour vérifier que ça ne build pas :
+
+```bash
+mvn clean test
+```
+
 Pour les erreurs de duplication de code, vous pouvez consulter le rapport HTML des duplications de code généré dans le répertoire **`/target/report/cpd.html`**.
 
-Actuellement, notre code ne contient pas de violations de code détectées par PMD ni par CPD. C'est une bonne nouvelle ! 🎉
+Il y a actuellement de la duplication à la ligne 38 et 63 de la classe `AuthController.java`. Vous pouvez ouvrir le rapport HTML pour voir les détails des duplications et les recommandations pour les corriger.
+
+Voici le code dupliqué dans la classe `AuthController.java` :
+
+```java
+public AuthenticatedUser register(@RequestBody Credentials credentials) {
+    if (credentials == null
+        || credentials.getUsername() == null
+        || credentials.getUsername().isBlank()
+        || credentials.getPassword() == null
+        || credentials.getPassword().isBlank()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+    }
+
+    AuthenticatedUser user = userService.register(credentials.getUsername(),
+```
+
+Pour corriger les duplications de code, vous pouvez extraire le code dupliqué dans une méthode séparée et appeler cette méthode à partir des endroits où le code dupliqué est utilisé.
+
+Voici comment vous pouvez extraire le code dupliqué dans une méthode séparée nommée `isInvalidCredentials` :
+
+```java {1-7,17-19,38-40} showLineNumbers
+  private boolean isInvalidCredentials(Credentials credentials) {
+    return credentials == null
+        || credentials.getUsername() == null
+        || credentials.getUsername().isBlank()
+        || credentials.getPassword() == null
+        || credentials.getPassword().isBlank();
+  }
+
+  /**
+   * Register a new user.
+   *
+   * @param credentials the user credentials from the request body.
+   * @return the authenticated user.
+   */
+  @PostMapping("/register")
+  public AuthenticatedUser register(@RequestBody Credentials credentials) {
+    if (isInvalidCredentials(credentials)) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+    }
+
+    AuthenticatedUser user = userService.register(credentials.getUsername(),
+        credentials.getPassword());
+
+    if (user == null) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT);
+    }
+    return user;
+  }
+
+  /**
+   * Login a user.
+   *
+   * @param credentials the user credentials from the request body
+   * @return the authenticated user.
+   */
+  @PostMapping("/login")
+  public AuthenticatedUser login(@RequestBody Credentials credentials) {
+    if (isInvalidCredentials(credentials)) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+    }
+
+    AuthenticatedUser user = userService.login(credentials.getUsername(),
+        credentials.getPassword());
+
+    if (user == null) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+    }
+
+    return user;
+  }
+```
+
+Il est temps de vérifier que tout est en ordre en relançant les tests :
+
+```bash
+mvn clean test
+```
+
+Vous devriez voir que le build est réussi et qu'il n'y a plus de violations de code détectées par PMD et CPD dans votre projet Java 🚀 !
 
 # <InternalPageTitle> Comment gérer les tests unitaires avec Mockito ? </InternalPageTitle>
 

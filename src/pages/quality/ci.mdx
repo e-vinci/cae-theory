@@ -166,11 +166,42 @@ Voici un premier workflow que nous souhaitons appliquer pour l'intégration cont
 
 Nous allons commencer par ajouter le boilerplate de votre API Spring à votre projet Gitlab.
 
+## Clonage de votre projet Gitlab
+
+**👉 CONSIGNE** : Pour les étudiants Vinci, veuillez cloner votre projet Gitlab sur votre machine locale.
+
+Pour vous assurer que vous clonez votre projet Gitlab avec votre nouveau compte Gitlab, nous vous recommandons cette commande :
+
+```bash
+git clone https://<votre-username-gitlab>@gitlab.com/e-vinci/cae-projects/2025-cae-projects/cae-group-<xy>.git
+```
+
+Si vous avez plusieurs comptes `gitlab.com` sur votre machine, veuillez vous assurer que les informations d'identification de votre nouveau compte Gitlab sont utilisées :
+
+```bash
+cd cae-group-<xy>
+git config --get user.name
+git config --get user.email
+```
+
+Si vous avez besoin de changer ces informations, vous pouvez utiliser les commandes suivantes :
+
+```bash
+git config user.name "<votre-username>"
+git config user.email "<votre-email>@student.vinci.be"
+```
+
 ## Ajout du boilerplate de votre API Spring
 
-Veuillez cloner votre projet Gitlab sur votre machine locale.
-
 Vous devriez créer une nouvelle branche à partir de la branche principale pour ajouter le boilerplate de votre API Spring. Nous vous proposons de l'appeler `api-init`.
+
+NB : Voici un exemple de commandes pour créer une nouvelle branche `api-init` à partir de la branche principale :
+
+```bash
+git checkout main
+git pull
+git checkout -b api-init
+```
 
 Pour l'ajout du boilerplate de votre API Spring, vous devez avoir fait tous les tutoriels qui sont demandés dans la page [Qualité de l'API](../quality/api).
 Le boilerplate de votre API Spring doit être ajouté à la racine de votre projet Gitlab, dans un dossier nommé **`api`**.
@@ -195,7 +226,7 @@ Comment créer une Merge Request ? [Voir la documentation](https://docs.gitlab.c
 
 Sur votre projet Gitlab, vous devriez voir un bouton `Create merge request` pour créer une *merge request*.
 
-TBC : Vérifier les consignes qui suivent.
+
 Veuillez compléter le formulaire de *merge request* en indiquant les informations suivantes :
 - **Title** : `Ajout du boilerplate de l'API Spring`
 - **Description** : 
@@ -206,22 +237,10 @@ Veuillez compléter le formulaire de *merge request* en indiquant les informatio
 - **Reviewers** : Sélectionnez un membre de votre équipe pour approuver la *merge request*.
 - **Merge options** : 
   - `Delete source branch when merge request is accepted.` : Cochez cette option pour supprimer la branche `boilerplate-init` après la fusion. On garde malgré tout l'historique complet des commits.
-  - `Squash commits when merge request is accepted.` : On pourrait cocher cette option pour fusionner tous les commits de la branche `boilerplate-init` en un seul commit. Néanmoins, pour pouvoir suivre tous vos commits, nous vous demandons de ne pas cocher cette option.
-- **Labels** : Ajoutez le label `boilerplate`.
 - Cliquez sur `Create merge request`.
 
 
-TBC : Vérifier les consignes qui suivent.
-Veuillez demander à un autre membre de votre équipe de revoir et d'approuver votre *merge request*.
-
-Comment approuver une Merge Request ? [Voir la documentation](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-
-Une fois la *merge request* approuvée, vous ne pouvez toujours pas fusionner la branche `boilerplate-init` avec la branche principale.
-
-Vous avez le message suivant : `Merge blocked: 1 check failed. The pipeline for this merge request failed.`
-Cela signifie que le pipeline d'intégration continue a échoué. 
-
-Et c'est normal, car nous n'avons pas encore configuré le pipeline d'intégration continue pour exécuter les tests et vérifier la qualité du code.
+Comme nous n'avons pas encore configuré le pipeline d'intégration continue pour exécuter les tests et vérifier la qualité du code, il n'est pas possible de fusionner la *merge request* pour le moment, même si un autre membre de l'équipe l'approuve.
 
 # <InternalPageTitle> Comment mettre en place un pipeline ? </InternalPageTitle>
 
@@ -235,9 +254,7 @@ Nous allons voir comment configurer un pipeline dans Gitlab pour exécuter les t
 
 Pour configurer un pipeline dans Gitlab, vous devez créer un fichier **`.gitlab-ci.yml`** à la racine de votre projet. Ce fichier contient les instructions pour exécuter les différents jobs du pipeline.
 
-Au niveau de la Merge requests, il y a un bouton `Try out GitLab Pipelines` qui permet de tester le pipeline avant de la fusionner.
-
-A la racine de votre Projet Gitlab (votre repository), dans la branche `api-init`, créez un fichier `.gitlab-ci.yml` avec le contenu suivant :
+A la racine de votre Projet Gitlab (dans votre repository local), dans la branche `api-init`, créez un fichier `.gitlab-ci.yml` avec le contenu suivant :
 
 ```yaml
 api test:
@@ -263,18 +280,30 @@ Là, vous devriez voir un pipeline avec le job `api test` qui a été exécuté 
 
 Si vous cliquez sur le numéro du pipeline, vous pouvez voir les détails de l'exécution du job `api test`. Puis vous pouvez voir les logs de l'exécution du job. On voit ici que tous les tests ont exécutés avec succès et que le build est réussi.
 
-Nous savons donc que la qualité du commit est bonne et que nous pouvons fusionner la branche `api-init` avec la branche principale.
+Nous pensons donc que la qualité du commit est bonne et qu'il devrait être possible de fusionner la branche `api-init` avec la branche principale. 
+
+Cependant, il est important de demander à un autre membre de l'équipe de vérifier le code avant de fusionner la branche. Car il est possible que même si la pipeline est réussie, il y ait des erreurs dans le code que seul un humain peut détecter.
+
+## Approbation de la *merge request*
+
+Veuillez demander à un autre membre de votre équipe, la personne que vous avez assigné comme `Reviewer` à la création de la *merge request* (MR), de revoir et d'approuver votre MR. 
+
+Comment approuver une MR ? [Voir la documentation](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
+
+En résumé, pour approuver une *merge request*, vous devriez :
+1. Accéder à la MR.
+2. Regarder les modifications apportées par la MR via l'onglet `Commits`.
+3. Vérifier que le pipeline a été exécuté avec succès.
+4. Approuver la MR en cliquant sur le bouton `Approve`.
 
 ## Fusion de la branche `api-init` avec la branche principale
 
-Maintenant que le pipeline a été exécutée avec succès, vous pouvez fusionner la branche `api-init` avec la branche principale. Pour cela, vous devez approuver la *merge request*.
-
-Une fois la *merge request* approuvée, vous pouvez cliquer sur le bouton `Merge` pour fusionner la branche `api-init` avec la branche principale.
+Maintenant que le pipeline a été exécutée avec succès et que la MR a été acceptée par le `Reviewer`, vous pouvez fusionner la branche `api-init` avec la branche principale. Pour cela, il suffit que le créateur de la MR clique sur le bouton `Merge`.
 
 Attention, une fois la MR fusionnée, un nouveau pipeline sera déclenché pour la branche principale. Vous devez vous assurer que ce pipeline est exécuté avec succès avant de continuer.
 
 ## Terminer la fusion de la branche `api-init` avec la branche principale
-Tout est bien géré sur le gitlab distant.
+Tout est bien géré sur le GitLab distant.
 Il reste à terminer la fusion de la branche `api-init` avec la branche principale sur votre machine locale.
 Pour ce faire, vous devez vous placer sur la branche principale et récupérer les dernières modifications. Par exemple, si vous êtes sur la branche `api-init`, vous pouvez exécuter les commandes suivantes :
 
@@ -288,9 +317,9 @@ git pull
 1. Un développeur crée une nouvelle feature branche à partir de la branche principale.
 2. Le développeur travaille sur sa feature et pousse ses modifications sur la branche distante.
 3. Le pipeline d'intégration continue est déclenché automatiquement. Si le pipeline échoue, le développeur doit corriger les erreurs avant de continuer.
-4. Le développeur crée une *merge request* pour fusionner sa branche avec la branche principale.
-5. Un autre membre de l'équipe approuve la *merge request*.
-6. La *merge request* est fusionnée avec la branche principale.
+4. Le développeur crée une *MR* pour fusionner sa branche avec la branche principale et lui assigne un `Reviewer`.
+5. Un autre membre de l'équipe, le `Reviewer`, approuve la *MR*.
+6. La *MR* est fusionnée avec la branche principale.
 
 # <InternalPageTitle> Comment gérer des tâches en parallèle dans un pipeline ? </InternalPageTitle>
 
