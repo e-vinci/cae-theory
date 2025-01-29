@@ -11,22 +11,21 @@ interface ImageProps {
 const Image = ({ height, width, src, alt = "Image" }: ImageProps) => {
   const { basePath } = useRouter();
 
-  
-
   return (
     <Box
-      height={height ? `${height}px` : "100%"}
+      height={height ? `${height}px` : "auto"}
       width={width ? `${width}px` : "100%"}
       display="flex"
-      justifyContent="center"
+      justifyContent="start"
       alignItems="center"
+      overflow="hidden"
     >
       <img
         src={`${basePath}${src}`}
         alt={alt}
         style={{
           maxHeight: height ? "100%" : "auto",
-          maxWidth: width ? "100%" : "auto",
+          maxWidth: "100%",
           height: height ? "100%" : "auto",
           width: width ? "100%" : "auto",
         }}
