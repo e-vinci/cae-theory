@@ -4,20 +4,7 @@ import { Frontmatter, SiteMetaData } from "@/types";
 import ScrollToTop from "@/components/ScrollToTop/ScrollToTop";
 
 import React from "react";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
 import { Container } from "@mui/material";
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: "#1976d2",
-    },
-    secondary: {
-      main: "#dc004e",
-    },
-  },
-});
 
 interface MdxLayoutProps {
   children: React.ReactNode;
@@ -32,15 +19,14 @@ interface MdxLayoutProps {
  */
 const MdxLayout = ({ children, siteMetaData }: MdxLayoutProps) => {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <>
       <Header siteMetaData={siteMetaData} />
 
       <Container style={{ padding: "1rem", wordWrap: "break-word" }}>
         {children}
       </Container>
       <ScrollToTop />
-    </ThemeProvider>
+    </>
   );
 };
 
