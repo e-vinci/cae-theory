@@ -10,74 +10,245 @@ date: 20/01/2025
     <PathViewerItem to="/quality"> Qualité </PathViewerItem>
     <PathViewerItem selected> Intégration Continue </PathViewerItem>
   </PathViewer>
-  <InternalPageMenuItem> Création de votre compte sous Gitlab </InternalPageMenuItem>
-  <InternalPageMenuItem> Comment démarrer l'intégration continue de code au sein de Gitlab ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment créer votre compte GitLab ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment nommer ses Git commits ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment nommer ses Git branches ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment démarrer l'intégration continue de code au sein de GitLab ? </InternalPageMenuItem>
   <InternalPageMenuItem> Comment mettre en place le workflow d'intégration continue ? </InternalPageMenuItem>
-  <InternalPageMenuItem> Comment mettre en place un pipeline ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment créer une merge request dans GitLab ? </InternalPageMenuItem>
+    <InternalPageMenuItem> Comment mettre en place un pipeline ? </InternalPageMenuItem>
   <InternalPageMenuItem> Comment gérer des tâches en parallèle dans un pipeline ? </InternalPageMenuItem>
-  <InternalPageMenuItem> Comment sauvegarder des rapports dans Gitlab ? </InternalPageMenuItem>
-  <InternalPageMenuItem> Est-ce que cette intégration continue est vraiment utile ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment sauvegarder des rapports dans GitLab ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Est-ce que l'intégration continue est vraiment utile ? </InternalPageMenuItem>
 </InternalPageMenu>
 
-# <InternalPageTitle> Création de votre compte Gitlab </InternalPageTitle>
+# <InternalPageTitle> Comment créer votre compte GitLab ? </InternalPageTitle>
 
-Pour les étudiants Vinci, vous devez créer un compte Gitlab. Ce paragraphe est donc pour vous.
+**👉 CONSIGNE** : Pour les étudiants Vinci, vous devez créer un compte GitLab. Ce paragraphe est donc pour vous.
 
-**👉 CONSIGNE** : 
-1. Créez un compte sur Gitlab en vous rendant sur https://gitlab.com/users/sign_up
+1. Créez un compte sur GitLab en vous rendant sur https://GitLab.com/users/sign_up
 2. Votre `First name` et `Last name` : Vous devez indiquer vos vraies informations, notamment votre nom et prénom, pour que vos enseignants puissent vous identifier.
 3. Votre `Username` doit être : `vinci-prenom-nom` (sans accent, sans espace, sans majuscule, sans caractères spéciaux). Si ce nom est déjà pris, vous pouvez ajouter l'année en cours à la fin de votre username (`vinci-prenom-nom-2025` par exemple).
-4. Votre `Email address` : vous devez indiquer votre adresse email personnelle **`@student.vinci.be`**!, sinon vous ne pourrez pas obtenir les services gratuits offerts par Gitlab Education.
+4. Votre `Email address` : vous devez indiquer votre adresse email personnelle **`@student.vinci.be`**!, sinon vous ne pourrez pas obtenir les services gratuits offerts par GitLab Education.
 5. Votre `Password` : Vous devez choisir un mot de passe sécurisé.
 6. Vous devez confirmer votre adresse email en donnant le code de vérification que vous avez reçu par email.
-7. Vous devez ensuite sélectionner un `Role` et indiquer une réponse pour `I'm signing up for Gitlab because:`. Vous pouvez choisir vos réponses.
+7. Vous devez ensuite sélectionner un `Role` et indiquer une réponse pour `I'm signing up for GitLab because:`. Vous pouvez choisir vos réponses.
 - Pour **`What would you like to do?`**, vous devez choisir **`Join a project`**.
 - Pour **`Who will be using GitLab?`**, vous devez choisir **`Just me`**.
-8. Une fois votre compte Gitlab créé, veuillez compléter ce formulaire : https://forms.office.com/e/NbJ1caZQGB
+8. Une fois votre compte GitLab créé, veuillez compléter ce formulaire : https://forms.office.com/e/NbJ1caZQGB
 
-Pour les étudiants Vinci, afin de simplifier le suivi des groupes par les enseignants, nous vous demandons d'ajouter une photo récente de vous sur votre compte Gitlab. Cette photo doit être une photo de vous, de face, sans lunettes de soleil, sans chapeau, sans filtre, sans masque, sans déguisement, sans autre personne, sans animal, sans dessin, sans logo, sans texte, sans arrière-plan, sans flou, sans modification. 
+Pour les étudiants Vinci, afin de simplifier le suivi des groupes par les enseignants, nous vous demandons d'ajouter une photo récente de vous sur votre compte GitLab. Cette photo doit être une photo de vous, de face, sans lunettes de soleil, sans chapeau, sans filtre, sans masque, sans déguisement, sans autre personne, sans animal, sans dessin, sans logo, sans texte, sans arrière-plan, sans flou, sans modification. 
 
-**👉 CONSIGNE** : Pour ajouter une photo à votre compte Gitlab, veuillez suivre ces étapes :
-1. Connectez-vous à votre compte Gitlab.
+**👉 CONSIGNE** : Pour ajouter une photo à votre compte GitLab, veuillez suivre ces étapes :
+1. Connectez-vous à votre compte GitLab.
 2. Cliquez sur votre avatar en haut à droite.
 3. Cliquez sur `Edit profile`.
 4. Cliquez sur `Choose file...` et choisissez votre image (la taille du fichier ne peut pas dépasser 200 KiB ).
 
-# <InternalPageTitle> Comment démarrer l'intégration continue de code au sein de Gitlab ? </InternalPageTitle>
+# <InternalPageTitle> Comment nommer ses Git commits ? </InternalPageTitle>
 
-Nous allons dans un premier temps définir ce qu'est l'intégration continue, puis nous verrons comment la mettre en place au sein de Gitlab.
+## Introduction 
+
+Il existe des conventions pour nommer les commits Git de manière claire et explicite. 
+
+Le standard le plus couramment utilisé pour nommer les commits est le **`Conventional Commits`**. Ce standard fournit un ensemble de règles pour créer un historique de commit explicite, ce qui facilite la lecture et la gestion des versions.
+
+Sa spécification est disponible sur le site officiel : https://www.conventionalcommits.org/
+
+**👉 CONSIGNE** : les étudiants Vinci doivent appliquer les règles des **`Conventional Commits`**.
+
+## Format de base
+
+Chaque message de commit doit inclure un **`type`**, une option **`scope`** (portée), et une **`description`** :  
+
+```txt
+<type>(<scope>): <description>
+```
+
+- **type** : le type de la modification (obligatoire).
+- **scope** : la portée de la modification (optionnelle). Un scope consiste généralement en un nom de composant ou de module (toute section de votre code) affecté par la modification.
+- **description** : une brève description de la modification (obligatoire). Cette description doit commencer par une lettre minuscule et ne doit pas se terminer par un point. En anglais, on utilise souvent l'impératif pour décrire l'action effectuée par le commit (`change` et pas `changed` ni `changes` par exemple). 
+
+Pour les **breaking changes** (changements qui cassent la compatibilité avec les versions précédentes), on ajoute un **`!`** après le type et avant la description :
+
+```txt  
+<type>!(<scope>): <description>
+```
+
+
+## Types de commits
+
+Les types de commits les plus couramment utilisés sont :
+
+- **feat** : une nouvelle fonctionnalité.
+- **fix** : une correction de bug.
+- **docs** : des modifications à la documentation.
+- **style** : des modifications qui n'affectent pas le sens du code (espaces, formatage, points-virgules manquants, etc.).
+- **refactor** : une modification de code qui n'ajoute pas de fonctionnalité et ne corrige pas de bug.
+- **perf** : une modification de code qui améliore les performances. C'est un type spécial de **refactor**
+- **test** : ajout ou modification de tests.
+- **build** : des modifications qui affectent le système de build, des dépendances externes (npm, yarn, etc.) ou le CI.
+- **chore** : des modifications diverses qui n'entrent pas dans les catégories ci-dessus, comme la modification de `.gitignore`.
+- **revert** : Un commit qui annule un commit précédent.
+
+## Exemples de commits
+
+Voici quelques exemples de messages de commit conformes aux **`Conventional Commits`** :
+
+```txt
+feat: add email notifications on new direct messages
+```
+
+```txt
+fix(shopping-cart): prevent order an empty shopping cart
+```
+
+```txt
+feat(api)!: send an email to the customer when a product is shipped
+```
+
+```txt
+build: update dependencies
+```
+
+```txt
+refactor: implement fibonacci number calculation as recursion
+```
+
+```txt
+style: remove empty line
+```
+
+## Pourquoi utiliser les **`Conventional Commits`** ?
+
+Les **`Conventional Commits`** permettent :
+- d'automatiser la génération de changelogs. 
+- de communiquer la nature des modifications aux membres d'une équipe, au public ou à des outils.
+- de faciliter la lecture et la compréhension de l'historique des commits, ce qui aide les gens lorsqu'ils souhaitent contribuer à un projet.
+- d'automatiser le build et le déploiement de projets.
+
+
+NB : Un changelog est un fichier qui liste toutes les modifications apportées à un projet entre deux versions. Il est généralement utilisé pour informer les utilisateurs des nouvelles fonctionnalités, des corrections de bugs et des changements importants. On peut générer un changelog à partir des messages de commit en utilisant des outils comme `semantic-release` pour le monde "JavaScript" et `Maven` (avec des plugins spécifiques) pour le monde "Java".
+
+
+# <InternalPageTitle> Comment nommer ses Git branches ? </InternalPageTitle>
+
+## Introduction
+
+Il n'existe pas de standard universel pour nommer les branches Git, mais il existe des conventions largement adoptées qui aident à maintenir un référentiel organisé et compréhensible.
+
+Il existe une convention de nommage des branches Git appelée **`Conventional Branch`** qui suit les mêmes principes que les **`Conventional Commits`**. Cette convention permet de nommer les branches de manière explicite et structurée.  
+
+Sa spécification est disponible sur le site : https://conventional-branch.github.io/
+
+**👉 CONSIGNE** : les étudiants Vinci doivent appliquer les règles de **`Conventional Branch`**.
+
+## Format de base
+
+Chaque nom de branche doit inclure un **`type`** et une **`description`** :
+
+```text
+<type>/<description>
+```
+
+## Types de branches
+
+Les types de branches les plus couramment utilisés sont :
+- **main** : pour la branche principale du projet. Elle peut aussi être appelée `master` ou `develop`.
+- **feature** : pour une nouvelle fonctionnalité.
+- **bugfix** : pour une correction de bug.
+- **hotfix** : pour des corrections urgentes.
+- **release** : pour préparer une nouvelle version.
+- **chore** : pour des tâches non liées directement au code, comme la mise à jour de la documentation, mise à jour des dépendances...
+
+## Règles de base
+
+- Les noms de branches doivent être en minuscules et les mots doivent être séparés par des tirets (**`-`**, "hyphens" en anglais). 
+- Les noms de branches ne doivent pas contenir d'espaces, de caractères spéciaux ou d'accents.
+- Les noms de branches doivent être courts et descriptifs.
+- Les noms de branches peuvent inclure un identifiant de ticket (par exemple, le numéro d'un ticket Jira ou Trello).
+
+## Exemples de branches
+
+Voici quelques exemples de noms de branches conformes aux **`Conventional Branch`** :
+
+```txt
+feature/add-login-page
+```
+
+```txt
+bugfix/fix-header-bug
+```
+
+```txt
+release/v1.2.0
+```
+
+```txt
+chore/update-dependencies
+```
+
+```txt
+feature/T-123-new-login # Pour un ticket T-123
+```
+
+## Pourquoi utiliser les **`Conventional Branch`** ?
+
+Les **`Conventional Branch`** permettent :
+- **une communication claire** : le nom d'une branche permet de comprendre rapidement l'objectif de la modification.
+- **une automatisation simplifiée** : les outils d'intégration continue peuvent utiliser les noms de branches pour déclencher des actions spécifiques.
+- **une organisation d'équipe efficace** : cela encourage la collaboration au sein d'une équipe en rendant l'objectif de chaque branche clair et compréhensible, permettant à chacun de changer de tâches sans confusion.
+
+## Faut-il garder les branches après la fusion ?
+
+Non, il est généralement recommandé de supprimer les branches après les avoir fusionnées à la branche principale. 
+
+Pourquoi supprimer les branches après fusion ?
+- **Maintenir un référentiel propre** : supprimer les branches fusionnées aide à garder le référentiel propre et organisé. Cela évite l'accumulation de branches obsolètes qui peuvent rendre la navigation dans le référentiel plus difficile.
+- **Éviter la confusion** : la présence de nombreuses branches obsolètes peut prêter à confusion pour les membres de l'équipe. Supprimer les branches fusionnées clarifie quelles branches sont actives et pertinentes.
+- **Encourager les bonnes pratiques** : cela encourage les bonnes pratiques de gestion des branches, telles que la création de nouvelles branches pour chaque fonctionnalité ou correction de bug.
+
+Quel est l'impact sur l'historique des commits ?
+- **l'historique des commits reste intact** : supprimer une branche après fusion n'affecte pas l'historique des commits. Les commits de la branche fusionnée sont intégrés dans la branche principale, et l'historique complet des modifications est conservé.
+- **les commits restent accessibles** : les commits de la branche fusionnée restent accessibles dans l'historique de la branche principale. Vous pouvez toujours voir les commits individuels et les modifications apportées.
+
+
+
+# <InternalPageTitle> Comment démarrer l'intégration continue de code au sein de GitLab ? </InternalPageTitle>
+
+Nous allons dans un premier temps définir ce qu'est l'intégration continue, puis nous verrons comment la mettre en place au sein de GitLab.
 
 ## Définition de l'intégration continue
 
 L'intégration continue est une pratique de développement logiciel qui consiste à **automatiser l'intégration du code produit par les développeurs dans un référentiel partagé**. L'objectif est de détecter et de corriger les problèmes d'intégration le plus tôt possible, afin de garantir une qualité de code constante et de faciliter le déploiement continu.
 
-## Mise en place de l'intégration continue avec Gitlab
+## Mise en place de l'intégration continue avec GitLab
 
-Gitlab propose des fonctionnalités intégrées pour mettre en place l'intégration continue de code. Voici les étapes à suivre pour configurer l'intégration continue dans Gitlab :
+GitLab propose des fonctionnalités intégrées pour mettre en place l'intégration continue de code. Voici les étapes à suivre pour configurer l'intégration continue dans GitLab :
 - Protéger la branche principale : pour éviter les modifications directes sur la branche principale, il est recommandé de protéger la branche `main` ou `master` et 
 d'exiger des *merge requests* pour intégrer les modifications.
-- Créer un fichier `.gitlab-ci.yml` : ce fichier contient les instructions pour exécuter les tests, le build et le déploiement du code. Il définit les *jobs* et les *stages* à exécuter lors de l'intégration continue.
+- Créer un fichier **`.gitlab-ci.yml`** : ce fichier contient les instructions pour exécuter les tests, le build et le déploiement du code. Il définit les *jobs* et les *stages* à exécuter lors de l'intégration continue.
 
 Les paramètres pour configurer la protection de la branche principale, la gestion des MR et des builds sont accessibles dans les paramètres du projet, ou dans les paramètres du groupe pour appliquer des règles à plusieurs projets. Pour les étudiants Vinci, ces paramètres ont été configurés par vos enseignants. 
-Pour pouvoir configurer ces paramètres, vous devez avoir un rôle de `Maintainer` ou d'`Owner` au niveau du groupe ou projet Gitlab.
+Pour pouvoir configurer ces paramètres, vous devez avoir un rôle de `Maintainer` ou d'`Owner` au niveau du groupe ou projet GitLab.
 
-Lorsque vous créez un projet Gitlab, nous vous recommandons de configurer Gitlab afin de protéger la branche principale, de configurer les *merge requests* pour qu'elles soient validées par un autre membre de l'équipe avant d'être fusionnées, et de configurer un pipeline d'intégration continue qui exécute les tests unitaires et vérifie la qualité du code.
+Lorsque vous créez un projet GitLab, nous vous recommandons de configurer GitLab afin de protéger la branche principale, de configurer les *merge requests* pour qu'elles soient validées par un autre membre de l'équipe avant d'être fusionnées, et de configurer un pipeline d'intégration continue qui exécute les tests unitaires et vérifie la qualité du code.
 
 Pour les étudiants Vinci : 
-- vos enseignants ont tenté de paramétrer un maximum de règles au niveau du groupe `2025-cae-projects`, puis d'autres règles plus fines au niveau de votre projet Gitlab `cae-group-xy` se trouvant dans le groupe `2025-cae-projects`.
-- vous devez avoir créé un compte Gitlab en suivant toutes les consignes données ci-dessus.
+- vos enseignants ont tenté de paramétrer un maximum de règles au niveau du groupe `2025-cae-projects`, puis d'autres règles plus fines au niveau de votre projet GitLab `cae-group-xy` se trouvant dans le groupe `2025-cae-projects`.
+- vous devez avoir créé un compte GitLab en suivant toutes les consignes données ci-dessus.
 - vous recevrez un email confirmant que vous avez été ajouté au projet ` e-vinci / cae-projects / 2025-cae-projects / cae-group-xy` avec le rôle de `Developer`.
 - ce rôle de `Developer` vous permettra de créer des *merge requests* et de les fusionner. Vous pouvez également configurer le pipeline d'intégration continue pour exécuter les tests et vérifier la qualité du code. 
 - par contre, vous ne pourrez pas configurer les règles de protection de la branche principale, ni les règles de *merge requests* au niveau du groupe. Ces règles ont été configurées par vos enseignants.
 
-Les prochaines sections expliquent, étape par étape, comment configurer l'intégration continue dans Gitlab si vous aviez un rôle de `Maintainer` ou d'`Owner` au niveau d'un groupe Gitlab. Ces sections sont à titre informatif pour les étudiants Vinci.
+Les prochaines sections expliquent, étape par étape, comment configurer l'intégration continue dans GitLab si vous aviez un rôle de `Maintainer` ou d'`Owner` au niveau d'un groupe GitLab. Ces sections sont à titre informatif pour les étudiants Vinci.
 
 ## 🍬 Protection de la branche principale au niveau d'un groupe
 
-Pour les étudiants Vinci, vous n'avez pas de groupe à configurer. Ce paragraphe est donc pour compréhension uniquement du rôle d'un `Maintainer` ou d'un `Owner` au niveau d'un groupe Gitlab.
+Pour les étudiants Vinci, vous n'avez pas de groupe à configurer. Ce paragraphe est donc pour compréhension uniquement du rôle d'un `Maintainer` ou d'un `Owner` au niveau d'un groupe GitLab.
 
-Pour protéger la branche principale au niveau d'un groupe Gitlab, vous pouvez suivre les étapes suivantes :
-1. Accédez aux paramètres du projet dans Gitlab (`Settings`).
+Pour protéger la branche principale au niveau d'un groupe GitLab, vous pouvez suivre les étapes suivantes :
+1. Accédez aux paramètres du projet dans GitLab (`Settings`).
 2. Cliquez sur `Repository` dans le menu de gauche.
 3. Cliquez sur `Default branch`.
 4. La branche principale est `main` par défaut (il n'y a rien à changer)
@@ -92,10 +263,10 @@ Ainsi, les développeurs ne pourront pas pousser directement sur la branche prin
 
 ## 🍬 Meilleure gestion des MR au niveau d'un groupe
 
-Pour les étudiants Vinci, vous n'avez pas de groupe à configurer. Ce paragraphe est donc pour compréhension uniquement du rôle d'un `Maintainer` ou d'un `Owner` au niveau d'un groupe Gitlab.
+Pour les étudiants Vinci, vous n'avez pas de groupe à configurer. Ce paragraphe est donc pour compréhension uniquement du rôle d'un `Maintainer` ou d'un `Owner` au niveau d'un groupe GitLab.
 
-Vous pouvez configurer les *merge requests* au niveau d'un groupe Gitlab pour appliquer des règles à plusieurs projets. Voici comment configurer les *merge requests* au niveau d'un groupe :
-1. Accédez aux paramètres du projet dans Gitlab (`Settings`).
+Vous pouvez configurer les *merge requests* au niveau d'un groupe GitLab pour appliquer des règles à plusieurs projets. Voici comment configurer les *merge requests* au niveau d'un groupe :
+1. Accédez aux paramètres du projet dans GitLab (`Settings`).
 2. Cliquez sur `General` dans le menu de gauche.
 3. Cliquez sur `Merge requests`.
 4. Cochez l'option `Pipelines must succeed
@@ -105,13 +276,13 @@ Merge requests can't be merged if the latest pipeline did not succeed or is stil
 
 Ainsi, les *merge requests* ne pourront pas être fusionnées si le pipeline d'intégration continue a échoué ou si tous les threads n'ont pas été résolus.
 
-## 🍬 Création d'un projet sous Gitlab
+## 🍬 Création d'un projet sous GitLab
 
-Pour les étudiants Vinci, vous ne devez pas créer de Projet Gitlab. Ce paragraphe est donc pour compréhension uniquement du rôle d'un `Maintainer` ou d'un `Owner` qui doit créer un projet Gitlab.
+Pour les étudiants Vinci, vous ne devez pas créer de Projet GitLab. Ce paragraphe est donc pour compréhension uniquement du rôle d'un `Maintainer` ou d'un `Owner` qui doit créer un projet GitLab.
 
-Vous pouvez créer un nouveau projet `privé` sur Gitlab en suivant ces étapes :
+Vous pouvez créer un nouveau projet `privé` sur GitLab en suivant ces étapes :
 
-1. Rendez-vous sur un groupe Gitlab (par exemple, https://gitlab.com/e-vinci/cae-projects/2025-cae-projects).
+1. Rendez-vous sur un groupe GitLab (par exemple, https://GitLab.com/e-vinci/cae-projects/2025-cae-projects).
 2. Cliquez sur `New project` en haut à droite.
 3. Sélectionnez `Create blank project`.
 4. Nommez votre projet.
@@ -119,16 +290,16 @@ Vous pouvez créer un nouveau projet `privé` sur Gitlab en suivant ces étapes 
 5. Cliquez sur `Create project`.
 
 
-## 🍬 Configuration de votre projet sous Gitlab
+## 🍬 Configuration de votre projet sous GitLab
 
-Pour les étudiants Vinci, vous n'avez pas de projet à configurer. Ce paragraphe est donc pour compréhension uniquement du rôle d'un `Maintainer` ou d'un `Owner` au niveau d'un projet Gitlab.
+Pour les étudiants Vinci, vous n'avez pas de projet à configurer. Ce paragraphe est donc pour compréhension uniquement du rôle d'un `Maintainer` ou d'un `Owner` au niveau d'un projet GitLab.
 
 ### Protection de la branche principale
 
 Pour protéger la branche principale, vous ne devez normalement rien changer si vous avez créé votre projet dans un groupe où vous avez déjà protégé la branche principale. 
 
 Pour vérifier que tout est en ordre, vous pouvez suivre les étapes suivantes :
-1. Accédez aux paramètres du projet dans Gitlab (`Settings`).
+1. Accédez aux paramètres du projet dans GitLab (`Settings`).
 2. Cliquez sur `Repository` dans le menu de gauche.
 3. Cliquez sur `Protected branches`.
 4. La branche principale est `main` par défaut (il n'y a rien à changer)
@@ -142,20 +313,17 @@ Ainsi, les développeurs ne pourront pas pousser directement sur la branche prin
 
 #### Historique des commits plus propre
 
-1. Accédez aux paramètres du projet dans Gitlab (`Settings`).
+1. Accédez aux paramètres du projet dans GitLab (`Settings`).
 2. Cliquez sur `Merge requests` dans le menu de gauche.
-3. Cochez l'option `Fast-forward merge`. 
-```txt No merge commits are created.
-Fast-forward merges only.
+3. Cochez l'option `Fast-forward merge`. `Fast-forward merges only.
 When there is a merge conflict, the user is given the option to rebase.
-If merge trains are enabled, merging is only possible if the branch can be rebased without conflicts.
-```
+If merge trains are enabled, merging is only possible if the branch can be rebased without conflicts.`
 4. `Squash commits when merging` : Sélectionnez `Do not allow`. `Squashing is never performed and the checkbox is hidden.`
 5. Cliquez sur `Save changes`.
 
 #### Approbation des MR
 
-1. Accédez aux paramètres du projet dans Gitlab (`Settings`).
+1. Accédez aux paramètres du projet dans GitLab (`Settings`).
 2. Cliquez sur `Merge requests` dans le menu de gauche.
 3. Veuillez ajouter au moins un membre de votre équipe pour approuver les *merge requests* :
 `Approval required` : `1` (ou plus si vous le souhaitez)
@@ -165,26 +333,29 @@ If merge trains are enabled, merging is only possible if the branch can be rebas
 
 ## Introduction 
 
-Voici un premier workflow que nous souhaitons appliquer pour l'intégration continue de code dans Gitlab :
+Voici un premier workflow que nous souhaitons appliquer pour l'intégration continue de code dans GitLab :
 
 1. Un développeur crée une nouvelle feature branche à partir de la branche principale.
 2. Le développeur travaille sur sa feature et pousse ses modifications sur la branche distante.
 3. Le développeur crée une *merge request* pour fusionner sa branche avec la branche principale.
 4. Un autre membre de l'équipe approuve la *merge request*.
 
-Nous allons commencer par ajouter le boilerplate de votre API Spring à votre projet Gitlab.
+Nous allons commencer par ajouter le boilerplate de votre API Spring à votre projet GitLab.
 
-## Clonage de votre projet Gitlab
+## Clonage de votre projet GitLab
 
-**👉 CONSIGNE** : Pour les étudiants Vinci, veuillez cloner votre projet Gitlab sur votre machine locale.
+**👉 CONSIGNE** : Pour les étudiants Vinci, veuillez cloner votre projet GitLab sur votre machine locale.
 
-Pour vous assurer que vous clonez votre projet Gitlab avec votre nouveau compte Gitlab, nous vous recommandons cette commande :
+Pour vous assurer que vous clonez votre projet GitLab avec votre nouveau compte GitLab, nous vous recommandons cette commande :
 
 ```bash
-git clone https://<votre-username-gitlab>@gitlab.com/e-vinci/cae-projects/2025-cae-projects/cae-group-<xy>.git
+git clone https://<votre-username-GitLab>@GitLab.com/e-vinci/cae-projects/2025-cae-projects/cae-group-<xy>.git
 ```
 
-Si vous avez plusieurs comptes `gitlab.com` sur votre machine, veuillez vous assurer que les informations d'identification de votre nouveau compte Gitlab sont utilisées :
+En clonant votre projet GitLab avec votre nouveau compte GitLab, vous vous assurez que vous avez les droits nécessaires pour pousser vos modifications sur votre projet GitLab. Git va ajouter une remote `origin` avec votre nouveau compte GitLab.
+NB : une `remote` est un raccourci pour une URL Git. C'est un moyen pratique de ne pas avoir à taper l'URL complète à chaque fois que vous voulez pousser ou tirer des modifications.
+
+Si vous avez plusieurs comptes `GitLab.com` sur votre machine, veuillez vous assurer que les informations d'identification de votre nouveau compte GitLab sont utilisées :
 
 ```bash
 cd cae-group-<xy>
@@ -195,24 +366,24 @@ git config --get user.email
 Si vous avez besoin de changer ces informations, vous pouvez utiliser les commandes suivantes :
 
 ```bash
-git config user.name "<votre-username>"
+git config user.name "<votre-username-GitLab>"
 git config user.email "<votre-email>@student.vinci.be"
 ```
 
 ## Ajout du boilerplate de votre API Spring
 
-Vous devriez créer une nouvelle branche à partir de la branche principale pour ajouter le boilerplate de votre API Spring. Nous vous proposons de l'appeler `api-init`.
+Vous devriez créer une nouvelle branche à partir de la branche principale pour ajouter le boilerplate de votre API Spring. Nous vous proposons de l'appeler `chore/setup-api-boilerplate`.
 
-NB : Voici un exemple de commandes pour créer une nouvelle branche `api-init` à partir de la branche principale :
+NB : Voici un exemple de commandes pour créer une nouvelle branche `chore/setup-api-boilerplate` à partir de la branche principale :
 
 ```bash
 git checkout main
 git pull
-git checkout -b api-init
+git checkout -b chore/setup-api-boilerplate
 ```
 
 Pour l'ajout du boilerplate de votre API Spring, vous devez avoir fait tous les tutoriels qui sont demandés dans la page [Qualité de l'API](../quality/api).
-Le boilerplate de votre API Spring doit être ajouté à la racine de votre projet Gitlab, dans un dossier nommé **`api`**.
+Le boilerplate de votre API Spring doit être ajouté à la racine de votre projet GitLab, dans un dossier nommé **`api`**.
 Si vous avez suivi les tutoriels, vous devriez avoir un projet Spring Boot avec les dépendances nécessaires pour démarrer votre API. En cas de souci, vous pouvez utiliser le dossier `api` fourni dans ce repository : [cae-project-boilerplate](https://github.com/e-vinci/cae-project-boilerplate).
 
 Pensez à ajouter un fichier `.gitignore` à la racine de votre projet (votre repository) pour ignorer les fichiers inutiles.
@@ -228,27 +399,26 @@ lost+found
 *.env
 ```
 
-Après avoir fait ces modifications, vous devez pousser votre branche `api-init` sur votre repo distant (qui est votre projet Gitlab).
+Après avoir fait ces modifications, vous devez pousser votre branche `chore/setup-api-boilerplate` sur votre repo distant (qui est votre projet GitLab).
 
-Comment créer une Merge Request ? [Voir la documentation](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
+# <InternalPageTitle> Comment créer une merge request dans GitLab ? </InternalPageTitle>
 
-Sur votre projet Gitlab, vous devriez voir un bouton `Create merge request` pour créer une *merge request*.
+Sur votre projet GitLab, vous devriez voir un bouton `Create merge request` pour créer une *merge request*.
 
 
 Veuillez compléter le formulaire de *merge request* en indiquant les informations suivantes :
 - **Title** : `Ajout du boilerplate de l'API Spring`
-- **Description** : 
-  ```
-  Ajout du boilerplate de l'API Spring.
-  ```
-- **Assign to** : Assign to me
+- **Description** : `Ajout du boilerplate de l'API Spring.`
+- **Assign to** : `Assign to me`
 - **Reviewers** : Sélectionnez un membre de votre équipe pour approuver la *merge request*.
 - **Merge options** : 
-  - `Delete source branch when merge request is accepted.` : Cochez cette option pour supprimer la branche `boilerplate-init` après la fusion. On garde malgré tout l'historique complet des commits.
+  - `Delete source branch when merge request is accepted.` : Cochez cette option pour supprimer la branche `feature/setup-api-boilerplate` après la fusion. On garde malgré tout l'historique complet des commits.
 - Cliquez sur `Create merge request`.
 
 
 Comme nous n'avons pas encore configuré le pipeline d'intégration continue pour exécuter les tests et vérifier la qualité du code, il n'est pas possible de fusionner la *merge request* pour le moment, même si un autre membre de l'équipe l'approuve.
+
+Vous souhaitez en savoir plus sur comment créer une Merge Request ? [Voir la documentation](https://docs.GitLab.com/ee/user/project/merge_requests/creating_merge_requests.html).
 
 # <InternalPageTitle> Comment mettre en place un pipeline ? </InternalPageTitle>
 
@@ -256,13 +426,13 @@ Comme nous n'avons pas encore configuré le pipeline d'intégration continue pou
 
 Un pipeline est un ensemble de **jobs** qui sont exécutés dans un ordre spécifique pour automatiser le processus de construction, de test et de déploiement d'une application.
 
-Nous allons voir comment configurer un pipeline dans Gitlab pour exécuter les tests unitaires et vérifier la qualité du code de notre API.
+Nous allons voir comment configurer un pipeline dans GitLab pour exécuter les tests unitaires et vérifier la qualité du code de notre API.
 
 ## Configuration du pipeline
 
-Pour configurer un pipeline dans Gitlab, vous devez créer un fichier **`.gitlab-ci.yml`** à la racine de votre projet. Ce fichier contient les instructions pour exécuter les différents jobs du pipeline.
+Pour configurer un pipeline dans GitLab, vous devez créer un fichier **`.gitlab-ci.yml`** à la racine de votre projet. Ce fichier contient les instructions pour exécuter les différents jobs du pipeline.
 
-A la racine de votre Projet Gitlab (dans votre repository local), dans la branche `api-init`, créez un fichier `.gitlab-ci.yml` avec le contenu suivant :
+A la racine de votre Projet GitLab (dans votre repository local), dans la branche `chore/setup-api-boilerplate`, créez un fichier `.gitlab-ci.yml` avec le contenu suivant :
 
 ```yaml
 api test:
@@ -278,17 +448,17 @@ Ce fichier définit un job nommé `api test` qui utilise l'image Docker `maven:3
 
 Veuillez pousser votre fichier `.gitlab-ci.yml` sur votre dépôt distant.
 
-Maintenant que vous avez ajouté le fichier `.gitlab-ci.yml`, vous devriez voir un pipeline se déclencher automatiquement à chaque *push* sur la branche `api-init`.
+Maintenant que vous avez ajouté le fichier `.gitlab-ci.yml`, vous devriez voir un pipeline se déclencher automatiquement à chaque *push* sur la branche `chore/setup-api-boilerplate`.
 
 ## Vérification du pipeline
 
-Pour vérifier que le pipeline a été exécutée avec succès, vous pouvez accéder à l'onglet `Build`, `Pipelines` de votre projet Gitlab.
+Pour vérifier que le pipeline a été exécutée avec succès, vous pouvez accéder à l'onglet `Build`, `Pipelines` de votre projet GitLab.
 
 Là, vous devriez voir un pipeline avec le job `api test` qui a été exécuté avec succès ou qui est toujours en cours.
 
 Si vous cliquez sur le numéro du pipeline, vous pouvez voir les détails de l'exécution du job `api test`. Puis vous pouvez voir les logs de l'exécution du job. On voit ici que tous les tests ont exécutés avec succès et que le build est réussi.
 
-Nous pensons donc que la qualité du commit est bonne et qu'il devrait être possible de fusionner la branche `api-init` avec la branche principale. 
+Nous pensons donc que la qualité du commit est bonne et qu'il devrait être possible de fusionner la branche `chore/setup-api-boilerplate` avec la branche principale. 
 
 Cependant, il est important de demander à un autre membre de l'équipe de vérifier le code avant de fusionner la branche. Car il est possible que même si la pipeline est réussie, il y ait des erreurs dans le code que seul un humain peut détecter.
 
@@ -296,7 +466,7 @@ Cependant, il est important de demander à un autre membre de l'équipe de véri
 
 Veuillez demander à un autre membre de votre équipe, la personne que vous avez assigné comme `Reviewer` à la création de la *merge request* (MR), de revoir et d'approuver votre MR. 
 
-Comment approuver une MR ? [Voir la documentation](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
+Comment approuver une MR ? [Voir la documentation](https://docs.GitLab.com/ee/user/project/merge_requests/approvals/)
 
 En résumé, pour approuver une *merge request*, vous devriez :
 1. Accéder à la MR.
@@ -304,16 +474,17 @@ En résumé, pour approuver une *merge request*, vous devriez :
 3. Vérifier que le pipeline a été exécuté avec succès.
 4. Approuver la MR en cliquant sur le bouton `Approve`.
 
-## Fusion de la branche `api-init` avec la branche principale
+## Fusion de la branche `chore/setup-api-boilerplate` avec la branche principale
 
-Maintenant que le pipeline a été exécutée avec succès et que la MR a été acceptée par le `Reviewer`, vous pouvez fusionner la branche `api-init` avec la branche principale. Pour cela, il suffit que le créateur de la MR clique sur le bouton `Merge`.
+Maintenant que le pipeline a été exécutée avec succès et que la MR a été acceptée par le `Reviewer`, vous pouvez fusionner la branche `chore/setup-api-boilerplate` avec la branche principale. Pour cela, il suffit que le créateur de la MR clique sur le bouton `Merge`.
 
 Attention, une fois la MR fusionnée, un nouveau pipeline sera déclenché pour la branche principale. Vous devez vous assurer que ce pipeline est exécuté avec succès avant de continuer.
 
-## Terminer la fusion de la branche `api-init` avec la branche principale
+## Terminer la fusion de la branche `chore/setup-api-boilerplate` avec la branche principale
+
 Tout est bien géré sur le GitLab distant.
-Il reste à terminer la fusion de la branche `api-init` avec la branche principale sur votre machine locale.
-Pour ce faire, vous devez vous placer sur la branche principale et récupérer les dernières modifications. Par exemple, si vous êtes sur la branche `api-init`, vous pouvez exécuter les commandes suivantes :
+Il reste à terminer la fusion de la branche `chore/setup-api-boilerplate` avec la branche principale sur votre machine locale.  
+Pour ce faire, vous devez vous placer sur la branche principale et récupérer les dernières modifications. Par exemple, si vous êtes sur la branche `chore/setup-api-boilerplate`, vous pouvez exécuter les commandes suivantes :
 
 ```bash
 git checkout main
@@ -335,7 +506,7 @@ git pull
 
 Comment gérer des tâches en parallèle dans un pipeline ? Par exemple, comment exécuter les tests du frontend et de l'API en parallèle dans un pipeline ?
 
-En fait, dans Gitlab, vous pouvez définir plusieurs jobs dans un pipeline et les exécuter en parallèle.
+En fait, dans GitLab, vous pouvez définir plusieurs jobs dans un pipeline et les exécuter en parallèle.
 
 Si vous avez plusieurs jobs qui ne dépendent pas les uns des autres, vous pouvez les exécuter en parallèle pour gagner du temps.
 
@@ -346,9 +517,9 @@ Nous allons donc ajouter notre frontend React dans le pipeline et exécuter les 
 Pour l'ajout du boilerplate de votre frontend, vous devez avoir fait tout ce qui est demandé dans la page [Qualité du Frontend](../quality/frontend).
 A la fin de ces tutoriels (le dernier s'appelle `unit-tests`), vous devriez avoir un projet React avec les dépendances nécessaires pour démarrer un frontend. Néanmoins, ce frontend n'intègre pas la librairie MUI.
 
-Pour vous aider, nous avons créé un boilerplate pour le frontend qui reprend les tutoriels précédents et qui intègre la librairie MUI. Vous pouvez le trouver ici : [cae-project-boilerplate](https://github.com/e-vinci/cae-project-boilerplate).
+Pour vous aider, nous avons créé un boilerplate pour le frontend qui reprend les tutoriels précédents et qui intègre la librairie MUI. Vous pouvez le trouver ici : [frontend du cae-project-boilerplate](https://github.com/e-vinci/cae-project-boilerplate/tree/main/frontend).
 
-Vous devriez créer une nouvelle branche à partir de la branche principale pour ajouter le boilerplate de votre frontend React dans un dossier nommé **`/frontend`**. Nous vous proposons d'appeler votre nouvelle branche `frontend-init`.
+Vous devriez créer une nouvelle branche à partir de la branche principale pour ajouter le boilerplate de votre frontend React dans un dossier nommé **`/frontend`**. Nous vous proposons d'appeler votre nouvelle branche `chore/setup-frontend-boilerplate`.
 
 ## Mise à jour du pipeline
 
@@ -378,26 +549,26 @@ Veuillez pousser tous vos modifications sur votre repo distant.
 
 ## Vérification du pipeline
 
-Après avoir poussé vos modifications, vous devriez voir un nouveau pipeline se déclencher automatiquement à chaque *push* sur la branche `frontend-init`.
+Après avoir poussé vos modifications, vous devriez voir un nouveau pipeline se déclencher automatiquement à chaque *push* sur la branche `chore/setup-frontend-boilerplate`.
 
 Vous devriez voir deux jobs `api test` et `frontend test` qui sont exécutés en
 parallèle.
 
-Une fois le pipeline exécuté avec succès, nous pourrions fusionner la branche `frontend-init` avec la branche principale.
+Une fois le pipeline exécuté avec succès, nous pourrions fusionner la branche `chore/setup-frontend-boilerplate` avec la branche principale.
 
 Mais avant cela, nous souhaitons découvrir un nouveau concept, la notion d'artefacts pour stocker les rapports de tests générés par les jobs du pipeline.
 
-# <InternalPageTitle> Comment sauvegarder des rapports dans Gitlab ? </InternalPageTitle>
+# <InternalPageTitle> Comment sauvegarder des rapports dans GitLab ? </InternalPageTitle>
 
 ## Introduction
 
-Dans un pipeline, il est souvent nécessaire de générer des rapports de tests, de couverture de code, de qualité du code, etc. Ces rapports peuvent être stockés dans Gitlab en tant qu'artefacts pour les consulter ultérieurement.
+Dans un pipeline, il est souvent nécessaire de générer des rapports de tests, de couverture de code, de qualité du code, etc. Ces rapports peuvent être stockés dans GitLab en tant qu'artefacts pour les consulter ultérieurement.
 
-Nous allons voir comment sauvegarder les rapports de tests générés par les jobs `api test` et `frontend test` dans Gitlab.
+Nous allons voir comment sauvegarder les rapports de tests générés par les jobs `api test` et `frontend test` dans GitLab.
 
 ## Sauvegarde des rapports
 
-Pour sauvegarder les rapports de tests dans Gitlab, vous devez utiliser l'option `artifacts` dans le fichier `.gitlab-ci.yml`.
+Pour sauvegarder les rapports de tests dans GitLab, vous devez utiliser l'option `artifacts` dans le fichier `.gitlab-ci.yml`.
 
 Voici comment mettre à jour votre fichier `.gitlab-ci.yml` pour sauvegarder les rapports de tests :
 
@@ -425,11 +596,11 @@ frontend test:
       - frontend/coverage/
 ```
 
-Ce fichier définit deux jobs `api test` et `frontend test` qui exécutent les tests de l'API Spring et du frontend React en parallèle. Les rapports de tests générés par ces jobs sont sauvegardés dans Gitlab en tant qu'artefacts.
+Ce fichier définit deux jobs `api test` et `frontend test` qui exécutent les tests de l'API Spring et du frontend React en parallèle. Les rapports de tests générés par ces jobs sont sauvegardés dans GitLab en tant qu'artefacts.
 
 Pour l'API Spring, nous sauvegardons les rapports dans les dossiers `api/target/reports/`, `api/target/site/` et `api/target/surefire-reports/`. Pour le frontend React, nous sauvegardons les rapports dans le dossier `frontend/coverage/`.
 
-Pour retrouver ces documents dans Gitlab, vous pouvez accéder à l'onglet `Build`, `Pipelines` de votre projet Gitlab. Vous devriez voir un pipeline avec les jobs `api test` et `frontend test` qui ont été exécutés avec succès.
+Pour retrouver ces documents dans GitLab, vous pouvez accéder à l'onglet `Build`, `Pipelines` de votre projet GitLab. Vous devriez voir un pipeline avec les jobs `api test` et `frontend test` qui ont été exécutés avec succès.
 
 Si vous cliquez sur le numéro du pipeline, vous pouvez voir les détails de l'exécution du job `api test` ou `frontend test`. 
 En cliquant sur le job, vous pouvez télécharger ou voir les artefacts générés par le job.
@@ -440,13 +611,13 @@ Idem pour le job `frontend test`. Allez dans le pipeline, cliquez sur le job `fr
 
 ## Intégration des changements dans la branche principale
 
-Maintenant que vous avez ajouté les artefacts dans votre pipeline, vous pouvez fusionner la branche `frontend-init` avec la branche principale.
+Maintenant que vous avez ajouté les artefacts dans votre pipeline, vous pouvez fusionner la branche `chore/setup-frontend-boilerplate` avec la branche principale.
 
-Pour cela, vous devez créer une *merge request* pour fusionner la branche `frontend-init` avec la branche principale. Une fois la *merge request* approuvée, vous pouvez cliquer sur le bouton `Merge` pour fusionner la branche `frontend-init` avec la branche principale.
+Pour cela, vous devez créer une *merge request* pour fusionner la branche `chore/setup-frontend-boilerplate` avec la branche principale. Une fois la *merge request* approuvée, vous pouvez cliquer sur le bouton `Merge` pour fusionner la branche `chore/setup-frontend-boilerplate` avec la branche principale.
 
 N'oubliez pas de mettre à jour votre branche principale sur votre machine locale après la fusion.
 
-# <InternalPageTitle> Est-ce que cette intégration continue est vraiment utile ? </InternalPageTitle>
+# <InternalPageTitle> Est-ce que l'intégration continue est vraiment utile ? </InternalPageTitle>
 
 ## Intro
 
@@ -460,7 +631,7 @@ Pour ce tutoriel, veuillez créer un souci au niveau du frontend.
 
 Vous savez qu'il est impossible de faire un `push` directement sur la branche principale. Vous devez passer par une *merge request*.
 
-Veuillez donc créer une nouvelle branche au niveau du frontend que nous allons appeler `update-login-color`.
+Veuillez donc créer une nouvelle branche au niveau du frontend que nous allons appeler `feature/update-login-page`.
 
 Veuillez mettre à jour le fichier `src/components/pages/LoginPage.tsx` pour changer la couleur du formulaire de connexion (de 'secondary.light' vers "primary.light").
 
@@ -477,11 +648,11 @@ return (
     >
 ```
 
-Faite un `commit` et un `push` sur votre branche `update-login-color`.
+Faite un `commit` et un `push` sur votre branche `feature/update-login-page`.
 
 ## Vérification du pipeline
 
-Après avoir poussé vos modifications, vous devriez voir un nouveau pipeline se déclencher automatiquement à chaque *push* sur la branche `update-login-color`.
+Après avoir poussé vos modifications, vous devriez voir un nouveau pipeline se déclencher automatiquement à chaque *push* sur la branche `feature/update-login-page`.
 
 Vous devriez voir deux jobs `api test` et `frontend test` qui sont exécutés en parallèle.
 
@@ -515,6 +686,6 @@ return (
     >
 ```
 
-Faite un `commit` et un `push` sur votre branche `update-login-color`.
+Faite un `commit` et un `push` sur votre branche `feature/update-login-page`.
 
 Cette fois-ci, le job `frontend test` devrait être exécuté avec succès ! 🎉
