@@ -81,16 +81,7 @@ En suivant ces points clés du style guide de Google pour Java, vous pouvez assu
 
 # <InternalPageTitle> Comment mettre en place le Checkstyle dans IntelliJ ? </InternalPageTitle>
 
-**👉 CONSIGNE** : Veuillez vous assurer d'avoir ajouté le boilerplate de votre API Spring au sein du répertoire **`/api`** du repository associé à votre projet.
-
-Pour l'ajout du boilerplate de votre API Spring, veuillez commencer avec ce projet de base :
-https://github.com/e-vinci/cae-exercices-demo
-
-**👉 CONSIGNE** : Tapez cette commande au sein du repository associé à votre projet. Votre Api doit se trouver dans le répertoire **`/api`** de votre repository :
-
-```bash
-git clone https://github.com/e-vinci/cae-exercices-demo api
-```
+Pour ce tutoriel, veuillez créer un nouveau projet nommé `api` sur base d'un copier/coller du dossier `api-starter` ici : [api-starter](https://github.com/e-vinci/cae-theory/tree/main/api-starter).
 
 Pour démarrer votre API, vous devez auparavant avoir une DB Postgres qui tourne localement.
 Pour cela, vous devez avoir installé `Docker Desktop` sur votre machine. :
@@ -102,7 +93,7 @@ docker compose up --build
 
 Maintenant que votre DB est exécutée, vous pouvez démarrer votre API à l'aide d'IntelliJ.
 
-**👉 CONSIGNE** : Pour mettre en place le Checkstyle dans IntelliJ, suivez les étapes suivantes :
+Pour mettre en place le Checkstyle dans IntelliJ, suivez les étapes suivantes :
 - Allez dans les paramètres d'IntelliJ (`IntelliJ IDEA` > `Settings` > `Plugins` > `Marketplace`).
 - Téléchargez le plugin `Checkstyle-IDEA` depuis le *Marketplace* d'IntelliJ.
 - Redémarrez IntelliJ pour activer le plugin.
@@ -247,7 +238,7 @@ Pour stopper l'exécution de l'API, vous pouvez utiliser le raccourci clavier **
 
 Nous allons voir comment mettre en place le plugin `Checkstyle` pour Maven afin de vérifier le respect des conventions de code dans votre projet Java. Nous souhaitons pouvoir utiliser `Maven` car nous voulons nous diriger vers une automatisation du processus de vérification du style de code.
 
-**👉 CONSIGNE** : Il faut commencer par ajouter le fichier `google_checks.xml` à la racine de votre projet. Ce fichier contient les règles de style à appliquer pour le projet. Vous pouvez le trouver [ici](https://raw.githubusercontent.com/checkstyle/checkstyle/master/src/main/resources/google_checks.xml).
+Il faut commencer par ajouter le fichier `google_checks.xml` à la racine de votre projet. Ce fichier contient les règles de style à appliquer pour le projet. Vous pouvez le trouver [ici](https://raw.githubusercontent.com/checkstyle/checkstyle/master/src/main/resources/google_checks.xml).
 
 On veut faire les checks de style que lors des tests : lorsque l'on exécute **`mvn test`**, on veut que les checks de style soient effectués.
 
@@ -696,7 +687,7 @@ Vous devriez voir que le build est réussi et qu'il n'y a plus de violations de 
 
 ## Introduction
 
-Dans ce tutoriel, nous allons voir comment nous pouvons aller vers l'automatisation des tests unitaires de notre projet Java en utilisant Maven et le framework de test Mockito.
+Dans ce tutoriel, toujours dans votre projet `api`, nous allons voir comment nous pouvons aller vers l'automatisation des tests unitaires de notre projet Java en utilisant Maven et le framework de test Mockito.
 
 Nous allons commencer par ajouter les dépendances nécessaires à notre projet Maven pour utiliser JUnit5 & Mockito. Ensuite, nous allons écrire un test unitaire pour une classe de service simple et voir comment nous pouvons simuler les dépendances de cette classe à l'aide de Mockito.
 
@@ -935,3 +926,5 @@ Vous devriez voir un rapport de couverture de tests généré dans le répertoir
 Attention : si vous avez un échec dans vos tests, le rapport de couverture de tests ne sera pas généré. Vous devez corriger les erreurs de test pour générer le rapport de couverture de tests.
 
 En cas d'échecs de tests, vous pouvez consulter le rapport de test au format texte dans le répertoire **`/target/surefire-reports`** pour voir les erreurs de test.
+
+Si nécessaire, vous pouvez trouver le code associé aux tutoriels `api` ic : [api](https://github.com/e-vinci/cae-theory/tree/main/api).

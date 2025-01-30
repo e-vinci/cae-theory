@@ -21,5 +21,25 @@ date: 23/01/2025
 
 # <InternalPageTitle> Comment gérer des tests de bout en bout ? </InternalPageTitle>
 
+## Introduction
+
 Les tests de bout en bout (e2e) sont des tests qui simulent le comportement d'un utilisateur sur une application. Ils permettent de vérifier que l'application fonctionne correctement dans son ensemble, en testant l'interaction entre les différentes parties de l'application.
 
+Pour pouvoir gérer efficacement les tests e2e, il est important de suivre quelques bonnes pratiques :
+- **Définir une stratégie de test** : Avant de commencer à écrire des tests e2e, il est important de définir une stratégie de test qui détermine quels scénarios seront testés et comment ils seront testés.
+- **Utiliser des outils adaptés** : Il existe de nombreux outils pour écrire des tests e2e, comme Playwright, Cypress, Selenium ou Puppeteer. Il est important de choisir l'outil qui convient le mieux à votre projet.
+- **Écrire des tests robustes** : Les tests e2e doivent être robustes et fiables. Il est important de s'assurer qu'ils sont capables de détecter les erreurs et les problèmes potentiels dans l'application.
+- **Automatiser les tests** : Les tests e2e doivent être automatisés pour pouvoir être exécutés régulièrement et rapidement. Il est important de les intégrer dans votre pipeline CI/CD.
+- **Suivre les bonnes pratiques de développement** : Comme pour les autres types de tests, il est important de suivre les bonnes pratiques de développement pour écrire des tests e2e de qualité.
+
+Pour ce cours, nous avons choisi l'outil **Playwright** pour écrire nos tests e2e. Playwright est un outil moderne et puissant qui permet d'écrire des tests e2e pour les applications web et mobiles. Il offre de nombreuses fonctionnalités avancées, comme la prise en charge des applications PWA, des tests parallèles et la possibilité de tester sur plusieurs navigateurs.
+
+## Comment définir une stratégie de test e2e ?
+
+Avant de commencer à écrire des tests e2e, il est important de définir une stratégie de test qui détermine quels scénarios seront testés et comment ils seront testés. Voici quelques étapes à suivre pour définir une stratégie de test e2e :
+- **Identifier les scénarios à tester** : Commencez par identifier les scénarios les plus importants de votre application. Il peut s'agir de scénarios critiques pour le bon fonctionnement de l'application, de scénarios qui couvrent les fonctionnalités les plus utilisées par les utilisateurs, ou de scénarios qui ont été à l'origine de bugs dans le passé.
+- **Déterminer les cas de test** : Pour chaque scénario identifié, déterminez les cas de test ("test cases" en anglais) à exécuter. Un cas de test est une séquence d'actions qui permet de vérifier le bon fonctionnement d'une fonctionnalité de l'application.
+
+Pour 
+
+Dans les prochaines sections, nous verrons comment écrire des tests e2e avec Playwright et comment les intégrer dans notre pipeline CI/CD pour garantir la qualité de nos applications.

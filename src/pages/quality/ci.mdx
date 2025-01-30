@@ -224,12 +224,13 @@ L'intégration continue est une pratique de développement logiciel qui consiste
 
 ## Mise en place de l'intégration continue avec GitLab
 
-GitLab propose des fonctionnalités intégrées pour mettre en place l'intégration continue de code. Voici les étapes à suivre pour configurer l'intégration continue dans GitLab :
-- Protéger la branche principale : pour éviter les modifications directes sur la branche principale, il est recommandé de protéger la branche `main` ou `master` et 
+GitLab propose des fonctionnalités intégrées pour mettre en place l'intégration continue de code. Voici les étapes à suivre lorsque l'on souhaite configurer l'intégration continue dans GitLab :
+- **Protéger la branche principale** : pour éviter les modifications directes sur la branche principale, il est recommandé de protéger la branche `main` ou `master` et 
 d'exiger des *merge requests* pour intégrer les modifications.
-- Créer un fichier **`.gitlab-ci.yml`** : ce fichier contient les instructions pour exécuter les tests, le build et le déploiement du code. Il définit les *jobs* et les *stages* à exécuter lors de l'intégration continue.
+- **Créer un fichier `.gitlab-ci.yml`** : ce fichier contient les instructions pour exécuter les tests, le build et le déploiement du code. Il définit les *jobs* et les *stages* à exécuter lors de l'intégration continue.
 
-Les paramètres pour configurer la protection de la branche principale, la gestion des MR et des builds sont accessibles dans les paramètres du projet, ou dans les paramètres du groupe pour appliquer des règles à plusieurs projets. Pour les étudiants Vinci, ces paramètres ont été configurés par vos enseignants. 
+Au sein de GitLab, les paramètres pour configurer la protection de la branche principale, la gestion des MR et des builds sont accessibles dans les paramètres du projet, ou dans les paramètres du groupe pour appliquer des règles à plusieurs projets.  
+Pour les étudiants Vinci, ces paramètres ont été configurés par vos enseignants. 
 Pour pouvoir configurer ces paramètres, vous devez avoir un rôle de `Maintainer` ou d'`Owner` au niveau du groupe ou projet GitLab.
 
 Lorsque vous créez un projet GitLab, nous vous recommandons de configurer GitLab afin de protéger la branche principale, de configurer les *merge requests* pour qu'elles soient validées par un autre membre de l'équipe avant d'être fusionnées, et de configurer un pipeline d'intégration continue qui exécute les tests unitaires et vérifie la qualité du code.
@@ -237,9 +238,19 @@ Lorsque vous créez un projet GitLab, nous vous recommandons de configurer GitLa
 Pour les étudiants Vinci : 
 - vos enseignants ont tenté de paramétrer un maximum de règles au niveau du groupe `2025-cae-projects`, puis d'autres règles plus fines au niveau de votre projet GitLab `cae-group-xy` se trouvant dans le groupe `2025-cae-projects`.
 - vous devez avoir créé un compte GitLab en suivant toutes les consignes données ci-dessus.
-- vous recevrez un email confirmant que vous avez été ajouté au projet ` e-vinci / cae-projects / 2025-cae-projects / cae-group-xy` avec le rôle de `Developer`.
-- ce rôle de `Developer` vous permettra de créer des *merge requests* et de les fusionner. Vous pouvez également configurer le pipeline d'intégration continue pour exécuter les tests et vérifier la qualité du code. 
-- par contre, vous ne pourrez pas configurer les règles de protection de la branche principale, ni les règles de *merge requests* au niveau du groupe. Ces règles ont été configurées par vos enseignants.
+- vous recevrez un email confirmant que vous avez été ajouté au projet ` e-vinci / cae-projects / 2025-cae-projects / cae-group-xy` avec le rôle de `Maintainer`.
+- ce rôle de `Maintainer` vous permettra de créer des *merge requests* et de les fusionner. Vous pouvez également configurer le pipeline d'intégration continue pour exécuter les tests et vérifier la qualité du code. 
+- **👉 CONSIGNE** : attention, avec le rôle de `Maintainer`, vous avez la possibilité de configurer les règles de protection de la branche principale, et les règles de *merge requests*. Ces règles ont été configurées par vos enseignants. Nous vous demandons de ne pas les modifier, sauf demande explicite de votre enseignant.
+
+Pour information, voici les différents rôles disponible dans GitLab :
+- **Owner** : peut tout faire, y compris supprimer le groupe ou le projet.
+- **Maintainer** : peut tout faire, sauf supprimer le groupe ou le projet. Peut configurer les règles de protection de la branche principale, les règles de *merge requests* et le pipeline d'intégration continue.
+- **Developer** : peut créer des *merge requests* et les fusionner, mais ne peut pas configurer les règles de protection de la branche principale ou les règles de *merge requests* au niveau du groupe ; peut mettre en place et exécuter le pipeline d'intégration continue en ajoutant ou modifiant un fichier **`.gitlab-ci.yml`** à la racine d'un projet GitLab ; ne peut pas configurer le CI/CD via les paramètres du projet et ne peut donc pas ajouter des variables d'environnement !
+- **Reporter** : peut voir les projets, mais ne peut pas les modifier ; peut créer des issues mais pas des *merge requests* ; ne peut pas pusher du code.
+- **Planner** : peut voir les projets, mais ne peut pas les modifier ; peut créer des issues mais pas des *merge requests* ; peut complétemnt gérer des épics ; ne peut pas pusher du code.
+- **Guest** : rôle le plus restrictif, peut seulement voir les projets ; peut créer des issues, mais pas des *merge requests* ; ne peut pas pusher du code.
+
+Pour les détails sur les permissions associées à chaque rôle, vous pouvez consulter la documentation officielle de GitLab : https://docs.gitlab.com/ee/user/permissions.html
 
 Les prochaines sections expliquent, étape par étape, comment configurer l'intégration continue dans GitLab si vous aviez un rôle de `Maintainer` ou d'`Owner` au niveau d'un groupe GitLab. Ces sections sont à titre informatif pour les étudiants Vinci.
 
@@ -372,6 +383,8 @@ git config user.email "<votre-email>@student.vinci.be"
 
 ## Ajout du boilerplate de votre API Spring
 
+L'ajout du boilerplate est à faire par un seul membre de l'équipe d'un projet, et vous devriez ensuite en discuter en groupe pour que tout le monde soit bien au courant de ce qui a été fait. 
+
 Vous devriez créer une nouvelle branche à partir de la branche principale pour ajouter le boilerplate de votre API Spring. Nous vous proposons de l'appeler `chore/setup-api-boilerplate`.
 
 NB : Voici un exemple de commandes pour créer une nouvelle branche `chore/setup-api-boilerplate` à partir de la branche principale :
@@ -383,6 +396,7 @@ git checkout -b chore/setup-api-boilerplate
 ```
 
 Pour l'ajout du boilerplate de votre API Spring, vous devez avoir fait tous les tutoriels qui sont demandés dans la page [Qualité de l'API](../quality/api).
+
 Le boilerplate de votre API Spring doit être ajouté à la racine de votre projet GitLab, dans un dossier nommé **`api`**.
 Si vous avez suivi les tutoriels, vous devriez avoir un projet Spring Boot avec les dépendances nécessaires pour démarrer votre API. En cas de souci, vous pouvez utiliser le dossier `api` fourni dans ce repository : [cae-project-boilerplate](https://github.com/e-vinci/cae-project-boilerplate).
 
@@ -399,7 +413,7 @@ lost+found
 *.env
 ```
 
-Après avoir fait ces modifications, vous devez pousser votre branche `chore/setup-api-boilerplate` sur votre repo distant (qui est votre projet GitLab).
+Après avoir fait ces modifications, vous devez pousser votre branche `chore/setup-api-boilerplate` (pensez à faire un commit auparavant ; ) sur votre repo distant (qui est votre projet GitLab).
 
 # <InternalPageTitle> Comment créer une merge request dans GitLab ? </InternalPageTitle>
 
@@ -689,3 +703,5 @@ return (
 Faite un `commit` et un `push` sur votre branche `feature/update-login-page`.
 
 Cette fois-ci, le job `frontend test` devrait être exécuté avec succès ! 🎉
+
+Si nécessaire, vous pouvez trouver le code associé à l'intégration continue ici : [api-ci](https://github.com/e-vinci/cae-theory/tree/main/api-ci).

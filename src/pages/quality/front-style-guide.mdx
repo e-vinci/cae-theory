@@ -77,7 +77,8 @@ Voici un résumé des principaux points du style guide de Google pour TypeScript
 
 ## Installation des dépendances
 
-Pour ce tutoriel, veuillez créer un nouveau projet nommé `style-guide` sur base du tutoriel précédent.
+Pour ce tutoriel, veuillez créer un nouveau projet nommé `style-guide` sur base du tutoriel précédent.  
+Si nécessaire, vous pouvez trouver le code associé au tutoriel précédent ici : [ui-library](https://github.com/e-vinci/cae-theory/tree/main/ui-library).
 
 Veuillez installer les dépendances suivantes :
 ```sh
@@ -160,6 +161,8 @@ Par exemple, dans le fichier `vite-env.d.ts`, vous pouvez ajouter un commentaire
 /// <reference types="vite/client" />
 ```
 
+Veuillez ensuite relancer la commande `npm run lint` pour vérifier qu'il n'y a plus d'erreurs.
+
 # <InternalPageTitle> Que se passe-t-il si on dépasse les 80 caractères par ligne ?  </InternalPageTitle>
 
 Dans le composant `Header`, veuillez ajouter un texte long pour dépasser les 80 caractères par ligne :
@@ -174,3 +177,7 @@ Vous pouvez régler le problème de plusieurs façons :
 - Vous pouvez utiliser l'option `Quick Fix` de VSCode pour formater le fichier.
 - Si vous avez installé l'extension Prettier dans VSCode, vous pouvez formater le fichier en appuyant sur `SHIFT + ALT + F`.
 - Vous pouvez aussi utiliser la commande `npm run format` pour formater tous les fichiers.
+
+Une fois le problème résolu, relancez la commande `npm run lint` pour vérifier qu'il n'y a plus de warning.
+
+Si nécessaire, vous pouvez trouver le code associé à ce tutoriel ici : [style-guide](https://github.com/e-vinci/cae-theory/tree/main/style-guide).
