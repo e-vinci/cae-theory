@@ -36,10 +36,177 @@ Pour ce cours, nous avons choisi l'outil **Playwright** pour écrire nos tests e
 
 ## Comment définir une stratégie de test e2e ?
 
+### Introduction 
+
 Avant de commencer à écrire des tests e2e, il est important de définir une stratégie de test qui détermine quels scénarios seront testés et comment ils seront testés. Voici quelques étapes à suivre pour définir une stratégie de test e2e :
 - **Identifier les scénarios à tester** : Commencez par identifier les scénarios les plus importants de votre application. Il peut s'agir de scénarios critiques pour le bon fonctionnement de l'application, de scénarios qui couvrent les fonctionnalités les plus utilisées par les utilisateurs, ou de scénarios qui ont été à l'origine de bugs dans le passé.
 - **Déterminer les cas de test** : Pour chaque scénario identifié, déterminez les cas de test ("test cases" en anglais) à exécuter. Un cas de test est une séquence d'actions qui permet de vérifier le bon fonctionnement d'une fonctionnalité de l'application.
 
-Pour 
+### Identification des scénarios à tester
+
+Un scénario de test décrit une situation ou un flux d'utilisation spécifique que vous souhaitez tester. Il se concentre sur les actions de l'utilisateur et les résultats attendus de manière générale.
+
+Pour identifier les scénarios à tester, nous vous recommandons cette approche :
+- **Identification des cas d'utilisation** : Commencez par identifier les cas d'utilisation de votre application. Un cas d'utilisation est une description détaillée d'une interaction entre un utilisateur et l'application.
+- **Priorisation des cas d'utilisation** : Priorisez les cas d'utilisation en fonction de leur importance pour l'application. Vous pouvez utiliser des critères comme la criticité, la fréquence d'utilisation, ou l'impact sur l'expérience utilisateur.
+- **Définition des scénarios de test** : Pour chaque cas d'utilisation priorisé, définissez un ou plusieurs scénarios de test qui couvrent les différentes étapes de l'interaction entre l'utilisateur et l'application.
+
+Par exemple, pour tester le cas d'utilisation "Créer un compte utilisateur", vous pourriez définir les scénarios de test suivants :
+- **Scénario 1** : L'utilisateur saisit son username et son mot de passe, puis clique sur le bouton "Créer un compte". Il devrait être redirigé vers la homepage.
+- **Scénario 2** : L'utilisateur saisit un username déjà existant, puis clique sur le bouton "Créer un compte". Il devrait voir un message d'erreur indiquant que le username est déjà pris.
+
+### Détermination des cas de test
+
+
+Un cas de test est une instance spécifique d'un scénario de test. Il inclut des données d'entrée précises, des actions détaillées, et des résultats attendus. Un scénario de test peut avoir plusieurs cas de test pour couvrir différentes variations et conditions.
+
+
+Pour chaque scénario identifié, déterminez les cas de test à exécuter. 
+
+Pour couvrir les tests du cas d'utilisation "Créer un compte utilisateur", vous pourriez définir les cas de test suivants :
+
+#### Scénario 1 : L'utilisateur saisit son username et son mot de passe, puis clique sur le bouton "Créer un compte". Il devrait être redirigé vers la homepage.
+
+- **Cas de test 1** : Saisir un username et un mot de passe valides, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur est redirigé vers la homepage.
+- **Cas de test 2** : Saisir un username valide et un mot de passe trop court, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur voit un message d'erreur indiquant que le mot de passe est trop court.
+- **Cas de test 3** : Saisir un username valide et laisser le champ mot de passe vide, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur voit un message d'erreur indiquant que le mot de passe est requis.
+
+#### Scénario 2 : L'utilisateur saisit un username déjà existant, puis clique sur le bouton "Créer un compte". Il devrait voir un message d'erreur indiquant que le username est déjà pris.
+
+- **Cas de test 1** : Saisir un username déjà existant et un mot de passe valide, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur voit un message d'erreur indiquant que le username est déjà pris.
+- **Cas de test 2** : Saisir un username déjà existant et laisser le champ mot de passe vide, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur voit un message d'erreur indiquant que le mot de passe est requis.
+
+
+# <InternalPageTitle> Comment mettre en place les tests e2e avec Playwright ? </InternalPageTitle>
+
+## Introduction
+
+Playwright est un outil moderne et puissant pour écrire des tests e2e pour les applications web et mobiles. Il offre de nombreuses fonctionnalités avancées, comme la prise en charge des applications PWA, des tests parallèles et la possibilité de tester sur plusieurs navigateurs.
+
+Pour mettre en place les tests e2e avec Playwright, vous devez suivre quelques étapes :
+- **Installation de Playwright** : Commencez par installer Playwright et les dépendances nécessaires. Pour utiliser Playwright, nous vous recommandons de créer un nouveau projet ; vous pourriez l'intégrer dans le frontend de votre application, mais nous vous conseillons de le garder séparé pour des raisons de clarté.
+- **Écriture des tests** : Écrivez les tests e2e en utilisant l'API de Playwright pour simuler le comportement de l'utilisateur.
+
+
+## Installation des dépendances
+
+Pour ce tutoriel, nous allons créer un projet de tests e2e avec Playwright et nommer ce projet `e2e`. Pour ce faire, là où vous souhaitez créer le projet, créez un répertoire nommé `e2e` et placez-vous dedans. 
+
+Pour utiliser Playwright, vous devez installer les dépendances suivantes au sein de `e2e` :
+
+```bash
+npm init playwright@latest
+```
+
+Veuillez suivre les instructions et sélectionnez toutes les options par défaut :
+- le langage de programmation : TypeScript
+- `Where to put your end-to-end tests?` : `tests` (c'est le dossier où seront stockés les tests e2e)
+- `Add a GitHub Actions workflow?` : false (pour ajouter un workflow GitHub Actions pour exécuter les tests e2e)
+- `Install Playwright browsers (can be done manually via 'npx playwright install')?` : true (pour installer les navigateurs pris en charge par Playwright)
+
+Une fois l'installation terminée, vous devriez voir un nouveau répertoire `tests` dans votre projet `e2e` et un fichier `playwright.config.ts` à la racine du projet.
+
+**`playwright.config.ts`** : Ce fichier contient la configuration de Playwright pour les tests e2e. Vous pouvez personnaliser cette configuration en fonction de vos besoins, notamment pour définir les navigateurs à utiliser, les options de lancement, ou les paramètres de test.
+
+Le répertoire `tests` contient un fichier `example.spec.ts` qui donne un exemple de test e2e avec Playwright. Vous pouvez le modifier ou le supprimer selon vos besoins.
+
+
+## Exécution des tests
+
+### Exécution des tests e2e dans le terminal 
+
+Pour exécuter les tests e2e avec Playwright en mode headless, c'est-à-dire sans interface graphique, vous pouvez utiliser la commande suivante :
+
+```bash
+npx playwright test
+```
+
+Les résultats des tests s'afficheront dans la console, indiquant si les tests ont réussi ou échoué. 
+
+Veuillez taper cette commande dans le répertoire `e2e` de votre projet.
+
+Playwright détecte toutes les spécifications de tests se trouvant dans le répertoire `tests`.
+
+La seule spécification de test fournie par défaut est `example.spec.ts` qui contient deux tests. Comme par défaut il y a 3 browsers installés, les tests seront exécutés sur ces 3 navigateurs, à savoir Chromium, Firefox et WebKit.  
+C'est pourquoi, au sein du terminal, vous verrez que 6 tests ont passé. C'est en fait que 2 tests ont passé avec succès sur chacun des 3 navigateurs.
+
+### Execution des tests e2e dans le mode UI
+
+Pour exécuter les tests e2e dans le mode UI, vous pouvez utiliser la commande suivante :
+
+```bash
+npx playwright test --ui
+```
+
+Cette commande ouvre une interface graphique qui vous permet de visualiser les tests en cours d'exécution et de voir les résultats en temps réel.
+
+Veuillez lancer les tests à l'aide de l'UI.
+
+### Exécution de tests au sein de VS Code
+
+VS Code a une extension Playwright qui permet d'exécuter les tests e2e directement dans l'éditeur. Pour utiliser cette extension, vous devez l'installer à partir du marketplace des extensions de VS Code.  
+Pour ce faire, veuillez suivre les étapes suivantes :
+- Ouvrez VS Code
+- Cliquez sur l'icône des extensions dans la barre latérale gauche
+- Recherchez "Playwright" dans la barre de recherche
+- Cliquez sur "Installer" pour installer l'extension `Playwright Test for VSCode `
+
+
+Une fois l'extension installée, vous pouvez configurer et exécuter les tests e2e directement dans VS Code en cliquant sur l'icône "Testing" dans la barre latérale gauche.
+
+Pour configurer les tests, vous devez cliquer sur l'onglet "Playwright" dans la barre latérale gauche.
+
+Par exemple, veuillez sélectionner seulement le navigateur Chromium pour exécuter les tests.
+
+Vous pouvez ensuite lancer les tests soit :
+- via le `Test Explorer` : en cliquant sur le bouton `Run Test`
+- via le fichier `example.spec.ts` : en cliquant sur le bouton `Run` à côté du mot clé `test` ou `describe`.
+
+Pour en savoir plus, veuillez consulter la documentation : https://playwright.dev/docs/getting-started-vscode
+
+
+## Rapports de tests au format HTML
+
+Par défaut, si certains tests échouent, Playwright génère un rapport de tests au format HTML dans le répertoire `test-results` et ouvre automatiquement ce rapport.
+
+Il est possible de visualiser le rapport de tests en tapant la commande suivante :
+
+```bash
+npx playwright show-report
+```
+
+Une façon de visualiser le rapport de tests est de consulter le fichier `playwright-report/index.html` dans votre navigateur.
+
+# <InternalPageTitle> Où enregistrer les spécifications de test ? </InternalPageTitle>
+
+Playwright détecte toutes les spécifications de tests se trouvant dans le répertoire `tests` par défaut. Vous pouvez personnaliser ce répertoire dans le fichier `playwright.config.ts` en modifiant la propriété `testDir`.
+
+Vous pouvez ajouter d'autres spécifications de test en créant de nouveaux fichiers `*.spec.ts` dans le répertoire `tests`.
+
+Pour apprendre à écrire des tests e2e avec Playwright, veuillez lire la documentation officielle : https://playwright.dev/docs/writing-tests
+
+
+# <InternalPageTitle> Comment tester une application web avec Playwright ? </InternalPageTitle>
+
+## Introduction
+
+Nous souhaitons tester une application web avec Playwright. Pour ce tutorial, nous souhaitons tester le register d'un utilisateur sur une application web.
+
+Pour ce faire, vous devez démarrer l'application web que vous souhaitez tester. 
+Veuillez démarrer l'api du site de la pizzeria et le frontend de la pizzeria utilisant la libraire MUI :
+- Pour l'API, vous devez d'abord démarrer la DB localement à l'aide de Docker Compose (ou Docker Desktop). Veuillez démarrer la dernière version de l'API nommée `api-ci` en utilisant la commande `npm run dev` dans le répertoire `api-ci`. Si nécessaire, vous pouvez trouver le code de l'API ici : [api-ci](https://github.com/e-vinci/cae-theory/tree/main/api-ci).
+- Pour le frontend, vous devez démarrer la dernière version du frontend de la pizzeria en utilisant la commande `npm run dev` dans le répertoire `frontend-pizzeria`. Si nécessaire, vous pouvez trouver le code du frontend ici : [frontend-pizzeria](
+
+
+
+
+
+
+
+Nous vous conseillons de suivre les bonnes pratiques de développement pour écrire des tests e2e de qualité. Voici quelques conseils pour écrire des tests e2e robustes et fiables :
+- **Utiliser des sélecteurs CSS spécifiques** : Utilisez des sélecteurs CSS spécifiques pour cibler les éléments de l'application que vous souhaitez tester. Évitez d'utiliser des sélecteurs basés sur la position des éléments dans la page, car ils sont plus susceptibles de changer.
+- **Gérer les attentes** : Gérez les attentes dans vos tests e2e en utilisant des fonctions d'attente ou des assertions pour vérifier que les éléments de l'application sont dans l'état attendu.
+- **Nettoyer l'état de l'application** : Assurez-vous de nettoyer l'état de l'application entre chaque test pour éviter les effets de bord et les interactions inattendues entre les tests.
+
 
 Dans les prochaines sections, nous verrons comment écrire des tests e2e avec Playwright et comment les intégrer dans notre pipeline CI/CD pour garantir la qualité de nos applications.

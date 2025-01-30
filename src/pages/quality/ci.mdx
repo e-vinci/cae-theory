@@ -247,7 +247,7 @@ Pour information, voici les différents rôles disponible dans GitLab :
 - **Maintainer** : peut tout faire, sauf supprimer le groupe ou le projet. Peut configurer les règles de protection de la branche principale, les règles de *merge requests* et le pipeline d'intégration continue.
 - **Developer** : peut créer des *merge requests* et les fusionner, mais ne peut pas configurer les règles de protection de la branche principale ou les règles de *merge requests* au niveau du groupe ; peut mettre en place et exécuter le pipeline d'intégration continue en ajoutant ou modifiant un fichier **`.gitlab-ci.yml`** à la racine d'un projet GitLab ; ne peut pas configurer le CI/CD via les paramètres du projet et ne peut donc pas ajouter des variables d'environnement !
 - **Reporter** : peut voir les projets, mais ne peut pas les modifier ; peut créer des issues mais pas des *merge requests* ; ne peut pas pusher du code.
-- **Planner** : peut voir les projets, mais ne peut pas les modifier ; peut créer des issues mais pas des *merge requests* ; peut complétemnt gérer des épics ; ne peut pas pusher du code.
+- **Planner** : peut voir les projets, mais ne peut pas les modifier ; peut créer des issues mais pas des *merge requests* ; peut complètement gérer des épics ; ne peut pas pusher du code.
 - **Guest** : rôle le plus restrictif, peut seulement voir les projets ; peut créer des issues, mais pas des *merge requests* ; ne peut pas pusher du code.
 
 Pour les détails sur les permissions associées à chaque rôle, vous pouvez consulter la documentation officielle de GitLab : https://docs.gitlab.com/ee/user/permissions.html
@@ -704,4 +704,4 @@ Faite un `commit` et un `push` sur votre branche `feature/update-login-page`.
 
 Cette fois-ci, le job `frontend test` devrait être exécuté avec succès ! 🎉
 
-Si nécessaire, vous pouvez trouver le code associé à l'intégration continue ici : [api-ci](https://github.com/e-vinci/cae-theory/tree/main/api-ci).
+Si nécessaire, vous pouvez trouver le code associé à l'intégration continue ici : [ci](https://github.com/e-vinci/cae-theory/tree/main/apci).

@@ -506,19 +506,21 @@ Vous devriez voir un rapport HTML des violations de code généré dans le répe
 
 PMD a détecté 2 violations de code dans notre projet, dans les classes **`DemoApplication.java`** et **`JwtAuthenticationFilter.java`**. Vous pouvez ouvrir le rapport HTML pour voir les détails des violations et les recommandations pour les corriger.
 
-Pour **`DemoApplication.java`**, PMD signale une violation de la règle `UseUtilityClass	: This utility class has a non-private constructor`. Cela signifie que la classe `DemoApplication` est une classe utilitaire mais qu'elle a un constructeur non privé. Pour corriger cette violation, vous pouvez rendre le constructeur de la classe `DemoApplication` privé. Plutôt que de le faire manuellement, il existe une annotation `@UtilityClass` de Lombok qui permet de déclarer une classe comme une classe utilitaire. Vous pouvez ajouter cette annotation à la classe `DemoApplication` pour résoudre cette violation :
+Pour **`DemoApplication.java`**, PMD signale une violation de la règle `UseUtilityClass	: This utility class has a non-private constructor`. Cela signifie que la classe `DemoApplication` est une classe utilitaire mais qu'elle a un constructeur non privé. Pour corriger cette violation, vous pouvez rendre le constructeur de la classe `DemoApplication` privé. Le souci si on rend le constructeur privé, c'est que Spring ne pourra plus instancier la classe, ou, que PMD s'attendra à ce que la class soit **`final`. Et donc, si l'on rend la classe `final`, nous ne pourrons pas compiler notre application.  
+Au final, dans ce cas particulier, PMD se trompe. Il est donc préférable de désactiver cette règle pour cette classe. Le plus simple est de désactiver cette règle pour la classe `DemoApplication` en ajoutant l'annotation **`@SuppressWarnings("PMD.UseUtilityClass")`** juste avant la déclaration de la classe :
 
-```java {3,10}
+Voici la classe `DemoApplication` corrigée :
+
+```java {9}
 package be.vinci.ipl.cae.demo;
 
-import lombok.experimental.UtilityClass;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * Main class of the application.
  */
-@UtilityClass
+@SuppressWarnings("PMD.UseUtilityClass")
 @SpringBootApplication
 public class DemoApplication {
 
@@ -530,11 +532,9 @@ public class DemoApplication {
   public static void main(String[] args) {
     SpringApplication.run(DemoApplication.class, args);
   }
-
 }
-```
 
-Lorsque vous ajoutez cette annotation à une classe, Lombok génère automatiquement un constructeur privé pour la classe, ce qui résout la violation de la règle `UseUtilityClass`.
+```
 
 Pour **`JwtAuthenticationFilter.java`**, PMD signale une violation de la règle `LiteralsFirstInComparisons :	Position literals first in String comparisons`. Cela signifie que la classe `JwtAuthenticationFilter` utilise des littéraux dans des comparaisons de chaînes de caractères, ce qui peut entraîner des erreurs si les littéraux sont `null`. Pour corriger cette violation, vous pouvez inverser l'ordre des littéraux et des variables dans les comparaisons de chaînes de caractères :
 
