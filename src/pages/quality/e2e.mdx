@@ -11,9 +11,9 @@ date: 23/01/2025
     <PathViewerItem selected> Tests e2e </PathViewerItem>
   </PathViewer>
   <InternalPageMenuItem> Comment gérer des tests de bout en bout ? </InternalPageMenuItem>
-  <InternalPageMenuItem> TBD </InternalPageMenuItem>
-  <InternalPageMenuItem> TBD </InternalPageMenuItem>
-  <InternalPageMenuItem> TBD </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment mettre en place les tests e2e avec Playwright ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Où enregistrer les spécifications de test ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment tester une application web avec Playwright ?  </InternalPageMenuItem>
   <InternalPageMenuItem> TBD </InternalPageMenuItem>
 </InternalPageMenu>
 
@@ -67,14 +67,18 @@ Pour couvrir les tests du cas d'utilisation "Créer un compte utilisateur", vous
 
 #### Scénario 1 : L'utilisateur saisit son username et son mot de passe, puis clique sur le bouton "Créer un compte". Il devrait être redirigé vers la homepage.
 
-- **Cas de test 1** : Saisir un username et un mot de passe valides, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur est redirigé vers la homepage.
-- **Cas de test 2** : Saisir un username valide et un mot de passe trop court, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur voit un message d'erreur indiquant que le mot de passe est trop court.
-- **Cas de test 3** : Saisir un username valide et laisser le champ mot de passe vide, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur voit un message d'erreur indiquant que le mot de passe est requis.
+- **Cas de test 1.1** : Saisir un username et un mot de passe valides, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur est redirigé vers la homepage.
+
 
 #### Scénario 2 : L'utilisateur saisit un username déjà existant, puis clique sur le bouton "Créer un compte". Il devrait voir un message d'erreur indiquant que le username est déjà pris.
 
-- **Cas de test 1** : Saisir un username déjà existant et un mot de passe valide, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur voit un message d'erreur indiquant que le username est déjà pris.
-- **Cas de test 2** : Saisir un username déjà existant et laisser le champ mot de passe vide, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur voit un message d'erreur indiquant que le mot de passe est requis.
+- **Cas de test 2.1** : Saisir un username déjà existant et un mot de passe valide, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur voit un message d'erreur indiquant que le username est déjà pris.
+- **Cas de test 2.2** : Saisir un username déjà existant et laisser le champ mot de passe vide, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur voit un message d'erreur indiquant que le mot de passe est requis.
+
+#### Scénario 3 : L'utilisateur saisit un username valide et un mot de passe invalide, puis clique sur le bouton "Créer un compte". Il devrait voir un message d'erreur.
+
+- **Cas de test 3.1** : Saisir un username valide et un mot de passe trop court, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur voit un message d'erreur indiquant que le mot de passe est trop court.
+- **Cas de test 3.2** : Saisir un username valide et laisser le champ mot de passe vide, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur voit un message d'erreur indiquant que le mot de passe est requis.
 
 
 # <InternalPageTitle> Comment mettre en place les tests e2e avec Playwright ? </InternalPageTitle>
@@ -193,9 +197,66 @@ Pour apprendre à écrire des tests e2e avec Playwright, veuillez lire la docume
 Nous souhaitons tester une application web avec Playwright. Pour ce tutorial, nous souhaitons tester le register d'un utilisateur sur une application web.
 
 Pour ce faire, vous devez démarrer l'application web que vous souhaitez tester. 
-Veuillez démarrer l'api du site de la pizzeria et le frontend de la pizzeria utilisant la libraire MUI :
-- Pour l'API, vous devez d'abord démarrer la DB localement à l'aide de Docker Compose (ou Docker Desktop). Veuillez démarrer la dernière version de l'API nommée `api-ci` en utilisant la commande `npm run dev` dans le répertoire `api-ci`. Si nécessaire, vous pouvez trouver le code de l'API ici : [api-ci](https://github.com/e-vinci/cae-theory/tree/main/api-ci).
-- Pour le frontend, vous devez démarrer la dernière version du frontend de la pizzeria en utilisant la commande `npm run dev` dans le répertoire `frontend-pizzeria`. Si nécessaire, vous pouvez trouver le code du frontend ici : [frontend-pizzeria](
+Veuillez démarrer l'api du site de la pizzeria et le frontend de la pizzeria utilisant la libraire MUI que nous avons dernièrement mis à jour lors du tutoriel `ci` :
+- Pour l'API, vous devez d'abord démarrer la DB localement à l'aide de Docker Compose (ou Docker Desktop). Veuillez démarrer la dernière version de l'API en utilisant la commande `npm run dev` dans le répertoire `api`. Si nécessaire, vous pouvez trouver le code de l'API ici : [ci/api](https://github.com/e-vinci/cae-theory/tree/main/ci/api).
+- Pour le frontend, vous devez démarrer la dernière version du frontend de la pizzeria en utilisant la commande `npm run dev` dans le répertoire `frontend`. Si nécessaire, vous pouvez trouver le code du frontend ici : [ci/frontend](https://github.com/e-vinci/cae-theory/tree/main/ci/frontend).
+
+## Écriture des tests
+
+Pour tester le register d'un utilisateur sur une application web, vous pouvez écrire des tests e2e avec Playwright. 
+
+Veuillez créer une nouvelle spécification de test dans le répertoire `tests` de votre projet `e2e` en créant un fichier `register.spec.ts`.
+
+Nous allons commencer par ce scénario : `Scénario 1 - "Register OK" : L'utilisateur clic sur "Créer un utilisateur", saisit son username et son mot de passe, puis clique sur le bouton "Créer le compte". Il devrait être redirigé vers la homepage.`.
+
+Pour un scénario donné, vous pouvez définir plusieurs cas de test. Nous allons commencer par ce premier cas de test : `Cas de test 1.1 : Naviguer vers "Créer un utilisateur", saisir un username et un mot de passe valides, puis cliquer sur le bouton "Créer le compte". Vérifier que l'utilisateur est redirigé vers la homepage et que l'on affiche son username`.
+
+Voici le code de la spécification de test `register.spec.ts` pour ce cas de test :
+
+```ts
+import { test, expect } from "@playwright/test";
+
+test.describe("Register", () => {
+  test("TC1.1: should register a new user when valid username & password", async ({
+    page,
+  }) => {
+    const username = "ananda";
+    const password = "123456";
+
+    await page.goto("http://localhost:5173/");
+
+    await page.getByText("créer un utilisateur").click();
+
+    await page.getByRole("textbox", { name: "username" }).fill(username);
+    await page.getByRole("textbox", { name: "password" }).fill(password);
+    await page.getByRole("button", { name: "Créer le compte" }).click();
+
+    await expect(page).toHaveURL("http://localhost:5173/register");
+    await expect(page.getByText(`Hello dear ${username}`)).toBeVisible();
+  });
+});
+```
+
+Quelques explications sur ce code :
+- **`test.describe`** : Cette fonction permet de définir un groupe de tests. Dans notre cas, nous avons un groupe de tests pour tous les scénarios associés au cas d'utilisation "Créer un compte" (ou "Register").
+- **`test`** : Cette fonction permet de définir un test individuel. Dans notre cas, nous avons un test pour le cas de test 1.1.
+- **`page.goto`** : Cette fonction permet de naviguer vers une URL spécifique. Dans notre cas, nous naviguons vers la page d'accueil de l'application.
+- **`page.getByText`** : Cette fonction permet de sélectionner un élément de la page par son texte. Dans notre cas, nous sélectionnons le bouton "créer un utilisateur". Par défaut, la recherche est insensible à la casse.
+- **`page.getByRole`** : Cette fonction permet de sélectionner un élément de la page par son rôle. Dans notre cas, nous sélectionnons les champs de texte pour le username et le mot de passe, ainsi que le bouton "Créer le compte".
+- **`locator.fill`** : Cette fonction permet de remplir un champ de texte avec une valeur spécifique. Dans notre cas, nous remplissons les champs de texte avec le username et le mot de passe. Un `locator` est un objet qui représente un élément de la page.
+- **`locator.click`** : Cette fonction permet de cliquer sur un élément de la page. Dans notre cas, nous cliquons sur le bouton "Créer le compte".
+- **`expect(page).toHaveURL`** : Cette fonction permet de vérifier que l'URL de la page correspond à une valeur spécifique. Dans notre cas, nous vérifions que l'utilisateur est redirigé vers la page de login.
+- **`expect(page.getByText).toBeVisible`** : Cette fonction permet de vérifier que l'élément de la page est visible. Dans notre cas, nous vérifions que le message de bienvenue contenant le username est affiché.
+
+
+
+
+
+
+
+- **Cas de test 2** : Saisir un username valide et un mot de passe trop court, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur voit un message d'erreur indiquant que le mot de passe est trop court.
+- **Cas de test 3** : Saisir un username valide et laisser le champ mot de passe vide, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur voit un message d'erreur indiquant que le mot de passe est requis.
+
 
 
 

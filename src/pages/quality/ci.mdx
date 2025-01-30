@@ -17,6 +17,7 @@ date: 20/01/2025
   <InternalPageMenuItem> Comment mettre en place le workflow d'intégration continue ? </InternalPageMenuItem>
   <InternalPageMenuItem> Comment créer une merge request dans GitLab ? </InternalPageMenuItem>
     <InternalPageMenuItem> Comment mettre en place un pipeline ? </InternalPageMenuItem>
+    <InternalPageMenuItem> Comment revoir et fusionner une merge request ? </InternalPageMenuItem>
   <InternalPageMenuItem> Comment gérer des tâches en parallèle dans un pipeline ? </InternalPageMenuItem>
   <InternalPageMenuItem> Comment sauvegarder des rapports dans GitLab ? </InternalPageMenuItem>
   <InternalPageMenuItem> Est-ce que l'intégration continue est vraiment utile ? </InternalPageMenuItem>
@@ -476,17 +477,22 @@ Nous pensons donc que la qualité du commit est bonne et qu'il devrait être pos
 
 Cependant, il est important de demander à un autre membre de l'équipe de vérifier le code avant de fusionner la branche. Car il est possible que même si la pipeline est réussie, il y ait des erreurs dans le code que seul un humain peut détecter.
 
-## Approbation de la *merge request*
+# <InternalPageTitle> Comment revoir et fusionner une merge request ?  </InternalPageTitle>
 
-Veuillez demander à un autre membre de votre équipe, la personne que vous avez assigné comme `Reviewer` à la création de la *merge request* (MR), de revoir et d'approuver votre MR. 
+## Revue et approbation de la *merge request*
 
-Comment approuver une MR ? [Voir la documentation](https://docs.GitLab.com/ee/user/project/merge_requests/approvals/)
+Veuillez demander à un autre membre de votre équipe, généralement à la personne que vous avez assigné comme `Reviewer` à la création de la *merge request* (MR), de revoir et d'approuver votre MR. 
 
-En résumé, pour approuver une *merge request*, vous devriez :
+En résumé, pour revoir et approuver une *merge request*, vous devriez :
 1. Accéder à la MR.
-2. Regarder les modifications apportées par la MR via l'onglet `Commits`.
-3. Vérifier que le pipeline a été exécuté avec succès.
-4. Approuver la MR en cliquant sur le bouton `Approve`.
+2. Vérifier que le pipeline a été exécuté avec succès. Si ça n'est pas le cas, demander au créateur de la MR de corriger les erreurs.
+3. Regarder les modifications apportées par la MR via l'onglet `Commits` et l'onglet `Changes`.
+4. Si vous avez des remarques : 
+- vous pouvez les ajouter dans l'onglet `Changes`. Pour chaque fichier modifié, vous pouvez ajouter des commentaires sur des lignes spécifiques.
+- vous pouvez ajouter des commentaires généraux dans l'onglet `Overview` de la MR.
+- vous devez atteindre que le créateur de la MR corrige les erreurs avant d'approuver la MR. Pour cela, le créateur de la MR doit pousser de nouveaux commits sur la branche de la MR.
+- vous pouvez revoir les nouveaux commits en cliquant sur le bouton `Commits` de la MR. N'hésitez pas à ajouter des commentaires sur des lignes spécifiques si nécessaire...
+5. Approuver la MR en cliquant sur le bouton `Approve` une fois qu'il n'y a plus de commentaires ouverts.
 
 ## Fusion de la branche `chore/setup-api-boilerplate` avec la branche principale
 
@@ -511,7 +517,7 @@ git pull
 2. Le développeur travaille sur sa feature et pousse ses modifications sur la branche distante.
 3. Le pipeline d'intégration continue est déclenché automatiquement. Si le pipeline échoue, le développeur doit corriger les erreurs avant de continuer.
 4. Le développeur crée une *MR* pour fusionner sa branche avec la branche principale et lui assigne un `Reviewer`.
-5. Un autre membre de l'équipe, le `Reviewer`, approuve la *MR*.
+5. Un autre membre de l'équipe, le `Reviewer`, fait une review des modifications et approuve la *MR* seulement s'il n'a plus de remarques. Tant qu'il y a des remarques, le développeur (le créateur de la MR) doit corriger les erreurs et pousser de nouveaux commits.
 6. La *MR* est fusionnée avec la branche principale.
 
 # <InternalPageTitle> Comment gérer des tâches en parallèle dans un pipeline ? </InternalPageTitle>
@@ -704,4 +710,4 @@ Faite un `commit` et un `push` sur votre branche `feature/update-login-page`.
 
 Cette fois-ci, le job `frontend test` devrait être exécuté avec succès ! 🎉
 
-Si nécessaire, vous pouvez trouver le code associé à l'intégration continue ici : [ci](https://github.com/e-vinci/cae-theory/tree/main/apci).
+Si nécessaire, vous pouvez trouver le code associé à l'intégration continue ici : [ci](https://github.com/e-vinci/cae-theory/tree/main/ci).
