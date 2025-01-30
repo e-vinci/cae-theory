@@ -4,6 +4,7 @@ import "prism-themes/themes/prism-vsc-dark-plus.css"; // Import Prism CSS
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { GlobalStyles } from "@mui/material";
+import "@fontsource/roboto";
 
 const theme = createTheme({
   palette: {
