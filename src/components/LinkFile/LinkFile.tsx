@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/router";
 
 interface LinkFileProps {
   children: React.ReactNode;
@@ -18,7 +17,7 @@ interface LinkFileProps {
 const LinkFile = ({ children, name, ...other }: LinkFileProps) => {
   const [content, setContent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { basePath } = useRouter();
+  const basePath = process.env.basePath ?? "";
 
   const url = `${basePath}${name}`;
 

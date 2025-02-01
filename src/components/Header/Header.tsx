@@ -6,7 +6,6 @@ interface HeaderProps {
 }
 
 const Header = ({ siteMetaData }: HeaderProps) => {
-  console.log(siteMetaData);
   return (
     <header>
       <Navbar siteMetaData={siteMetaData} />

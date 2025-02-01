@@ -55,7 +55,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
         <html>
           <head>
             <title>CAE Course</title>
-            <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+            <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
             </head>
           <body>
             <Header siteMetaData={siteMetaData} />
