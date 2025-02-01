@@ -49,8 +49,8 @@ interface RootLayoutProps {
 }
 
 const RootLayout = ({ children }: RootLayoutProps) => {
-  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "/";
-  const faviconUrl = `${basePath}favicon.svg`;
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+  const faviconUrl = `${basePath}/favicon.svg`;
 
   return (
     <AppRouterCacheProvider>

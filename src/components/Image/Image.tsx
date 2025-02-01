@@ -8,8 +8,8 @@ interface ImageProps {
 }
 
 const Image = ({ height, width, src, alt = "Image" }: ImageProps) => {
-  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "/";
-  const url = `${basePath}${src}`.replace("//", "/");
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+  const url = `${basePath}/${src}`.replace("//", "/");;
   return (
     <Box
       height={height ? `${height}px` : "auto"}
