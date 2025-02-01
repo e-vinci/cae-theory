@@ -49,14 +49,21 @@ interface RootLayoutProps {
 }
 
 const RootLayout = ({ children }: RootLayoutProps) => {
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "/";
+  const faviconUrl = `${basePath}favicon.svg`;
+
   return (
     <AppRouterCacheProvider>
       <ClientThemeProvider>
         <html>
           <head>
             <title>CAE Course</title>
-            <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-            </head>
+            <link
+              rel="icon"
+              type="image/svg+xml"
+              href={faviconUrl}
+            />
+          </head>
           <body>
             <Header siteMetaData={siteMetaData} />
 
