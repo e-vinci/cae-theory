@@ -17,7 +17,7 @@ interface LinkFileProps {
 const LinkFile = ({ children, name, ...other }: LinkFileProps) => {
   const [content, setContent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const basePath = process.env.basePath ?? "";
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
   const url = `${basePath}${name}`;
 
