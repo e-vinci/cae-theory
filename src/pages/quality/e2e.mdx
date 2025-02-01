@@ -1025,10 +1025,10 @@ spring.datasource.url=jdbc:postgresql://docker:5432/cae_db
 
 Cette configuration fonctionne donc bien sur la pipeline de CI, mais pas si vous souhaitez exécuter l'API localement et vous connecter à votre DB localement.
 
-Pour exécuter l'API localement, vous devez modifier le fichier **`application-test.properties`** pour utiliser **`localhost`** comme hôte de la base de données :
+Pour exécuter l'API localement, vous pourriez :
+- soit modifier le fichier **`application-test.properties`** pour utiliser **`localhost`** comme hôte de la base de données (`jdbc:postgresql://localhost:5432/cae_db`)
+- soit créer deux profils de tests différents, un pour la pipeline de CI et un pour l'exécution locale de l'API. Vous pourriez par exemple créer un fichier **`application-ci.properties`** pour la pipeline de CI et un fichier **`application-test.properties`** pour l'exécution locale de l'API.
+- soit utiliser une DB en ligne, pour exécuter l'API localement. Ainsi l'URL vers la DB ne changera pas.
+- soit ... il existe d'autres solutions, mais nous ne les détaillerons pas ici.
 
-```properties 
-spring.datasource.url=jdbc:postgresql://localhost:5432/cae_db
-```
-
-Nous allons voir comment résoudre ce problème plus tard dans le cours, afin d'automatiser la gestion des URLs en fonction de l'environnement dans lequel nos applications sont exécutées.
+Nous allons voir comment éviter ce genre de problèmes plus tard dans le cours, afin d'automatiser la gestion des URLs en fonction de l'environnement dans lequel nos applications sont exécutées.
