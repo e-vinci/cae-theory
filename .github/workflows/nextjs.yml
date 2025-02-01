@@ -25,8 +25,11 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+
   # Build job
   build:
+    env:
+      BASE_PATH: /cae-project
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -82,6 +85,8 @@ jobs:
 
   # Deployment job
   deploy:
+    env:
+      BASE_PATH: /cae-project
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
