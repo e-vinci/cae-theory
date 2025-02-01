@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
@@ -13,7 +14,7 @@ const style = {
   borderRadius: 2,
   border: "1px solid",
   borderColor: "divider",
-  padding:"0.5rem"
+  padding: "0.5rem",
 };
 
 const InternalPageMenu = ({ children }: InternalPageMenuProps) => {

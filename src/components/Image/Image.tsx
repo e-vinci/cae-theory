@@ -1,5 +1,4 @@
 import { Box } from "@mui/material";
-import { useRouter } from 'next/router';
 
 interface ImageProps {
   height?: number;
@@ -9,8 +8,7 @@ interface ImageProps {
 }
 
 const Image = ({ height, width, src, alt = "Image" }: ImageProps) => {
-  const { basePath } = useRouter();
-
+  const basePath = process.env.basePath ?? "";
   return (
     <Box
       height={height ? `${height}px` : "auto"}

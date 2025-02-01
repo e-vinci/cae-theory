@@ -1,3 +1,4 @@
+"use client";
 /**
  * ScrollToTop component that only renders a button to scroll to the top of the page.
  * when the user scrolls down. It shall use MUI components.

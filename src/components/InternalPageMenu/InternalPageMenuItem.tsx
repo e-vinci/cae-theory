@@ -13,10 +13,7 @@ const InternalPageMenuItem = ({ children, to }: InternalPageMenuItemProps) => {
   const itemTextInSnakeCase = snakeCase(children);
 
   return (
-    <ListItem
-      component="div"
-      sx={{ paddingTop: 0, paddingBottom: 0 }}
-    >
+    <ListItem component="div" sx={{ paddingTop: 0, paddingBottom: 0 }}>
       <MUILink
         href={to ? to : "#" + itemTextInSnakeCase}
         underline="hover"

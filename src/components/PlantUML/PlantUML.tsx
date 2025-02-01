@@ -1,7 +1,7 @@
-import * as React from "react";
+"use client";
 import plantumlEncoder from "plantuml-encoder";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
+// import { useRouter } from "next/router";
 
 interface ReactPlantUMLProps {
   src: string;
@@ -18,8 +18,8 @@ interface ReactPlantUMLProps {
 const PlantUML = ({ src, alt }: ReactPlantUMLProps) => {
   const [content, setContent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { basePath } = useRouter();
-
+  // const { basePath } = useRouter();
+  const basePath = process.env.basePath ?? "";
   useEffect(() => {
     const fetchContent = async () => {
       try {
