@@ -14,7 +14,11 @@ date: 23/01/2025
   <InternalPageMenuItem> Comment mettre en place les tests e2e avec Playwright ? </InternalPageMenuItem>
   <InternalPageMenuItem> Où enregistrer les spécifications de test ? </InternalPageMenuItem>
   <InternalPageMenuItem> Comment tester une application web avec Playwright ?  </InternalPageMenuItem>
-  <InternalPageMenuItem> TBD </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment s'assurer de l'état de l'application avant de commencer les tests ?  </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment gérer les duplications de code dans les tests ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment écrire des tests e2e de qualité ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment intégrer les tests e2e dans le pipeline de CI ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment utiliser le cache de GitLab CI ? </InternalPageMenuItem>
 </InternalPageMenu>
 
 
@@ -54,6 +58,7 @@ Pour identifier les scénarios à tester, nous vous recommandons cette approche 
 Par exemple, pour tester le cas d'utilisation "Créer un compte utilisateur", vous pourriez définir les scénarios de test suivants :
 - **Scénario 1** : L'utilisateur saisit son username et son mot de passe, puis clique sur le bouton "Créer un compte". Il devrait être redirigé vers la homepage.
 - **Scénario 2** : L'utilisateur saisit un username déjà existant, puis clique sur le bouton "Créer un compte". Il devrait voir un message d'erreur indiquant que le username est déjà pris.
+- **Scénario 3** : L'utilisateur saisit un username valide et un mot de passe invalide, puis clique sur le bouton "Créer un compte". Il devrait voir un message d'erreur.
 
 ### Détermination des cas de test
 
@@ -94,9 +99,14 @@ Pour mettre en place les tests e2e avec Playwright, vous devez suivre quelques �
 
 ## Installation des dépendances
 
-Pour ce tutoriel, nous allons créer un projet de tests e2e avec Playwright et nommer ce projet `e2e`. Pour ce faire, là où vous souhaitez créer le projet, créez un répertoire nommé `e2e` et placez-vous dedans. 
+Pour ce tutorial, veuillez créer un nouveau répertoire `e2e-tests` sur base d'un copier / coller de `ci` : [ci](https://github.com/e-vinci/cae-theory/tree/main/ci).
 
-Pour utiliser Playwright, vous devez installer les dépendances suivantes au sein de `e2e` :
+Une fois votre répertoire `e2e-tests` créé, veuillez démarrer l'API et le frontend de la pizzeria du projet `e2e-tests`.
+
+Pour ce tutoriel, au sein du répertoire `e2e-tests`, nous allons créer un projet de tests e2e avec Playwright et nommer ce projet `e2e`.  
+Pour ce faire, créez un répertoire nommé `e2e` au sein du répertoire `e2e-tests` et placez-vous dedans.
+
+Pour utiliser Playwright, vous devez installer les dépendances suivantes au sein de `e2e-tests/e2e` :
 
 ```bash
 npm init playwright@latest
@@ -196,16 +206,16 @@ Pour apprendre à écrire des tests e2e avec Playwright, veuillez lire la docume
 
 Nous souhaitons tester une application web avec Playwright. Pour ce tutorial, nous souhaitons tester le register d'un utilisateur sur une application web.
 
-Pour ce faire, vous devez démarrer l'application web que vous souhaitez tester. 
-Veuillez démarrer l'api du site de la pizzeria et le frontend de la pizzeria utilisant la libraire MUI que nous avons dernièrement mis à jour lors du tutoriel `ci` :
-- Pour l'API, vous devez d'abord démarrer la DB localement à l'aide de Docker Compose (ou Docker Desktop). Veuillez démarrer la dernière version de l'API en utilisant la commande `npm run dev` dans le répertoire `api`. Si nécessaire, vous pouvez trouver le code de l'API ici : [ci/api](https://github.com/e-vinci/cae-theory/tree/main/ci/api).
-- Pour le frontend, vous devez démarrer la dernière version du frontend de la pizzeria en utilisant la commande `npm run dev` dans le répertoire `frontend`. Si nécessaire, vous pouvez trouver le code du frontend ici : [ci/frontend](https://github.com/e-vinci/cae-theory/tree/main/ci/frontend).
+Pour ce faire, vous devez avoir démarré l'application web que vous souhaitez tester. 
+Veuillez démarrer l'api du site de la pizzeria et le frontend de la pizzeria :
+- Pour l'API, vous devez d'abord démarrer la DB localement à l'aide de Docker Compose (ou Docker Desktop). Veuillez démarrer la dernière version de l'API en utilisant la commande `npm run dev` dans le répertoire `/e2e-tests/api`.
+- Pour le frontend, vous devez démarrer la dernière version du frontend de la pizzeria en utilisant la commande `npm run dev` dans le répertoire `/e2e-tests/frontend`.
 
 ## Écriture des tests
 
 Pour tester le register d'un utilisateur sur une application web, vous pouvez écrire des tests e2e avec Playwright. 
 
-Veuillez créer une nouvelle spécification de test dans le répertoire `tests` de votre projet `e2e` en créant un fichier `register.spec.ts`.
+Veuillez créer une nouvelle spécification de test dans le répertoire `tests` de votre projet `/e2e-tests/e2e` en créant un fichier `register.spec.ts`.
 
 Nous allons commencer par ce scénario : `Scénario 1 - "Register OK" : L'utilisateur clic sur "Créer un utilisateur", saisit son username et son mot de passe, puis clique sur le bouton "Créer le compte". Il devrait être redirigé vers la homepage.`.
 
@@ -227,11 +237,12 @@ test.describe("Register", () => {
 
     await page.getByText("créer un utilisateur").click();
 
+    await expect(page).toHaveURL("http://localhost:5173/register");
+
     await page.getByRole("textbox", { name: "username" }).fill(username);
     await page.getByRole("textbox", { name: "password" }).fill(password);
     await page.getByRole("button", { name: "Créer le compte" }).click();
 
-    await expect(page).toHaveURL("http://localhost:5173/register");
     await expect(page.getByText(`Hello dear ${username}`)).toBeVisible();
   });
 });
@@ -242,32 +253,782 @@ Quelques explications sur ce code :
 - **`test`** : Cette fonction permet de définir un test individuel. Dans notre cas, nous avons un test pour le cas de test 1.1.
 - **`page.goto`** : Cette fonction permet de naviguer vers une URL spécifique. Dans notre cas, nous naviguons vers la page d'accueil de l'application.
 - **`page.getByText`** : Cette fonction permet de sélectionner un élément de la page par son texte. Dans notre cas, nous sélectionnons le bouton "créer un utilisateur". Par défaut, la recherche est insensible à la casse.
+- **`expect(page).toHaveURL`** : Cette fonction permet de vérifier que l'URL de la page correspond à une valeur spécifique. Dans notre cas, nous vérifions que l'utilisateur est redirigé vers la page de register.
 - **`page.getByRole`** : Cette fonction permet de sélectionner un élément de la page par son rôle. Dans notre cas, nous sélectionnons les champs de texte pour le username et le mot de passe, ainsi que le bouton "Créer le compte".
 - **`locator.fill`** : Cette fonction permet de remplir un champ de texte avec une valeur spécifique. Dans notre cas, nous remplissons les champs de texte avec le username et le mot de passe. Un `locator` est un objet qui représente un élément de la page.
 - **`locator.click`** : Cette fonction permet de cliquer sur un élément de la page. Dans notre cas, nous cliquons sur le bouton "Créer le compte".
-- **`expect(page).toHaveURL`** : Cette fonction permet de vérifier que l'URL de la page correspond à une valeur spécifique. Dans notre cas, nous vérifions que l'utilisateur est redirigé vers la page de login.
 - **`expect(page.getByText).toBeVisible`** : Cette fonction permet de vérifier que l'élément de la page est visible. Dans notre cas, nous vérifions que le message de bienvenue contenant le username est affiché.
 
+Nous avons écrit un test pour le cas de test 1.1. Ce test fonctionne une seule fois pour un username et un mot de passe donnés. Comment pourrions-nous écrire un test qui fonctionne à chaque fois ?
+Pour ce faire, il faudrait pouvoir supprimer l'utilisateur créé à la fin du test. Pour ce faire, nous pourrions utiliser une fonction **`afterEach`** qui serait exécutée après chaque test. Cette fonction permettrait de nettoyer l'état de l'application après chaque test. 
+Néanmoins, pour supprimer un utilisateur, il faudrait que l'API de l'application web permette de supprimer un utilisateur. Ce genre d'opération est généralement réservé aux administrateurs, elle demanderait donc une authentification. Ce qui est un peu plus complexe à mettre en place.
+
+Pour simplifier, nous pourrions simplement générer un username aléatoire à chaque test. Pour ce faire, nous allons utiliser la librairie `faker` qui permet de générer des données aléatoires.
+
+Pour installer la librairie `faker`, veuillez taper la commande suivante :
+
+```bash
+npm install @faker-js/faker -D
+```
+
+Toutes les API de `faker` sont disponibles ici : https://fakerjs.dev/api/
+
+Voici le code mis à jour pour le cas de test 1.1 :
+
+```ts {2,8-9} showLineNumbers
+import { test, expect } from "@playwright/test";
+import { faker } from "@faker-js/faker";
+
+test.describe("Register", () => {
+  test("TC1.1: should register a new user when valid username & password", async ({
+    page,
+  }) => {
+    const username = faker.internet.username();
+    const password = faker.internet.password();
+
+    await page.goto("http://localhost:5173/");
+
+    await page.getByText("créer un utilisateur").click();
+
+    await expect(page).toHaveURL("http://localhost:5173/register");
+
+    await page.getByRole("textbox", { name: "username" }).fill(username);
+    await page.getByRole("textbox", { name: "password" }).fill(password);
+    await page.getByRole("button", { name: "Créer le compte" }).click();
+    
+    await expect(page.getByText(`Hello dear ${username}`)).toBeVisible();
+  });
+});
+```
+
+Dans ce code, nous utilisons la fonction **`faker.internet.username()`** pour générer un username aléatoire et la fonction **`faker.internet.password()`** pour générer un mot de passe aléatoire.  
+Notons que `faker` permet de configurer les données générées. Par exemple, pour générer un username sur base d'un username, vous pouvez utiliser `faker.internet.username({firstName:"ananda"})`.
+
+# <InternalPageTitle> Comment s'assurer de l'état de l'application avant de commencer les tests ? </InternalPageTitle>
+
+Notons que dans pas mal de tests, on peut considérer qu'il soit important de démarrer une suite de test avec un état initial connu. 
+
+Il existe pas mal de solutions pour obtenir un état initial connu avant de commencer les tests. 
+
+## Méthode 1 : Utiliser des hooks de tests et des opérations d'API
+
+### Introduction
+
+Il est possible d'utiliser des hooks de test comme **`beforeAll`** et **`beforeEach`** pour réinitialiser la base de données avant chaque suite de tests ou chaque test individuel.
+
+### Utilisation de la fonction `beforeAll`
+
+On peut utiliser la fonction **`beforeAll`** qui permet d'exécuter une fonction avant le début de la suite de tests. Cette fonction permet de mettre en place l'état initial de l'application avant de commencer les tests.  
+Par exemple, nous pourrions avoir une fonction de l'API qui permet de supprimer tous les utilisateurs de la base de données. Cette fonction pourrait être appelée dans la fonction **`beforeAll`** pour s'assurer que la base de données est vide avant de commencer les tests. Attention donc à bien sécuriser cette opération par une authentification JWT et vous assurer que l'opération n'est accessible qu'en environnement de test.
+
+L'avantage de cette méthode est :
+- que vous pouvez être sûr de l'état initial de l'application avant de commencer les tests.
+- que vous pouvez garantir que les tests sont reproductibles et fiables. 
+- que vous pouvez écrire des cas de tests avec des données précises et connues. Il n'est pas nécessaire de générer des données aléatoires pour chaque test.
+
+L'inconvénient de cette méthode est :
+- que vous devez vous assurer que l'état initial de l'application est cohérent avec les tests que vous souhaitez exécuter. Si l'état initial de l'application ne correspond pas aux tests, les tests peuvent échouer.
+- pas si simple à mettre en place si l'application est complexe et que l'état initial dépend de plusieurs facteurs.
+
+### Utilisation de la fonction `afterEach`
+
+Il est possible d'utiliser la fonction **`afterEach`** qui permet d'exécuter une fonction après chaque test. Cette fonction permet de nettoyer l'état de l'application après chaque test.
+
+L'avantage de cette méthode est :
+- que vous pouvez nettoyer l'état de l'application après chaque test pour garantir que les tests sont indépendants les uns des autres.
+- que vous pouvez éviter les effets de bord et les interactions inattendues entre les tests.
+
+L'inconvénient de cette méthode est :
+- que vous devez vous assurer que le nettoyage de l'état de l'application est correctement implémenté. Si le nettoyage n'est pas correct, les tests peuvent échouer.
+- que vous devez gérer les cas où le nettoyage de l'état de l'application échoue. Si le nettoyage échoue, les tests peuvent échouer.
+- pas si simple à mettre en place.
 
 
+## Méthode 2 : Utiliser des scripts de réinitialisation de la base de données
+
+### Introduction
+
+Il est possible d'utiliser des scripts de réinitialisation de la base de données pour réinitialiser l'état de la base de données avant de commencer les tests. Ces scripts peuvent être exécutés manuellement ou automatiquement avant le début des tests.
+
+### Utilisation de scripts de réinitialisation de la base de données
+
+Nous allons maintenant voir comment mettre à jour l'API se trouvant dans le dossier `api` de notre répertoire `e2e-tests` pour réinitialiser la base de données avant de commencer les tests.
+
+#### Fonctionnement actuel de l'initialisation de la DB
+
+Le script **`insert.sql`** dans le répertoire **`src/main/resources`** de l'API : 
+- est exécuté automatiquement par Spring Boot grâce à la configuration de la source de données. 
+- Spring Boot détecte automatiquement les fichiers SQL dans ce répertoire et les exécute au démarrage de l'application.  
+
+Voici comment cela fonctionne :  
+- **Configuration de la source de données** : 
+  - Dans le fichier **`application.properties`**, vous avez configuré les propriétés de la source de données (username, password...), ce qui permet à Spring Boot de se connecter à la base de données.  
+  - **`spring.jpa.generate-ddl=true`** : cette propriété permet à Spring Boot de générer automatiquement le schéma de la base de données à partir des entités JPA.
+- **Exécution automatique des scripts SQL** : 
+  - Spring Boot, par défaut, exécute les scripts SQL trouvés dans **`src/main/resources`** ou **`src/main/resources/db/migration`** au démarrage de l'application **SEULEMENT** pour les bases de données intégrées (par pour PostGres). 
+  - Pour exécuter les scripts SQL à chaque démarrage, il faut ajouter la propriété **`spring.sql.init.mode=always`** dans le fichier **`application.properties`**.
+  - Les fichiers doivent être nommés **`schema.sql`** pour les scripts de création de schéma et **`data.sql`** pour les scripts d'insertion de données.
+  - Cependant, il exécutera également tout autre fichier SQL trouvé dans ce répertoire.
+  - Pour laisser d'abord Spring Boot générer le schéma de la base de données avant d'exécuter **`data.sql`**, il faut ajouter la propriété **`spring.jpa.defer-datasource-initialization=true`** dans le fichier **`application.properties`**.
+
+Veuillez donc mettre à jour le fichier **`application.properties`** pour ajouter ces propriétés :
+
+```properties {9-10}
+spring.application.name=demo
+
+server.port=3000
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/cae_db
+spring.datasource.username=cae_user
+spring.datasource.password=cae
+spring.jpa.generate-ddl=true
+spring.sql.init.mode=always
+spring.jpa.defer-datasource-initialization=true
+```
+
+Pour bien faire, renommez le fichier **`src/main/resources/insert.sql`** en **`src/main/resources/data.sql`**.
+
+Démarrez l'API et vérifiez que la base de données est bien initialisée.
+
+Actuellement, à chaque démarrage de l'API, on insert un utilisateur `admin` dans la DB.
+Voici le contenu actuel du fichier **`data.sql`** :
+
+```sql
+INSERT INTO users(username, password) VALUES('admin', '$2y$10$EW75BdcbCfKEA3NbE7in4OiYYacfP3OY4Q2JsVzjxd3jNxxgAEZNu');
+```
+
+Cela va vite devenir problématique car comme la DB est réinitialisée à chaque démarrage de l'API, on va se retrouver avec plusieurs utilisateurs `admin` dans la DB. En effet, `username` n'est pas une clé primaire.
+
+Pour réinitialiser la base de données avant de commencer les tests, nous allons modifier le script SQL pour supprimer tous les utilisateurs de la base de données avant d'en ajouter un.
+
+Veuillez modifier le contenu du fichier **`data.sql`** :
+
+```sql
+TRUNCATE TABLE users;
+
+INSERT INTO users(username, password)
+VALUES ('admin', '$2y$10$EW75BdcbCfKEA3NbE7in4OiYYacfP3OY4Q2JsVzjxd3jNxxgAEZNu');
+```
+
+Le problème avec cette approche, c'est que l'on ne veut pas réinitialiser la DB à chaque démarrage de l'API, mais uniquement avant de commencer les tests.  
+En effet, imaginez que l'API soit utilisée en production, on ne veut pas supprimer tous les utilisateurs à chaque démarrage de l'API.
+
+#### Réinitialisation de la base de données avant de commencer les tests
+
+Pour ce tutoriel, nous allons créer deux configurations pour l'API : une configuration pour l'environnement de production et une configuration pour l'environnement de test.
+
+Pour ce faire, veuillez créer un nouveau fichier **`application-test.properties`** dans le répertoire **`src/main/resources`** :
+
+```properties {9-10}
+spring.application.name=demo
+
+server.port=3000
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/cae_db
+spring.datasource.username=cae_user
+spring.datasource.password=cae
+spring.jpa.generate-ddl=true
+spring.sql.init.mode=always
+spring.jpa.defer-datasource-initialization=true
+```
+
+Nous allons mettre à jour le fichier **`application.properties`** pour qu'il n'utilise jamais de script SQL pour initialiser la base de données :
+
+```properties {9}
+spring.application.name=demo
+
+server.port=3000
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/cae_db
+spring.datasource.username=cae_user
+spring.datasource.password=cae
+spring.jpa.generate-ddl=true
+spring.sql.init.mode=never
+```
+
+Si nous redémarrons l'application maintenant via la configuration nommée **`DemoApplication`** au sein d'IntelliJ, la base de données ne sera pas réinitialisée.
+
+De même, si nous exécutons cette commande :
+
+```bash
+mvn clean spring-boot:run
+```
+
+La base de données ne sera pas réinitialisée.
+
+Pour réinitialiser la base de données avant de commencer les tests, nous pouvons activer le profile de tests dans la commande de lancement de Spring Boot :
+
+```bash
+mvn clean spring-boot:run -Dspring-boot.run.profiles=test
+```
+
+C'est donc cette commande que nous allons utiliser pour démarrer l'API avant de commencer les tests.
+
+Une autre possibilité, c'est de générer un package JAR exécutable et de lancer l'application avec le profile de tests :
+
+```bash
+mvn clean package
+java -jar ./target/cae-exercices-demo-0.0.1-SNAPSHOT.jar --spring.profiles.active=test
+```
+
+Si vous lancez l'application avec le JAR, il est possible que le nom du fichier soit différent. Veuillez vérifier le nom du fichier généré dans le répertoire **`target`**.
+
+# <InternalPageTitle> Comment gérer les duplications de code dans les tests ? </InternalPageTitle>
+
+## Introduction
+
+Il est important de gérer les duplications de code dans les tests pour éviter la répétition et améliorer la maintenabilité des tests. Les duplications de code peuvent rendre les tests difficiles à lire, à maintenir et à déboguer.
+
+Il existe plusieurs techniques pour gérer les duplications de code dans les tests :
+- **Utiliser des fonctions utilitaires** : Créez des fonctions utilitaires pour les actions répétitives dans les tests. Ces fonctions peuvent être réutilisées dans plusieurs tests pour éviter la duplication de code.
+- **Utiliser des fonctions de setup et de teardown** : Utilisez des fonctions de setup et de teardown pour les actions qui doivent être exécutées avant et après les tests. Ces fonctions permettent de réduire la duplication de code en centralisant les actions communes. Ces fonctions sont : **`beforeEach`**, **`afterEach`**, **`beforeAll`** et **`afterAll`**.
+- **Utiliser des fixtures** : Créez des fixtures pour les données et les états de l'application qui sont utilisés dans plusieurs tests. Les fixtures permettent de centraliser les données et les états de l'application pour éviter la duplication de code. N'hésitez pas à consulter la documentation de Playwright pour en savoir plus sur les fixtures : https://playwright.dev/docs/test-fixtures
+
+## Suite des tests pour le register
+
+Nous allons voir comment gérer les duplications de code dans les tests pour le register d'un utilisateur sur une application web.
+
+Nous allons commencer par ce scénario : `Scénario 2 - "Register KO" : L'utilisateur clic sur "Créer un utilisateur", saisit un username déjà existant, puis clique sur le bouton "Créer le compte". Il devrait voir un message d'erreur indiquant que le username est déjà pris.`.
+
+Nous allons commencer par ce cas de test : `Cas de test 2.1 : Saisir un username déjà existant et un mot de passe valide, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur voit un message d'erreur indiquant que le username est déjà pris.`
+
+Ici, l'UI ne permet actuellement pas d'afficher un message d'erreur si le username est déjà pris. Néanmoins, un message d'erreur est affiché dans la console du navigateur à l'aide de **`console.error()`**. 
+
+Voici le code la **`RegisterPage`** :
+
+```tsx
+const handleSubmit = async (e: SyntheticEvent) => {
+    e.preventDefault();
+    try {
+      await registerUser({ username, password });
+      navigate('/');
+    } catch (err) {
+      console.error('RegisterPage::error: ', err);
+    }
+  };
+```
+
+Nous savons que lorsqu'un utilisateur est déjà présent dans l'API, un message d'erreur est affiché dans la console du navigateur qui affichera le HTTP status code 409.
+
+Nous allons donc vérifier que ce message d'erreur est bien affiché dans la console du navigateur.
+
+Pensez à bien réinitialiser la base de données avant de commencer les tests. Pour ce faire, dans le répertoire `/e2e-tests/api`, veuillez redémarrer l'API avec la commande suivante :
+
+```bash
+mvn clean spring-boot:run -Dspring-boot.run.profiles=test
+```
+
+Pensez aussi a bien garder le frontend de la pizzeria en exécution.
+
+Voici le code de la spécification de test `register.spec.ts` que vous devez mettre à jour pour ce cas de test :
+
+```ts {24-60} showLineNumbers
+import { test, expect } from "@playwright/test";
+import { faker } from "@faker-js/faker";
+
+test.describe("Register", () => {
+  test("TC1.1: should register a new user when valid username & password", async ({
+    page,
+  }) => {
+    const username = faker.internet.username();
+    const password = faker.internet.password();
+
+    await page.goto("http://localhost:5173/");
+
+    await page.getByText("créer un utilisateur").click();
+
+    await expect(page).toHaveURL("http://localhost:5173/register");
+
+    await page.getByRole("textbox", { name: "username" }).fill(username);
+    await page.getByRole("textbox", { name: "password" }).fill(password);
+    await page.getByRole("button", { name: "Créer le compte" }).click();
+
+    await expect(page.getByText(`Hello dear ${username}`)).toBeVisible();
+  });
+
+  test("TC2.1: should not register a new user when existing username", async ({
+    page,
+  }) => {
+    const username = "farina";
+    const password = "farinapwd";
+
+    await page.goto("http://localhost:5173/");
+
+    await page.getByText("créer un utilisateur").click();
+
+    await expect(page).toHaveURL("http://localhost:5173/register");
+
+    await page.getByRole("textbox", { name: "username" }).fill(username);
+    await page.getByRole("textbox", { name: "password" }).fill(password);
+    await page.getByRole("button", { name: "Créer le compte" }).click();
+
+    await expect(page.getByText(`Hello dear ${username}`)).toBeVisible();
+
+    await page.getByText("se déconnecter").click();
+
+    await page.getByText("créer un utilisateur").click();
+
+    await expect(page).toHaveURL("http://localhost:5173/register");
+
+    await page.getByRole("textbox", { name: "username" }).fill(username);
+    await page.getByRole("textbox", { name: "password" }).fill(password);
+    await page.getByRole("button", { name: "Créer le compte" }).click();
+
+    // Check in the console for the error message
+    const message = await page.waitForEvent(
+      "console",
+      (msg) => msg.type() === "error"
+    );
+
+    // Check for specific error message
+    expect(message.text()).toContain("409");
+  });
+});
+```
+
+Nous voyons qu'il y a pas mal de duplications de code dans les tests. Nous allons voir comment gérer ces duplications de code.
+
+Attention, ces deux cas créent deux utilisateurs dans la base de données. Le deuxième scénario de test crée une utilisatrice `farina` et le premier scénario de test crée un utilisateur aléatoire. Il est donc possible que le deuxième scénario de test échoue si l'utilisateur `farina` est déjà présent dans la base de données. Cela va arriver si vous exécutez les tests sur les 3 browsers en même temps. Pour éviter cela, vous pouvez exécuter les tests sur un seul browser à la fois.
+
+## Configuration d'un seul browser
+
+Pour exécuter les tests sur un seul browser, vous pouvez modifier la propriété **`projects`** dans le fichier **`playwright.config.ts`** :
+
+```ts
+//...
+ projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+],
 
 
+## Utilisation de fonctions utilitaires
 
+Nous allons commencer par extraire le code commun dans deux fonctions utilitaires.  
+Pour ce faire, veuillez créer un nouveau fichier `helper.ts` dans le répertoire `tests` de votre projet `e2e` et y ajouter le code suivant :
 
-- **Cas de test 2** : Saisir un username valide et un mot de passe trop court, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur voit un message d'erreur indiquant que le mot de passe est trop court.
-- **Cas de test 3** : Saisir un username valide et laisser le champ mot de passe vide, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur voit un message d'erreur indiquant que le mot de passe est requis.
+```ts
+import { Page, expect } from "@playwright/test";
 
+const goFromHomePageToRegisterPage = async (page: Page) => {
+  await page.goto("http://localhost:5173/");
+  await page.getByText("créer un utilisateur").click();
+  await expect(page).toHaveURL("http://localhost:5173/register");
+};
 
+const registerWith = async (page: Page, username: string, password: string) => {
+  await page.getByRole("textbox", { name: "username" }).fill(username);
+  await page.getByRole("textbox", { name: "password" }).fill(password);
+  await page.getByRole("button", { name: "Créer le compte" }).click();
+};
 
+export { registerWith, goFromHomePageToRegisterPage };
+```
 
+Dans ce code, nous avons créé deux fonctions utilitaires :
+- **`goFromHomePageToRegisterPage`** : Cette fonction permet de naviguer de la HomePage à la page de register.
+- **`registerWith`** : Cette fonction permet de remplir les champs de texte pour le username et le mot de passe, puis de cliquer sur le bouton "Créer le compte".
 
+Nous allons maintenant mettre à jour les tests pour utiliser ces fonctions utilitaires. Voici le code mis à jour de la spécification de test `register.spec.ts` :
 
+```ts {3,9,13,21,25,31} showLineNumbers
+import { test, expect } from "@playwright/test";
+import { faker } from "@faker-js/faker";
+import { goFromHomePageToRegisterPage, registerWith } from "./helper";
 
+test.describe("Register", () => {
+  test("TC1.1: should register a new user when valid username & password", async ({
+    page,
+  }) => {
+    goFromHomePageToRegisterPage(page);
+
+    const username = faker.internet.username();
+    const password = faker.internet.password();
+    await registerWith(page, username, password);
+
+    await expect(page.getByText(`Hello dear ${username}`)).toBeVisible();
+  });
+
+  test("TC2.1: should not register a new user when existing username", async ({
+    page,
+  }) => {
+    goFromHomePageToRegisterPage(page);
+
+    const username = "farina";
+    const password = "farinapwd";
+    await registerWith(page, username, password);
+
+    await expect(page.getByText(`Hello dear ${username}`)).toBeVisible();
+
+    await page.getByText("se déconnecter").click();
+
+    goFromHomePageToRegisterPage(page);
+
+    await registerWith(page, username, password);
+
+    // Check in the console for the error message
+    const message = await page.waitForEvent(
+      "console",
+      (msg) => msg.type() === "error"
+    );
+
+    // Check for specific error message
+    expect(message.text()).toContain("409");
+  });
+});
+``` 
+
+## Utilisation de fonctions de setup et de teardown
+
+Nous allons maintenant voir comment utiliser une fonction de setup pour réduire les duplications de code dans les tests.
+
+Dans les deux cas de test que nous avons écrits, et dans tous les cas de tests associé au register, nous devons à chaque fois nous rendre sur la HomePage, cliquer sur "créer un utilisateur", puis nous rendre sur la page de register.
+
+Nous allons donc utiliser une fonction de setup pour effectuer ces actions avant chaque test. Pour ce faire, nous allons utiliser la fonction **`beforeEach`** de Playwright.
+
+Voici le code mis à jour de la spécification de test `register.spec.ts` :
+
+```ts {5-8,12-13,20-23} showLineNumbers
+import { test, expect } from "@playwright/test";
+import { faker } from "@faker-js/faker";
+import { goFromHomePageToRegisterPage, registerWith } from "./helper";
+
+test.describe("Register", () => {
+  test.beforeEach(async ({ page }) => {
+    goFromHomePageToRegisterPage(page);
+  });
+
+  test("TC1.1: should register a new user when valid username & password", async ({
+    page,
+  }) => {
+    const username = faker.internet.username();
+    const password = faker.internet.password();
+    await registerWith(page, username, password);
+
+    await expect(page.getByText(`Hello dear ${username}`)).toBeVisible();
+  });
+
+  test("TC2.1: should not register a new user when existing username", async ({
+    page,
+  }) => {
+    const username = "farina";
+    const password = "farinapwd";
+    await registerWith(page, username, password);
+
+    await expect(page.getByText(`Hello dear ${username}`)).toBeVisible();
+
+    await page.getByText("se déconnecter").click();
+
+    goFromHomePageToRegisterPage(page);
+
+    await registerWith(page, username, password);
+
+    // Check in the console for the error message
+    const message = await page.waitForEvent(
+      "console",
+      (msg) => msg.type() === "error"
+    );
+
+    // Check for specific error message
+    expect(message.text()).toContain("409");
+  });
+});
+```
+
+Dans ce code, nous avons utilisé la fonction **`test.beforeEach`** pour exécuter la fonction **`goFromHomePageToRegisterPage`** avant chaque test. Cette fonction permet de réduire les duplications de code en centralisant les actions communes.
+De plus, elle permet de **garantir que les tests commencent dans un état connu et cohérent**.
+
+# <InternalPageTitle> Comment écrire des tests e2e de qualité ? </InternalPageTitle>
 
 Nous vous conseillons de suivre les bonnes pratiques de développement pour écrire des tests e2e de qualité. Voici quelques conseils pour écrire des tests e2e robustes et fiables :
 - **Utiliser des sélecteurs CSS spécifiques** : Utilisez des sélecteurs CSS spécifiques pour cibler les éléments de l'application que vous souhaitez tester. Évitez d'utiliser des sélecteurs basés sur la position des éléments dans la page, car ils sont plus susceptibles de changer.
 - **Gérer les attentes** : Gérez les attentes dans vos tests e2e en utilisant des fonctions d'attente ou des assertions pour vérifier que les éléments de l'application sont dans l'état attendu.
 - **Nettoyer l'état de l'application** : Assurez-vous de nettoyer l'état de l'application entre chaque test pour éviter les effets de bord et les interactions inattendues entre les tests.
 
+Dans les prochaines sections, nous verrons comment intégrer les tests e2e dans notre pipeline CI/CD pour garantir la qualité de nos applications.
 
-Dans les prochaines sections, nous verrons comment écrire des tests e2e avec Playwright et comment les intégrer dans notre pipeline CI/CD pour garantir la qualité de nos applications.
+# <InternalPageTitle> Comment intégrer les tests e2e dans le pipeline de CI ? </InternalPageTitle>
+
+## Introduction
+
+Il est important d'intégrer les tests e2e dans le pipeline de CI pour garantir la qualité de l'application et détecter les problèmes le plus tôt possible. Les tests e2e permettent de valider le bon fonctionnement de l'application dans son ensemble et de vérifier que les différentes parties de l'application interagissent correctement.
+
+Dans la suite du tutoriel `e2e-tests`, nous allons voir comment intégrer les tests e2e avec Playwright dans le pipeline de CI à l'aide de GitLab CI.
+
+Votre répertoire `e2e-tests/e2e` doit se trouver à la racine du repository de votre projet GitLab. N'oubliez pas que vous devez pousser des modifications à partir d'une nouvelle branche.
+
+## Configuration de GitLab CI
+
+Dans le repository de votre projet GitLab, voici le contenu actuel du fichier `.gitlab-ci.yml` :
+
+```yaml
+api test:
+  image: maven:3.9.9-amazoncorretto-21
+  script:
+    - cd api
+    - mvn clean test
+  artifacts:
+    paths:
+      - api/target/reports/
+      - api/target/site/
+      - api/target/surefire-reports/
+
+frontend test:
+  image: node:20
+  script:
+    - cd frontend
+    - npm install
+    - npm run lint
+    - npm run coverage
+  artifacts:
+    paths:
+      - frontend/coverage/
+```
+
+Veuillez mettre à jour le fichier `.gitlab-ci.yml` et y ajouter le code suivant :
+
+```yaml {1-3,6,18,29-57} showLineNumbers
+stages:
+  - test
+  - e2e
+
+api test:
+  stage: test
+  image: maven:3.9.9-amazoncorretto-21
+  script:
+    - cd api
+    - mvn clean test
+  artifacts:
+    paths:
+      - api/target/reports/
+      - api/target/site/
+      - api/target/surefire-reports/
+
+frontend test:
+  stage: test
+  image: node:20
+  script:
+    - cd frontend
+    - npm install
+    - npm run lint
+    - npm run coverage
+  artifacts:
+    paths:
+      - frontend/coverage/
+
+e2e tests:
+  stage: e2e
+  image: mcr.microsoft.com/playwright:v1.50.0-jammy
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+  before_script:   
+    - apt update -y
+    - wget https://download.oracle.com/java/21/latest/jdk-21_linux-x64_bin.deb
+    - apt install ./jdk-21_linux-x64_bin.deb
+    - apt install -y maven docker-compose-v2
+    - docker compose -f api/docker-compose.yaml up --build -d
+    - sleep 5
+    - cd api
+    - mvn clean spring-boot:run -Dspring-boot.run.profiles=test &
+    - sleep 30
+    - cd ../frontend
+    - npm install
+    - npm run dev &
+    - sleep 30
+    - cd ../e2e
+    - npm install
+  script:
+    - npx playwright test
+  artifacts:
+    paths:
+      - e2e/playwright-report/
+      - e2e/test-results/
+```
+
+Dans ce fichier, nous avons deux **`stages`** : `test` et `e2e`. Le stage `test` contient les tâches de test pour l'API et le frontend, tandis que le stage `e2e` contient les tâches de test e2e avec Playwright.
+
+Un **`stage`** dans GitLab CI permet de regrouper des tâches en fonction de leur objectif. Les stages sont exécutés en série, ce qui signifie que le stage `test` sera exécuté en premier, suivi du stage `e2e`.
+
+Si l'on souhaite passer des fichiers d'un stage à un autre, il est possible de le faire en utilisant les **`artifacts`**. Les **`artifacts`** sont des fichiers générés par les tâches de CI qui peuvent être utilisés dans d'autres tâches. Nous verrons cela plus tard, lors du déploiement d'applications.
+
+Dans le stage `e2e`, nous utilisons l'image **`mcr.microsoft.com/playwright:v1.50.0-jammy`** pour exécuter les tests e2e avec Playwright. Cette image contient Playwright et tous les navigateurs nécessaires pour exécuter les tests e2e. Si vous tentez de créer une image Docker avec Playwright, vous pouvez consulter la documentation officielle de Playwright : https://playwright.dev/docs/ci  
+Il est important de noter que si vous tentez de construire votre propre image de Playwright, vous devrez également installer les navigateurs nécessaires pour exécuter les tests e2e, et cela rend la configuration très complexe.  
+Dans notre cas, nous utilisons l'image officielle de Playwright qui contient pas mal de choses que nous avons besoin pour exécuter les tests e2e.  
+Néanmoins, nous devons aussi rajouter :
+- les dépendances nécessaire à l'API : Java et Maven. 
+- Docker Compose pour pouvoir exécuter la DB dans un conteneur.
+
+Nous utilisons la variables **`DOCKER_HOST`** pour spécifier l'hôte Docker à utiliser dans le pipeline de CI. En utilisant **`docker:dind`**, nous pouvons exécuter des conteneurs Docker dans le pipeline de CI. Toutes les commandes données dans le **`before_script`** seront exécutées avant le script principal. Ces commandes s'exécutent au sein de la pipeline de CI qui elle aussi s'exécute dans un conteneur Docker. Ainsi, pour la DB, nous utilisons **`docker compose`** pour démarrer le conteneur de la DB. Nous pouvons imaginer la DB comme un conteneur externe à l'API, externe au container de la pipeline de CI contenant l'API, le frontend et l'application Playwright de e2e.
+Ainsi, pour joindre le réseau du conteneur de la DB, nous devons utiliser comme hôte **`docker`** et non pas **`localhost`**, car le réseau de la pipeline de CI est isolé du réseau du conteneur de la DB.
+
+Veuillez donc mettre à jour le fichier **`application-test.properties`** de l'API pour qu'il utilise **`docker`** comme hôte de la base de données :
+
+```properties
+spring.datasource.url=jdbc:postgresql://docker:5432/cae_db
+```
+
+Vous noterez que nous avons ajouté une pause de 30 secondes après le démarrage de l'API et du frontend pour s'assurer qu'ils sont prêts avant de commencer les tests e2e. Cette pause est nécessaire car le build de l'API et du frontend peut prendre un certain temps et les tests e2e peuvent échouer si l'API ou le frontend ne sont pas prêts.
+
+Une fois que c'est fait, vous pouvez pousser les modifications sur votre branche et créer une Merge Request. Vos tests e2e devrait maintenant s'exécuter dans le pipeline de CI.
+
+Veuillez vérifier que la pipeline de CI s'exécute correctement et que les tests e2e s'exécutent sans erreur.
+
+## Etat actuel de la pipeline de CI
+
+Dans ce tutoriel, nous avons vu comment écrire des tests e2e avec Playwright pour tester une application web. Nous avons vu comment écrire des cas de test pour le register d'un utilisateur et comment gérer les duplications de code dans les tests. Nous avons également vu comment intégrer les tests e2e dans le pipeline de CI à l'aide de GitLab CI.
+
+Nous voyons que la mise en place de la pipeline de CI pour les tests e2e est un peu plus complexe que pour les tests unitaires et les tests d'intégration. Cela est dû au fait que les tests e2e nécessitent un environnement complet de l'application pour s'exécuter. Il est donc important de bien configurer l'environnement de test pour garantir que les tests e2e s'exécutent correctement.
+
+La configuration actuelle contient quelques faiblesses :
+- Les tests e2e s'exécutent dans un seul navigateur. Il est important de tester l'application dans plusieurs navigateurs pour garantir la compatibilité.
+- Nous utilisons une pause de 30 secondes pour attendre que l'API et le frontend soient prêts. Cette pause n'est pas idéale et peut entraîner des problèmes si les services prennent plus de temps à démarrer.
+- Nous utilisons une image Docker pour exécuter les tests e2e. Cette image contient notamment Playwright et les navigateurs nécessaires, mais elle peut être complexe à configurer et à maintenir. 
+- Nous devons à chaque push de modification installer les dépendances nécessaires à chaque job. Cela ralentit le pipeline de CI.
+- Nous n'avons pas un seul réseau pour les différentes applications : l'API, du frontend, la DB et les tests e2e. Cela peut poser des problèmes de communication entre les applications et rend la configuration des URLs pour communiquer plus complexe.
+- Nous ne testons pas l'application dans son environnement de production. Il est important de tester l'application dans un environnement de production, une fois l'application déployée, pour garantir que tout fonctionne correctement pour les utilisateurs de l'application.
+- Nous ne réutilisons pas le build d'un service (api & frontend) d'un stage à l'autre. Cela peut ralentir le pipeline de CI.
+
+Nous allons prochainement voir que la containérisation des applications peut nous aider à résoudre plusieurs de ces problèmes.
+
+Mais avant cela, nous allons voir si nous pouvons optimiser la configuration actuelle de la pipeline de CI pour les tests e2e en utilisant le cache de GitLab CI.
+
+# <InternalPageTitle> Comment utiliser le cache de GitLab CI ? </InternalPageTitle>
+
+## Introduction
+
+Le cache de GitLab CI permet de stocker des fichiers ou des répertoires entre les différents jobs d'une pipeline de CI. Cela permet de réduire le temps de construction en évitant de télécharger les dépendances à chaque exécution du pipeline.
+
+Dans la suite de ce tutoriel, nous allons voir comment utiliser le cache de GitLab CI pour stocker les dépendances des tests e2e entre les différents jobs de la pipeline.
+
+Voici comment fonctionne le cache de GitLab CI :
+- Lorsqu'un job est exécuté pour la première fois, le cache est vide.
+- À la fin de l'exécution du job, les fichiers ou les répertoires spécifiés dans le cache sont stockés.
+- Lorsque le même job est exécuté à nouveau, les fichiers ou les répertoires stockés dans le cache sont téléchargés et utilisés.
+- Cela permet de réduire le temps de construction en évitant de télécharger les dépendances à chaque exécution du job.
+- Comment savoir si le cache doit être mis à jour ? GitLab CI utilise une clé pour identifier le cache. Si la clé change, le cache est considéré comme obsolète et doit être mis à jour.
+
+## Configuration du cache de GitLab CI
+
+Pour tenter d'accélérer le temps d'exécution de notre pipeline, nous pourrions tenter d'utiliser le cache de GitLab CI en mettant à jour notre fichier `.gitlab-ci.yml`:
+
+```yaml {4-5,10-15,29-33,51-58} showLineNumbers
+stages:
+  - test
+  - e2e
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+
+api test:
+  stage: test
+  image: maven:3.9.9-amazoncorretto-21
+  cache:
+    key:
+      files:
+        - api/pom.xml
+    paths:
+      - $CI_PROJECT_DIR/.m2/repository
+  script:
+    - cd api
+    - mvn clean test
+  artifacts:
+    paths:
+      - api/target/reports/
+      - api/target/site/
+      - api/target/surefire-reports/
+
+frontend test:
+  stage: test
+  image: node:20
+  cache:
+    key:
+      files:
+        - frontend/package-lock.json
+    paths:
+      - frontend/node_modules
+  script:
+    - cd frontend
+    - npm install
+    - npm run lint
+    - npm run coverage
+  artifacts:
+    paths:
+      - frontend/coverage/
+
+e2e tests:
+  stage: e2e
+  image: mcr.microsoft.com/playwright:v1.50.0-jammy
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+  cache:
+    key:
+      files:
+        - api/pom.xml
+        - frontend/package-lock.json
+    paths:
+      - $CI_PROJECT_DIR/.m2/repository
+      - frontend/node_modules
+      - e2e/node_modules
+  before_script:
+    - apt update -y
+    - wget https://download.oracle.com/java/21/latest/jdk-21_linux-x64_bin.deb
+    - apt install ./jdk-21_linux-x64_bin.deb
+    - apt install -y maven docker-compose-v2
+    - docker compose -f api/docker-compose.yaml up --build -d
+    - sleep 5
+    - cd api
+    - mvn clean spring-boot:run -Dspring-boot.run.profiles=test &
+    - sleep 30
+    - cd ../frontend
+    - npm install
+    - npm run dev &
+    - sleep 30
+    - cd ../e2e
+    - npm install
+  script:
+    - npx playwright test
+  artifacts:
+    paths:
+      - e2e/playwright-report/
+      - e2e/test-results/
+```
+
+Voici quelques points importants à noter dans cette configuration :
+- Nous avons ajouté une clé pour le cache de l'API et du frontend. Cette clé est basée sur les fichiers de dépendances de l'API et du frontend. Si ces fichiers changent, le cache est considéré comme obsolète et doit être mis à jour.
+- Il existe d'autres clés possibles pour le cache, comme par exemple les variables d'environnement, les fichiers de configuration, etc. ;  par exemple, GitLab CI propose d'utiliser :
+  - la variable **`$CI_COMMIT_REF_SLUG`** pour partager le cache entre des jobs de la même branche  
+  - la variable **`$CI_JOB_NAME`** pour partager le cache entre toutes les branches avec un cache unique par job.
+- Pour pouvoir accéder aux dépendances de Maven, nous avons défini la variable **`MAVEN_OPTS`** pour spécifier le répertoire local du dépôt Maven. Cela permet de stocker les dépendances de Maven dans le cache et de les réutiliser entre les différents jobs.
+
+## Conclusion sur le cache de GitLab CI
+
+Après configuration du cache, le temps d'exécution de la pipeline n'est pas significativement plus court. 
+
+Nous ne creuserons pas plus loin pour l'aspect cache de GitLab CI, car nous allons prochainement voir que la containérisation des applications peut nous aider à résoudre plusieurs problèmes de la configuration actuelle de la pipeline de CI.
+
+Si vous souhaitez en savoir plus sur le cache de GitLab CI, vous pouvez consulter la documentation officielle de GitLab : https://docs.gitlab.com/ee/ci/caching/
+
+Si nécessaire, vous pouvez trouver le code associé aux tests e2e ici : [e2e-test](https://github.com/e-vinci/cae-theory/tree/main/e2e-tests).
+
+## Problème de configuration de l'API
+
+Attention, si vous exécutez l'API avec le profil de test localement, l'API est configurée pour utiliser **`docker`** comme hôte de la base de données dans le pipeline de CI. La configuration de l'API, au sein du fichier **`application-test.properties`**, est la suivante
+
+```properties
+spring.datasource.url=jdbc:postgresql://docker:5432/cae_db
+```
+
+Cette configuration fonctionne donc bien sur la pipeline de CI, mais pas si vous souhaitez exécuter l'API localement et vous connecter à votre DB localement.
+
+Pour exécuter l'API localement, vous devez modifier le fichier **`application-test.properties`** pour utiliser **`localhost`** comme hôte de la base de données :
+
+```properties 
+spring.datasource.url=jdbc:postgresql://localhost:5432/cae_db
+```
+
+Nous allons voir comment résoudre ce problème plus tard dans le cours, afin d'automatiser la gestion des URLs en fonction de l'environnement dans lequel nos applications sont exécutées.
