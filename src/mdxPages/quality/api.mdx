@@ -25,59 +25,52 @@ date: 20/01/2025
 
 La qualité de l'API est essentielle pour offrir une expérience des développeurs optimale et maintenir la cohérence et la maintenabilité du code. Voici quelques pratiques clés pour gérer la qualité de l'API :
 
-1. **Style guide de Google** :
+- **Style guide de Google** :
    - Utiliser le style guide de Google pour les conventions de code et de nommage. Cela permet de maintenir un code propre, lisible et cohérent à travers toute l'équipe de développement.
-   - [Google TypeScript Style Guide](https://google.github.io/styleguide/javaguide.html)
 
-2. **Tests statiques** :
+- **Tests statiques** :
    - Utiliser des outils d'analyse statique pour vérifier la qualité du code, détecter les vulnérabilités de sécurité et appliquer les normes de codage.
    - Par exemple, avec Java, on peut utiliser des outils comme `Checkstyle`, `PMD` et `CPD`.
 
-3. **Architecture modulaire du code** :
+- **Architecture modulaire du code** :
    - Adopter une architecture modulaire pour le code de l'API. 
    - Avec Spring Boot, il suffit de découper le code en `repository`, `service`, `controller` et `model`.
 
-4. **Tests unitaires avec JUnit & Mockito** :
-   - Écrire des tests unitaires pour vérifier le bon fonctionnement de la logique de l'application
+- **Tests unitaires avec JUnit & Mockito** :
+   - Écrire des tests unitaires pour vérifier le bon fonctionnement de la logique de l'application.
 
-5. **Tests d'intégration avec Spring Boot** :
+- **Tests d'intégration avec Spring Boot** :
    - A l'aide de requêtes HTTP, on peut facilement tester l'intégration des différentes parties de l'API.
 
 
 
 # <InternalPageTitle> Comment résumer le style guide de Google ? </InternalPageTitle>
 
-Voici un résumé des principaux points du style guide de Google pour Java :
+Voici un minuscule résumé de quelques points du style guide de Google pour Java :
 
-1. **Nommage des variables et des fonctions** :
+- **Nommage des variables et des fonctions** :
    - Utiliser le camelCase pour les noms de variables et de méthodes.
    - Utiliser PascalCase pour les noms de classes et d'interfaces.
    - Les constantes doivent être en UPPER_SNAKE_CASE.
 
-2. **Formatage du code** :
-   - Utiliser des espaces pour l'indentation, avec une taille de tabulation de 2 ou 4 espaces.
-   - Respecter une largeur de ligne maximale de 100 caractères.
+- **Formatage du code** :
+   - Utiliser des espaces pour l'indentation, avec une taille de tabulation de `2` ou `4` espaces.
+   - Respecter une largeur de ligne maximale de `100` caractères.
    - Placer les accolades ouvrantes `{` à la fin de la ligne de déclaration et les accolades fermantes `}` sur une nouvelle ligne.
 
-3. **Commentaires** :
+- **Commentaires** :
    - Utiliser des commentaires Javadoc (`/** ... */`) pour documenter les classes, les méthodes et les champs publics.
    - Utiliser des commentaires en ligne (`// ...`) pour expliquer des sections spécifiques du code.
 
-4. **Organisation des imports** :
+- **Organisation des imports** :
    - Grouper les imports par type : imports standard de Java, imports de bibliothèques tierces, imports internes.
    - Éviter les imports globaux (`import ....*`).
 
-5. **Structure des classes** :
+- **Structure des classes** :
    - Suivre l'ordre suivant pour les membres d'une classe : variables de classe (statique), variables d'instance, constructeurs, méthodes publiques, méthodes protégées, méthodes privées.
    - Utiliser des modificateurs d'accès appropriés (public, protected, private) pour encapsuler les données et les méthodes.
 
-6. **Gestion des exceptions** :
-   - Utiliser des exceptions vérifiées pour les conditions exceptionnelles qui peuvent être récupérées.
-   - Utiliser des exceptions non vérifiées pour les erreurs de programmation (par exemple, `NullPointerException`).
-   - Fournir des messages d'erreur clairs et significatifs dans les exceptions.
-
-En suivant ces points clés du style guide de Google pour Java, vous pouvez assurer la cohérence, la lisibilité et la maintenabilité de votre code Java.
-
+Plutôt que de devoir apprendre les règles, le plus simple est de mettre en place le checkstyle au sein d'IntelliJ afin de checker le code selon le style guide de Google.
 
 # <InternalPageTitle> Comment mettre en place le Checkstyle dans IntelliJ ? </InternalPageTitle>
 
@@ -176,7 +169,7 @@ Maven est un outil de gestion de projet et de compréhension qui permet de gére
 - **mvn spring-boot:run** :
   - Compile le code source et démarre une application Spring Boot. Cette commande compile le code, mais n'exécute pas les tests.
 
-### Exemple : `mvn clean spring-boot:run`
+### Exemple
 
 Lorsque vous exécutez la commande suivante :
 
@@ -303,11 +296,11 @@ Les profils sont définis dans le fichier `pom.xml` sous l'élément `<profiles>
 
 Les profils peuvent être activés ou désactivés de différentes manières :
 
-1. **Activation par ligne de commande** :
+- **Activation par ligne de commande** :
    - Vous pouvez activer un profil en utilisant l'option **`-P`** de la ligne de commande Maven.
    - Exemple : **`mvn clean install -Pmy-profile`**
 
-2. **Activation par propriété** :
+- **Activation par propriété** :
    - Vous pouvez activer un profil en définissant une propriété spécifique.
    - Exemple : 
      ```xml
@@ -320,7 +313,7 @@ Les profils peuvent être activés ou désactivés de différentes manières :
      ```
    - Commande : `mvn clean install -Denv=production`
 
-3. **Activation par JDK** :
+- **Activation par JDK** :
    - Vous pouvez activer un profil en fonction de la version du JDK utilisé.
    - Exemple :
      ```xml
@@ -329,7 +322,7 @@ Les profils peuvent être activés ou désactivés de différentes manières :
      </activation>
      ```
 
-4. **Activation par système d'exploitation** :
+- **Activation par système d'exploitation** :
    - Vous pouvez activer un profil en fonction du système d'exploitation.
    - Exemple :
      ```xml
@@ -496,6 +489,8 @@ Puis, rajoutez cette partie dans le profile `no-build-failure` au sein de la bal
    </plugin>
 ```
 
+Cela permet de configurer le plugin PMD pour ne pas échouer le build en cas de violations de code. Cela permet de générer un rapport HTML des violations de code, même si le build échoue.
+
 Veuillez exécuter la commande suivante au sein d'un terminal d'IntelliJ pour détecter les violations de code dans votre projet Java :
 
 ```sh
@@ -506,7 +501,7 @@ Vous devriez voir un rapport HTML des violations de code généré dans le répe
 
 PMD a détecté 2 violations de code dans notre projet, dans les classes **`DemoApplication.java`** et **`JwtAuthenticationFilter.java`**. Vous pouvez ouvrir le rapport HTML pour voir les détails des violations et les recommandations pour les corriger.
 
-Pour **`DemoApplication.java`**, PMD signale une violation de la règle `UseUtilityClass	: This utility class has a non-private constructor`. Cela signifie que la classe `DemoApplication` est une classe utilitaire mais qu'elle a un constructeur non privé. Pour corriger cette violation, vous pouvez rendre le constructeur de la classe `DemoApplication` privé. Le souci si on rend le constructeur privé, c'est que Spring ne pourra plus instancier la classe, ou, que PMD s'attendra à ce que la class soit **`final`. Et donc, si l'on rend la classe `final`, nous ne pourrons pas compiler notre application.  
+Pour **`DemoApplication.java`**, PMD signale une violation de la règle `UseUtilityClass	: This utility class has a non-private constructor`. Cela signifie que la classe `DemoApplication` est une classe utilitaire mais qu'elle a un constructeur non privé. Pour corriger cette violation, vous pouvez rendre le constructeur de la classe `DemoApplication` privé. Le souci si on rend le constructeur privé, c'est que Spring ne pourra plus instancier la classe, ou, que PMD s'attendra à ce que la class soit `final`. Et donc, si l'on rend la classe `final`, nous ne pourrons pas compiler notre application.  
 Au final, dans ce cas particulier, PMD se trompe. Il est donc préférable de désactiver cette règle pour cette classe. Le plus simple est de désactiver cette règle pour la classe `DemoApplication` en ajoutant l'annotation **`@SuppressWarnings("PMD.UseUtilityClass")`** juste avant la déclaration de la classe :
 
 Voici la classe `DemoApplication` corrigée :
@@ -724,9 +719,9 @@ Voici le code de la méthode `readAllPizzas` de la classe `PizzaService` :
 Nous allons écrire un test unitaire pour cette méthode en utilisant Mockito pour simuler le comportement de la dépendance `PizzaRepository`.
 
 Pour ce faire, créez une classe de test `PizzaServiceTest` dans le répertoire `src/test/java` de votre projet :
-1. Dans le fichier `PizzaServiceTest.java`, faites un clic droit, puis sélectionnez **`Show Context Actions`** > **`Create test`**.
+1. Dans le fichier `PizzaServiceTest.java`, faites un clic droit, puis sélectionnez `Show Context Actions` > `Create test`.
 2. Sélectionnez la méthode `readAllPizzas` pour laquelle vous souhaitez créer un test unitaire.
-3. Cliquez sur **`OK`** pour générer la classe de test.
+3. Cliquez sur `OK` pour générer la classe de test.
 4. Ecrivez un premier scénario qui permet de vérifier que la méthode `readAllPizzas` renvoie bien toutes les pizzas lorsqu'aucun ordre n'est spécifié.
 
 Voici le code de la classe de test `PizzaServiceTest` :
@@ -776,7 +771,7 @@ class PizzaServiceTest {
 
 Voici une brève explication des annotations utilisées dans la classe de test `PizzaService` :
 - **`@ExtendWith(MockitoExtension.class)`** : 
-   - Cette annotation est nécessaire pour utiliser les annotations Mockito pour initialiser les mocks. E
+   - Cette annotation est nécessaire pour utiliser les annotations Mockito pour initialiser les mocks.
    - Elle permet d'initialiser les mocks avant l'exécution des tests. 
    - Si vous oublier cette annotation, vous verrez une erreur `java.lang.NullPointerException` lors de l'exécution des tests.
 
@@ -793,7 +788,7 @@ Voici une brève explication des annotations utilisées dans la classe de test `
 ## Exécuter le test unitaire
 
 Vous pouvez bien sûr exécuter le test unitaire en utilisant IntelliJ. Pour cela, il existe plusieurs façons, comme :
-- faire un clic droit sur la classe de test `PizzaServiceTest` et sélectionnez **`Run 'PizzaServiceTest'`**.
+- faire un clic droit sur la classe de test `PizzaServiceTest` et sélectionnez `Run 'PizzaServiceTest'`.
 - sélectionner la méthode de test `readAllPizzasNoOrderWithNull` et cliquez sur le bouton `Play` à côté de la méthode pour l'exécuter (`Run 'readAllPizzasNoOrd...()'`.
 
 Nous souhaitons automatiser l'exécution des tests unitaires en utilisant Maven. Pour cela, nous allons exécuter les tests unitaires en utilisant la commande suivante au sein d'un terminal d'IntelliJ :
