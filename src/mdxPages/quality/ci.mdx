@@ -74,7 +74,7 @@ Chaque message de commit doit inclure un **`type`**, une option **`scope`** (por
 Pour les **breaking changes** (changements qui cassent la compatibilité avec les versions précédentes), on ajoute un **`!`** après le type et avant la description :
 
 ```txt  
-<type>!(<scope>): <description>
+<type>(<scope>)!: <description>
 ```
 
 
@@ -268,7 +268,7 @@ Pour information, voici les différents rôles disponible dans GitLab :
 
 Pour les détails sur les permissions associées à chaque rôle, vous pouvez consulter la documentation officielle de GitLab : https://docs.gitlab.com/ee/user/permissions.html
 
-Les prochaines sections expliquent, étape par étape, comment configurer l'intégration continue dans GitLab si vous aviez un rôle de `Maintainer` ou d'`Owner` au niveau d'un groupe GitLab. Ces sections sont à titre informatif pour les étudiants Vinci.
+Les prochaines sections expliquent, étape par étape, comment configurer l'intégration continue dans GitLab si vous aviez un rôle de `Maintainer` ou d'`Owner` au niveau d'un groupe GitLab ou d'un projet GitLab.
 
 ## 🍬 Protection de la branche principale au niveau d'un groupe
 
@@ -387,7 +387,7 @@ Pour cloner votre projet GitLab, vous pouvez utiliser la commande suivante :
 git clone https://gitlab.com/<votre-username-GitLab>/<nom-du-projet>.git
 ```
 
-S'il y a un souci avec cette commande car ça serait un autre profil GitLab qui serait dans le cache de Git, vous pouvez utiliser la commande suivante :
+S'il y a un souci avec cette commande (par exemple si vous aviez un autre profil GitLab qui serait dans le cache de Git), vous pouvez utiliser la commande suivante :
 
 ```bash
 git clone https://<votre-username-GitLab>@gitlab.com/<votre-username-GitLab>/<nom-du-projet>.git
@@ -412,7 +412,7 @@ Pour vous assurer que vous clonez votre projet GitLab avec votre nouveau compte 
 git clone https://<votre-username-GitLab>@GitLab.com/e-vinci/cae-projects/2025-cae-projects/cae-group-<xy>.git
 ```
 
-En clonant votre projet GitLab avec votre nouveau compte GitLab, vous vous assurez que vous avez les droits nécessaires pour pousser vos modifications sur votre projet GitLab. Git va ajouter une remote `origin` avec votre nouveau compte GitLab.
+En clonant votre projet GitLab avec votre nouveau compte GitLab, vous vous assurez que vous avez les droits nécessaires pour pousser vos modifications sur votre projet GitLab. Git va ajouter une remote `origin` avec votre nouveau compte GitLab.  
 NB : une `remote` est un raccourci pour une URL Git. C'est un moyen pratique de ne pas avoir à taper l'URL complète à chaque fois que vous voulez pousser ou tirer des modifications.
 
 Si vous avez plusieurs comptes `GitLab.com` sur votre machine, veuillez vous assurer que les informations d'identification de votre nouveau compte GitLab sont utilisées :
@@ -499,7 +499,7 @@ Nous allons voir comment configurer un pipeline dans GitLab pour exécuter les t
 
 Pour configurer un pipeline dans GitLab, vous devez créer un fichier **`.gitlab-ci.yml`** à la racine de votre projet. Ce fichier contient les instructions pour exécuter les différents jobs du pipeline.
 
-A la racine de votre Projet GitLab (dans votre repository local), dans la branche `chore/setup-api-boilerplate`, créez un fichier `.gitlab-ci.yml` avec le contenu suivant :
+A la racine de votre Projet GitLab (dans votre repository local), dans la branche `chore/setup-api-boilerplate`, créez un fichier **`.gitlab-ci.yml`** avec le contenu suivant :
 
 ```yaml
 api test:
@@ -513,13 +513,13 @@ Ce fichier définit un job nommé `api test` qui utilise l'image Docker `maven:3
 - `cd api` : se déplace dans le dossier `api` où se trouve le code de l'API Spring.
 - `mvn clean test` : exécute tous les checks que nous avons configurés dans l'API Spring. Il s'agit du Checkstyle, du PMD, du CPD et des tests unitaires.
 
-Veuillez pousser votre fichier `.gitlab-ci.yml` sur votre dépôt distant.
+Veuillez pousser votre fichier **`.gitlab-ci.yml`** sur votre dépôt distant.
 
 Dans le cadre d'un compte GitLab personnel, il est possible que vous deviez d'abord vérifier votre compte GitLab avant d'avoir le droit d'exécuter une pipeline. Pour cela, veuillez suivre les instructions demandées sur votre projet GitLab.
 
 Pour relancer un build, veuillez simplement pousser un nouveau commit sur votre branche `chore/setup-api-boilerplate`.
 
-Maintenant que vous avez ajouté le fichier `.gitlab-ci.yml`, vous devriez voir un pipeline se déclencher automatiquement à chaque *push* sur la branche `chore/setup-api-boilerplate`.
+Maintenant que vous avez ajouté le fichier **`.gitlab-ci.yml`**, vous devriez voir un pipeline se déclencher automatiquement à chaque *push* sur la branche `chore/setup-api-boilerplate`.
 
 ## Vérification du pipeline
 
