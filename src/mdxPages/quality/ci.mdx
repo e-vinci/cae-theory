@@ -214,6 +214,15 @@ Quel est l'impact sur l'historique des commits ?
 - **les commits restent accessibles** : les commits de la branche fusionnée restent accessibles dans l'historique de la branche principale. Vous pouvez toujours voir les commits individuels et les modifications apportées.
 
 
+# <InternalPageTitle> Comment créer un projet GitLab  ? </InternalPageTitle>
+
+Pour réaliser les tutoriels proposé dans ce cours, nous vous recommandons de créer un projet GitLab personnel. Pour cela, vous pouvez suivre les étapes suivantes :
+- Cliquez sur l'onglet `Projects` dans le menu de gauche.
+- Cliquez sur `New project` en haut à droite.
+- Sélectionnez `Create blank project`.
+- Nommez votre projet, par exemple `cae-theory-tutorials`.
+- Assurez-vous que le projet est `Private`.
+- Cliquez sur `Create project`.
 
 # <InternalPageTitle> Comment démarrer l'intégration continue de code au sein de GitLab ? </InternalPageTitle>
 
@@ -236,12 +245,11 @@ Pour pouvoir configurer ces paramètres, vous devez avoir un rôle de `Maintaine
 
 Lorsque vous créez un projet GitLab, nous vous recommandons de configurer GitLab afin de protéger la branche principale, de configurer les *merge requests* pour qu'elles soient validées par un autre membre de l'équipe avant d'être fusionnées, et de configurer un pipeline d'intégration continue qui exécute les tests unitaires et vérifie la qualité du code.
 
-Pour les étudiants Vinci : 
+Pour les étudiants Vinci, concernant le projet GitLab associé à votre groupe : 
 - vos enseignants ont tenté de paramétrer un maximum de règles au niveau du groupe `2025-cae-projects`, puis d'autres règles plus fines au niveau de votre projet GitLab `cae-group-xy` se trouvant dans le groupe `2025-cae-projects`.
 - vous devez avoir créé un compte GitLab en suivant toutes les consignes données ci-dessus.
 - vous recevrez un email confirmant que vous avez été ajouté au projet ` e-vinci / cae-projects / 2025-cae-projects / cae-group-xy` avec le rôle de `Maintainer`.
-- ce rôle de `Maintainer` vous permettra de créer des *merge requests* et de les fusionner. Vous pouvez également configurer le pipeline d'intégration continue pour exécuter les tests et vérifier la qualité du code. 
-- **👉 CONSIGNE** : attention, avec le rôle de `Maintainer`, vous avez la possibilité de configurer les règles de protection de la branche principale, et les règles de *merge requests*. Ces règles ont été configurées par vos enseignants. Nous vous demandons de ne pas les modifier, sauf demande explicite de vos enseignants.
+- ce rôle de `Maintainer` vous permettra de créer des *merge requests* et de les fusionner. Vous pouvez également configurer le pipeline d'intégration continue pour exécuter les tests et vérifier la qualité du code.  **👉 CONSIGNE** : attention, avec le rôle de `Maintainer`, vous avez la possibilité de configurer les règles de protection de la branche principale, et les règles de *merge requests*. Ces règles ont été configurées par vos enseignants. Nous vous demandons de ne pas les modifier, sauf demande explicite de vos enseignants.
 
 Pour information, voici les différents rôles disponible dans GitLab :
 - **Owner** : peut tout faire, y compris supprimer le groupe ou le projet.
@@ -281,36 +289,23 @@ Vous pouvez configurer les *merge requests* au niveau d'un groupe GitLab pour ap
 1. Accédez aux paramètres du projet dans GitLab (`Settings`).
 2. Cliquez sur `General` dans le menu de gauche.
 3. Cliquez sur `Merge requests`.
-4. Cochez l'option `Pipelines must succeed
-Merge requests can't be merged if the latest pipeline did not succeed or is still running.`.
+4. Cochez l'option `Pipelines must succeed` : `Merge requests can't be merged if the latest pipeline did not succeed or is still running.`.
 5. Cochez l'option `All threads must be resolved`.
 6. Cliquez sur `Save changes`.
 
 Ainsi, les *merge requests* ne pourront pas être fusionnées si le pipeline d'intégration continue a échoué ou si tous les threads n'ont pas été résolus.
 
-## 🍬 Création d'un projet sous GitLab
+## Configuration de votre projet sous GitLab
 
-Pour les étudiants Vinci, vous ne devez pas créer de Projet GitLab. Ce paragraphe est donc pour compréhension uniquement du rôle d'un `Maintainer` ou d'un `Owner` qui doit créer un projet GitLab.
+Pour les étudiants Vinci, le projet GitLab associé à votre groupe n'est pas à configurer, car cela a été fait par vos enseignants.
 
-Vous pouvez créer un nouveau projet `privé` sur GitLab en suivant ces étapes :
-
-1. Rendez-vous sur un groupe GitLab (par exemple, https://GitLab.com/e-vinci/cae-projects/2025-cae-projects).
-2. Cliquez sur `New project` en haut à droite.
-3. Sélectionnez `Create blank project`.
-4. Nommez votre projet.
-5. Assurez vous que le projet est `Private`.
-5. Cliquez sur `Create project`.
-
-
-## 🍬 Configuration de votre projet sous GitLab
-
-Pour les étudiants Vinci, vous n'avez pas de projet à configurer. Ce paragraphe est donc pour compréhension uniquement du rôle d'un `Maintainer` ou d'un `Owner` au niveau d'un projet GitLab.
+Par contre, pour votre projet GitLab personnel, nous vous recommandons de réaliser ces tâches de configuration pour vous familiariser avec les paramètres de GitLab.
 
 ### Protection de la branche principale
 
 Pour protéger la branche principale, vous ne devez normalement rien changer si vous avez créé votre projet dans un groupe où vous avez déjà protégé la branche principale. 
 
-Pour vérifier que tout est en ordre, vous pouvez suivre les étapes suivantes :
+Dans le cadre d'une projet GitLab personnel, pour protéger la branche principale, vous pouvez suivre les étapes suivantes :
 1. Accédez aux paramètres du projet dans GitLab (`Settings`).
 2. Cliquez sur `Repository` dans le menu de gauche.
 3. Cliquez sur `Protected branches`.
@@ -333,8 +328,28 @@ If merge trains are enabled, merging is only possible if the branch can be rebas
 4. `Squash commits when merging` : Sélectionnez `Do not allow`. `Squashing is never performed and the checkbox is hidden.`
 5. Cliquez sur `Save changes`.
 
+#### Fusion des MR
+
+Si applicable, nous allons configurer les checks qui doivent être validés avant de pouvoir fusionner une *merge request*.
+
+Pour les étudiants Vinci et concernant leur projet GitLab associé à leur groupe, cela a été configuré par vos enseignants.
+
+Concernant votre projet GitLab personnel, si vous avez configuré la gestion des MR au niveau d'un groupe, vous n'avez pas besoin de le refaire au niveau du projet.  
+Si vous n'avez pas configuré la gestion des MR au niveau d'un groupe, vous pouvez configurer les *merge requests* au niveau de votre projet GitLab :
+1. Accédez aux paramètres du projet dans GitLab (`Settings`).
+2. Cliquez sur `Merge requests` dans le menu de gauche.
+4. Cochez l'option `Pipelines must succeed` : `Merge requests can't be merged if the latest pipeline did not succeed or is still running.`.
+5. Cochez l'option `All threads must be resolved`.
+6. Cliquez sur `Save changes`.
+
 #### Approbation des MR
 
+Pour pouvoir configurer les règles d'approbation des *merge requests*, il faut avoir un plan tarifaire payant sur GitLab.com. Il est possible de tester cette fonctionnalité avec un essai gratuit de 60 jours. Néanmoins, pour suivre ce cours théorique, vous n'avez pas besoin de cette fonctionnalité.
+Plus d'info sur l'essai possible de GitLab Ultimate : https://about.gitlab.com/free-trial/
+
+Notons que pour les étudiants Vinci, le projet GitLab associé à votre groupe n'est pas à configurer, car cela a été fait par vos enseignants.
+
+Si vous aviez un compte Ultimate, voici comment vous pourriez configurer les règles d'approbation des *merge requests* :
 1. Accédez aux paramètres du projet dans GitLab (`Settings`).
 2. Cliquez sur `Merge requests` dans le menu de gauche.
 3. Veuillez ajouter au moins un membre de votre équipe pour approuver les *merge requests* :
@@ -352,9 +367,35 @@ Voici un premier workflow que nous souhaitons appliquer pour l'intégration cont
 3. Le développeur crée une *merge request* pour fusionner sa branche avec la branche principale.
 4. Un autre membre de l'équipe approuve la *merge request*.
 
-Nous allons commencer par ajouter le boilerplate de votre API Spring à votre projet GitLab.
+Nous allons commencer par ajouter le boilerplate d'une API Spring à votre projet GitLab.
 
-## Clonage de votre projet GitLab
+
+## Clonage de votre projet GitLab personnel
+
+Veuillez cloner votre projet GitLab personnel sur votre machine locale.
+
+Pour cloner votre projet GitLab, vous pouvez utiliser la commande suivante :
+
+```bash
+git clone https://gitlab.com/<votre-username-GitLab>/<nom-du-projet>.git
+```
+
+S'il y a un souci avec cette commande car ça serait un autre profil GitLab qui serait dans le cache de Git, vous pouvez utiliser la commande suivante :
+
+```bash
+git clone https://<votre-username-GitLab>@gitlab.com/<votre-username-GitLab>/<nom-du-projet>.git
+```
+
+Vous pouvez utiliser les commandes suivantes pour bien configurer votre compte GitLab sur votre machine locale :
+
+```bash
+git config user.name "<votre-username-GitLab>"
+git config user.email "<votre-email>@student.vinci.be"
+```
+
+## Clonage de votre projet GitLab associé à votre groupe
+
+Cette section est pour les étudiants Vinci uniquement.
 
 **👉 CONSIGNE** : Pour les étudiants Vinci, veuillez cloner votre projet GitLab sur votre machine locale.
 
@@ -384,7 +425,11 @@ git config user.email "<votre-email>@student.vinci.be"
 
 ## Ajout du boilerplate de votre API Spring
 
-L'ajout du boilerplate est à faire par un seul membre de l'équipe d'un projet, et vous devriez ensuite en discuter en groupe pour que tout le monde soit bien au courant de ce qui a été fait. 
+Tous les tutoriels asssociés à l'intégration continue de code dans GitLab sont à réaliser :
+- dans le cadre de votre projet GitLab personnel.
+- dans le cadre de votre projet GitLab associé à votre groupe pour les étudiants Vinci.
+
+Pour les étudiants Vinci, il y a donc un ou une membre d'un groupe qui réalisera les tutoriels sur le projet GitLab associé à son groupe, et les autres membres réaliseront les tutoriels sur leur projet GitLab personnel.
 
 Vous devriez créer une nouvelle branche à partir de la branche principale pour ajouter le boilerplate de votre API Spring. Nous vous proposons de l'appeler `chore/setup-api-boilerplate`.
 
@@ -425,7 +470,7 @@ Veuillez compléter le formulaire de *merge request* en indiquant les informatio
 - **Title** : `Ajout du boilerplate de l'API Spring`
 - **Description** : `Ajout du boilerplate de l'API Spring.`
 - **Assign to** : `Assign to me`
-- **Reviewers** : Sélectionnez un membre de votre équipe pour approuver la *merge request*.
+- **Reviewers** : Si vous êtes dans le cadre d'un projet GitLab associé à un groupe, sélectionnez un membre de votre équipe pour approuver la *merge request*. Pour les étudiants Vinci, vous pouvez sélectionner un autre membre de votre groupe.  Si vous ête dans un projet GitLab personnel, vous pouvez laisser cette option vide.  Dans le cadre d'un projet GitLab personnel, si vous souhaiter jouer le jeu jusqu'au bout, vous pouvez ajouter un nouveau membre à votre projet GitLab (`Manage`, `Members`, `Invite members`). Vous pouvez ensuite mettre à jour votre MR pour ajouter ce nouveau membre en tant que `Reviewer`.
 - **Merge options** : 
   - `Delete source branch when merge request is accepted.` : Cochez cette option pour supprimer la branche `feature/setup-api-boilerplate` après la fusion. On garde malgré tout l'historique complet des commits.
 - Cliquez sur `Create merge request`.
@@ -462,6 +507,10 @@ Ce fichier définit un job nommé `api test` qui utilise l'image Docker `maven:3
 - `mvn clean test` : exécute tous les checks que nous avons configurés dans l'API Spring. Il s'agit du Checkstyle, du PMD, du CPD et des tests unitaires.
 
 Veuillez pousser votre fichier `.gitlab-ci.yml` sur votre dépôt distant.
+
+Dans le cadre d'un compte GitLab personnel, il est possible que vous deviez d'abord vérifier votre compte GitLab avant d'avoir le droit d'exécuter une pipeline. Pour cela, veuillez suivre les instructions demandées sur votre projet GitLab.
+
+Pour relancer un build, veuillez simplement pousser un nouveau commit sur votre branche `chore/setup-api-boilerplate`.
 
 Maintenant que vous avez ajouté le fichier `.gitlab-ci.yml`, vous devriez voir un pipeline se déclencher automatiquement à chaque *push* sur la branche `chore/setup-api-boilerplate`.
 
@@ -511,6 +560,8 @@ git checkout main
 git pull
 ```
 
+Attention, le git pull n'est possible que si le pipeline de la branche principale est vert. 
+
 ## Résumé du workflow actuel pour l'intégration continue
 
 1. Un développeur crée une nouvelle feature branche à partir de la branche principale.
@@ -534,7 +585,7 @@ Nous allons donc ajouter notre frontend React dans le pipeline et exécuter les 
 
 ## Ajout du boilerplate de votre frontend
 
-Pour l'ajout du boilerplate de votre frontend, vous devez avoir fait tout ce qui est demandé dans la page [Qualité du Frontend](../quality/frontend).
+Pour l'ajout du boilerplate de votre frontend à votre projet GitLab, vous devez avoir fait tout ce qui est demandé dans la page [Qualité du Frontend](../quality/frontend).
 A la fin de ces tutoriels (le dernier s'appelle `unit-tests`), vous devriez avoir un projet React avec les dépendances nécessaires pour démarrer un frontend. Néanmoins, ce frontend n'intègre pas la librairie MUI.
 
 Pour vous aider, nous avons créé un boilerplate pour le frontend qui reprend les tutoriels précédents et qui intègre la librairie MUI. Vous pouvez le trouver ici : [frontend du cae-project-boilerplate](https://github.com/e-vinci/cae-project-boilerplate/tree/main/frontend).
