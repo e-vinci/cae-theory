@@ -53,6 +53,8 @@ Il existe plusieurs architectures possibles pour concevoir une application d'ent
 
 Ces architectures offrent différentes approches pour concevoir des applications d'entreprise robustes, évolutives et maintenables. Le choix de l'architecture dépend des besoins spécifiques de l'entreprise et des contraintes techniques du projet.
 
+Dans le cadre de ce cours, nous allons implémenter une architecture en couches (3-tiers) pour notre application d'entreprise. Nous avons choisi cette architecture car c'est une architecture classique et éprouvée pour des projets de taille moyenne, offrant une bonne séparation des préoccupations et une scalabilité efficace.
+
 # <InternalPageTitle> Qu'est-ce qu'une architecture 3-tiers ? </InternalPageTitle>
 
 ## Généralités
@@ -65,7 +67,7 @@ L'architecture 3-tiers est une architecture classique et éprouvée pour les app
 ## Pourquoi l'architecture 3-tiers est un bon choix pour une application d'entreprise ?
 
 - **Séparation des préoccupations** : En divisant l'application en trois couches distinctes, chaque couche peut se concentrer sur une responsabilité spécifique, ce qui facilite la maintenance et l'évolution de l'application.
-- **Scalabilité** : Chaque couche peut être mise à l'échelle indépendamment en fonction des besoins. Par exemple, la couche de présentation peut être mise à l'échelle horizontalement pour gérer un grand nombre d'utilisateurs, tandis que la couche de données peut être optimisée pour les performances de la base de données.
+- **Scalabilité** : Chaque couche peut être mise à l'échelle indépendamment en fonction des besoins. Par exemple, la couche de présentation peut être mise à l'échelle horizontalement pour gérer un grand nombre d'utilisateurs, tandis que la couche de données peut être optimisée verticalement pour améliorer les performances de la base de données.
 - **Flexibilité** : L'architecture 3-tiers permet de remplacer ou de mettre à jour une couche sans affecter les autres couches. Par exemple, vous pouvez remplacer la couche de présentation par une nouvelle technologie sans modifier la logique métier ou l'accès aux données.
 - **Sécurité** : En isolant la logique métier et l'accès aux données de la couche de présentation, il est plus facile de mettre en œuvre des mesures de sécurité pour protéger les données sensibles et prévenir les accès non autorisés.
 
@@ -75,14 +77,17 @@ L'architecture 3-tiers est une architecture classique et éprouvée pour les app
 
 ## Quels avantages concrets de cette architecture ?
 
-- Nouveau frontend ? Pas de problème, on peut le changer sans toucher au backend. Je crée une app mobile ? Pas de problème, je peux réutiliser le backend.
-- Nouvelle base de données ? Pas de problème, on peut la changer sans toucher au frontend.
-- Nouvelle API ? Pas de problème, on peut la changer sans toucher au frontend.
+- Je souhaite créer un nouveau frontend ? Pas de problème, on peut le changer sans toucher au backend.  
+Je souhaite créer une app mobile ? Pas de problème, je peux réutiliser le backend.
+- Je souhaite une nouvelle base de données ? Pas de problème, on peut la changer sans toucher au frontend.
+- Je souhaite une nouvelle API ? Pas de problème, on peut la changer sans toucher au frontend.
 
 Scalabilité ? 
 - On peut mettre à l'échelle chaque couche indépendamment.
 - API REST : pas de session, donc facile à mettre à l'échelle horizontalement. Si on a besoin de plus de puissance, on peut ajouter des instances de l'API REST derrière un simple load balancer.
 Comme il n'y a pas de session, on ne doit pas retenir avec quelle instance un utilisateur est connecté.
+
+NB : un load balancer est un serveur qui répartit la charge entre plusieurs serveurs. Il peut être configuré pour rediriger les requêtes en fonction de différents critères (round-robin, charge, etc.). On peut par exemple utiliser Nginx comme load balancer pour faire du round-robin entre les différentes instances de l'API REST : si on a 3 instances, la première requête va sur la première instance, la deuxième sur la deuxième, la troisième sur la troisième, la quatrième sur la première, etc.
 
 # <InternalPageTitle> Comment augmenter la scalabilité de la base de données ? </InternalPageTitle>
 
@@ -106,4 +111,3 @@ Pour augmenter la capacité de la base de données, plusieurs stratégies peuven
    - Diviser les grandes tables en partitions plus petites basées sur des critères spécifiques (par exemple, la date, l'ID utilisateur). Cela permet d'améliorer les performances des requêtes en réduisant la quantité de données à scanner.
 
 Ces stratégies peuvent être combinées pour répondre aux besoins spécifiques de l'application et garantir une base de données performante et évolutive.
-
