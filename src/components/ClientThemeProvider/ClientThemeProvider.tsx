@@ -30,6 +30,8 @@ const ClientThemeProvider = ({ children }: ClientThemeProviderProps) => {
           table: {
             width: "100%",
             borderCollapse: "collapse",
+            overflowX: "auto",
+            display: "block",
           },
           th: {
             border: `1px solid ${theme.palette.divider}`,

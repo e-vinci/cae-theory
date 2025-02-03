@@ -891,6 +891,7 @@ La configuration actuelle contient quelques faiblesses :
 - Nous n'avons pas un seul réseau pour les différentes applications : l'API, du frontend, la DB et les tests e2e. Cela peut poser des problèmes de communication entre les applications et rend la configuration des URLs pour communiquer plus complexe.
 - Nous ne testons pas l'application dans son environnement de production. Il est important de tester l'application dans un environnement de production, une fois l'application déployée, pour garantir que tout fonctionne correctement pour les utilisateurs de l'application.
 - Nous ne réutilisons pas le build d'un service (api & frontend) d'un stage à l'autre. Cela peut ralentir le pipeline de CI.
+- Les builds de l'API et du frontend sont des builds de développement. Il est important de construire l'API et le frontend pour la production avant de les tester ; il faudra donc apprendre à créer des builds de production (lancer la commande `npm run build` par exemple au lieu de `npm run dev` pour le frontend) et à les exécuter. 
 
 Nous allons prochainement voir que la containérisation des applications peut nous aider à résoudre plusieurs de ces problèmes.
 
