@@ -51,7 +51,7 @@ Avant de commencer à écrire des tests e2e, il est important de définir une st
 Un scénario de test décrit une situation ou un flux d'utilisation spécifique que vous souhaitez tester. Il se concentre sur les actions de l'utilisateur et les résultats attendus de manière générale.
 
 Pour identifier les scénarios à tester, nous vous recommandons cette approche :
-- **Identification des cas d'utilisation** : Commencez par identifier les cas d'utilisation de votre application. Un cas d'utilisation est une description détaillée d'une interaction entre un utilisateur et l'application.
+- **Identification des cas d'utilisation** : Commencez par identifier les cas d'utilisation de votre application. Un cas d'utilisation est une description d'une interaction entre un utilisateur et l'application, c'est une fonctionnalité offerte par votre application.
 - **Priorisation des cas d'utilisation** : Priorisez les cas d'utilisation en fonction de leur importance pour l'application. Vous pouvez utiliser des critères comme la criticité, la fréquence d'utilisation, ou l'impact sur l'expérience utilisateur.
 - **Définition des scénarios de test** : Pour chaque cas d'utilisation priorisé, définissez un ou plusieurs scénarios de test qui couvrent les différentes étapes de l'interaction entre l'utilisateur et l'application.
 
@@ -120,7 +120,7 @@ Veuillez suivre les instructions et sélectionnez toutes les options par défaut
 
 Une fois l'installation terminée, vous devriez voir un nouveau répertoire `tests` dans votre projet `e2e` et un fichier `playwright.config.ts` à la racine du projet.
 
-**`playwright.config.ts`** : Ce fichier contient la configuration de Playwright pour les tests e2e. Vous pouvez personnaliser cette configuration en fonction de vos besoins, notamment pour définir les navigateurs à utiliser, les options de lancement, ou les paramètres de test.
+`playwright.config.ts` : Ce fichier contient la configuration de Playwright pour les tests e2e. Vous pouvez personnaliser cette configuration en fonction de vos besoins, notamment pour définir les navigateurs à utiliser, les options de lancement, ou les paramètres de test.
 
 Le répertoire `tests` contient un fichier `example.spec.ts` qui donne un exemple de test e2e avec Playwright. Vous pouvez le modifier ou le supprimer selon vos besoins.
 
@@ -185,7 +185,7 @@ Par défaut, si certains tests échouent, Playwright génère un rapport de test
 
 Il est possible de visualiser le rapport de tests en tapant la commande suivante :
 
-```bash
+```sh
 npx playwright show-report
 ```
 
@@ -204,7 +204,7 @@ Pour apprendre à écrire des tests e2e avec Playwright, veuillez lire la docume
 
 ## Introduction
 
-Nous souhaitons tester une application web avec Playwright. Pour ce tutorial, nous souhaitons tester le register d'un utilisateur sur une application web.
+Nous souhaitons tester une application web avec Playwright. Pour ce tutorial, nous souhaitons tester la création d'un compte utilisateur sur une application web.
 
 Pour ce faire, vous devez avoir démarré l'application web que vous souhaitez tester. 
 Veuillez démarrer l'api du site de la pizzeria et le frontend de la pizzeria :
@@ -259,9 +259,9 @@ Quelques explications sur ce code :
 - **`locator.click`** : Cette fonction permet de cliquer sur un élément de la page. Dans notre cas, nous cliquons sur le bouton "Créer le compte".
 - **`expect(page.getByText).toBeVisible`** : Cette fonction permet de vérifier que l'élément de la page est visible. Dans notre cas, nous vérifions que le message de bienvenue contenant le username est affiché.
 
-Nous avons écrit un test pour le cas de test 1.1. Ce test fonctionne une seule fois pour un username et un mot de passe donnés. Comment pourrions-nous écrire un test qui fonctionne à chaque fois ?
-Pour ce faire, il faudrait pouvoir supprimer l'utilisateur créé à la fin du test. Pour ce faire, nous pourrions utiliser une fonction **`afterEach`** qui serait exécutée après chaque test. Cette fonction permettrait de nettoyer l'état de l'application après chaque test. 
-Néanmoins, pour supprimer un utilisateur, il faudrait que l'API de l'application web permette de supprimer un utilisateur. Ce genre d'opération est généralement réservé aux administrateurs, elle demanderait donc une authentification. Ce qui est un peu plus complexe à mettre en place.
+Nous avons écrit un test pour le cas de test 1.1. Ce test fonctionne une seule fois pour un username et un mot de passe donnés.  
+Comment pourrions-nous écrire un test qui fonctionne à chaque fois ?
+Pour ce faire, il faudrait pouvoir supprimer l'utilisateur créé à la fin du test : nous pourrions, par exemple, utiliser une fonction **`afterEach`** qui serait exécutée après chaque test. Cette fonction permettrait de nettoyer l'état de l'application après chaque test. Néanmoins, pour supprimer un utilisateur, il faudrait que l'API de l'application web permette de supprimer un utilisateur. Ce genre d'opération est généralement réservé aux administrateurs, elle demanderait donc une authentification. Ce qui est un peu plus complexe à mettre en place.
 
 Pour simplifier, nous pourrions simplement générer un username aléatoire à chaque test. Pour ce faire, nous allons utiliser la librairie `faker` qui permet de générer des données aléatoires.
 
@@ -369,7 +369,8 @@ Voici comment cela fonctionne :
   - Pour exécuter les scripts SQL à chaque démarrage, il faut ajouter la propriété **`spring.sql.init.mode=always`** dans le fichier **`application.properties`**.
   - Les fichiers doivent être nommés **`schema.sql`** pour les scripts de création de schéma et **`data.sql`** pour les scripts d'insertion de données.
   - Cependant, il exécutera également tout autre fichier SQL trouvé dans ce répertoire.
-  - Pour laisser d'abord Spring Boot générer le schéma de la base de données avant d'exécuter **`data.sql`**, il faut ajouter la propriété **`spring.jpa.defer-datasource-initialization=true`** dans le fichier **`application.properties`**.
+  - Pour laisser d'abord Spring Boot générer le schéma de la base de données avant d'exécuter **`data.sql`**, il faut ajouter la propriété **`spring.jpa.defer-datasource-initialization=true`** dans le fichier **`application.properties`**.  
+  Si cela n'est pas fait, Spring Boot exécutera **`data.sql`** avant de générer le schéma de la base de données, ce qui peut entraîner des erreurs.
 
 Veuillez donc mettre à jour le fichier **`application.properties`** pour ajouter ces propriétés :
 
@@ -411,7 +412,7 @@ VALUES ('admin', '$2y$10$EW75BdcbCfKEA3NbE7in4OiYYacfP3OY4Q2JsVzjxd3jNxxgAEZNu')
 ```
 
 Le problème avec cette approche, c'est que l'on ne veut pas réinitialiser la DB à chaque démarrage de l'API, mais uniquement avant de commencer les tests.  
-En effet, imaginez que l'API soit utilisée en production, on ne veut pas supprimer tous les utilisateurs à chaque démarrage de l'API.
+En effet, imaginez que l'API soit utilisée en production, on ne veut pas supprimer tous les utilisateurs à chaque démarrage de l'API 😱.
 
 #### Réinitialisation de la base de données avant de commencer les tests
 
@@ -586,6 +587,8 @@ test.describe("Register", () => {
 });
 ```
 
+**`page.waitForEvent`** permet d'attendre un événement donné. Dans notre cas, nous attendons un événement de type **`console`**. Nous vérifions ensuite que le message d'erreur contient le code d'erreur **`409`**.
+
 Nous voyons qu'il y a pas mal de duplications de code dans les tests. Nous allons voir comment gérer ces duplications de code.
 
 Attention, ces deux cas créent deux utilisateurs dans la base de données. Le deuxième scénario de test crée une utilisatrice `farina` et le premier scénario de test crée un utilisateur aléatoire. Il est donc possible que le deuxième scénario de test échoue si l'utilisateur `farina` est déjà présent dans la base de données. Cela va arriver si vous exécutez les tests sur les 3 browsers en même temps. Pour éviter cela, vous pouvez exécuter les tests sur un seul browser à la fois.
@@ -602,6 +605,7 @@ Pour exécuter les tests sur un seul browser, vous pouvez modifier la propriét�
       use: { ...devices['Desktop Chrome'] },
     },
 ],
+```
 
 
 ## Utilisation de fonctions utilitaires
@@ -757,7 +761,10 @@ Il est important d'intégrer les tests e2e dans le pipeline de CI pour garantir 
 
 Dans la suite du tutoriel `e2e-tests`, nous allons voir comment intégrer les tests e2e avec Playwright dans le pipeline de CI à l'aide de GitLab CI.
 
-Votre répertoire `e2e-tests/e2e` doit se trouver à la racine du repository de votre projet GitLab. N'oubliez pas que vous devez pousser des modifications à partir d'une nouvelle branche.
+Pour ce faire, veuillez reprendre le repository de votre projet GitLab personnel (ou de votre projet GitLab associé à un groupe pour un ou une membre d'un groupe d'étudiants Vinci) et suivre les étapes suivantes.
+
+Veuillez copier / coller votre répertoire `e2e` créé au tutoriel précédent (dont le chemin est `e2e-tests/e2e`) à la racine du repository de votre projet GitLab. N'oubliez pas que vous devez pousser des modifications à partir d'une nouvelle branche.  
+A vous de jouer donc, de choisir un nom de branche.
 
 ## Configuration de GitLab CI
 
@@ -858,12 +865,14 @@ Si l'on souhaite passer des fichiers d'un stage à un autre, il est possible de 
 Dans le stage `e2e`, nous utilisons l'image **`mcr.microsoft.com/playwright:v1.50.0-jammy`** pour exécuter les tests e2e avec Playwright. Cette image contient Playwright et tous les navigateurs nécessaires pour exécuter les tests e2e. Si vous tentez de créer une image Docker avec Playwright, vous pouvez consulter la documentation officielle de Playwright : https://playwright.dev/docs/ci  
 Il est important de noter que si vous tentez de construire votre propre image de Playwright, vous devrez également installer les navigateurs nécessaires pour exécuter les tests e2e, et cela rend la configuration très complexe.  
 Dans notre cas, nous utilisons l'image officielle de Playwright qui contient pas mal de choses que nous avons besoin pour exécuter les tests e2e.  
-Néanmoins, nous devons aussi rajouter :
-- les dépendances nécessaire à l'API : Java et Maven. 
+Néanmoins, nous devons aussi rajouter des dépendances à cette image :
+- celles nécessaire à l'API : Java et Maven. 
 - Docker Compose pour pouvoir exécuter la DB dans un conteneur.
 
-Nous utilisons la variables **`DOCKER_HOST`** pour spécifier l'hôte Docker à utiliser dans le pipeline de CI. En utilisant **`docker:dind`**, nous pouvons exécuter des conteneurs Docker dans le pipeline de CI. Toutes les commandes données dans le **`before_script`** seront exécutées avant le script principal. Ces commandes s'exécutent au sein de la pipeline de CI qui elle aussi s'exécute dans un conteneur Docker. Ainsi, pour la DB, nous utilisons **`docker compose`** pour démarrer le conteneur de la DB. Nous pouvons imaginer la DB comme un conteneur externe à l'API, externe au container de la pipeline de CI contenant l'API, le frontend et l'application Playwright de e2e.
-Ainsi, pour joindre le réseau du conteneur de la DB, nous devons utiliser comme hôte **`docker`** et non pas **`localhost`**, car le réseau de la pipeline de CI est isolé du réseau du conteneur de la DB.
+Nous utilisons la variables **`DOCKER_HOST`** pour spécifier l'hôte Docker à utiliser dans le pipeline de CI. En utilisant **`docker:dind`**, nous pouvons exécuter des conteneurs Docker dans le pipeline de CI. Toutes les commandes données dans le **`before_script`** seront exécutées avant le script principal. Ces commandes s'exécutent au sein de la pipeline de CI qui elle aussi s'exécute dans un conteneur Docker. Ainsi, pour la DB, nous utilisons **`docker compose`** pour démarrer le conteneur de la DB.  
+Comment est-ce que le conteneur de la pipeline de CI peut accéder à la DB ?
+- **Réseau Docker** : Les conteneurs démarrés par docker compose partagent un réseau Docker par défaut. Le conteneur de la pipeline GitLab CI peut accéder à ce réseau.
+- **Hôte Docker** : Pour accéder au conteneur de la DB depuis le conteneur de la pipeline (contenant l'API, le frontend et l'application Playwright de e2e), utilisez l'hôte **`docker`** au lieu de **`localhost`**. Cela permet au conteneur de la pipeline de se connecter au réseau Docker partagé.
 
 Veuillez donc mettre à jour le fichier **`application-test.properties`** de l'API pour qu'il utilise **`docker`** comme hôte de la base de données :
 
@@ -888,7 +897,7 @@ La configuration actuelle contient quelques faiblesses :
 - Nous utilisons une pause de 30 secondes pour attendre que l'API et le frontend soient prêts. Cette pause n'est pas idéale et peut entraîner des problèmes si les services prennent plus de temps à démarrer.
 - Nous utilisons une image Docker pour exécuter les tests e2e. Cette image contient notamment Playwright et les navigateurs nécessaires, mais elle peut être complexe à configurer et à maintenir. 
 - Nous devons à chaque push de modification installer les dépendances nécessaires à chaque job. Cela ralentit le pipeline de CI.
-- Nous n'avons pas un seul réseau pour les différentes applications : l'API, du frontend, la DB et les tests e2e. Cela peut poser des problèmes de communication entre les applications et rend la configuration des URLs pour communiquer plus complexe.
+- Nous n'avons pas un seul réseau pour les différentes applications : la DB est sur un autre réseau que l'API, le frontend et les tests e2e. Cela peut poser des problèmes de communication entre les applications et rend la configuration des URLs pour communiquer plus complexe.
 - Nous ne testons pas l'application dans son environnement de production. Il est important de tester l'application dans un environnement de production, une fois l'application déployée, pour garantir que tout fonctionne correctement pour les utilisateurs de l'application.
 - Nous ne réutilisons pas le build d'un service (api & frontend) d'un stage à l'autre. Cela peut ralentir le pipeline de CI.
 - Les builds de l'API et du frontend sont des builds de développement. Il est important de construire l'API et le frontend pour la production avant de les tester ; il faudra donc apprendre à créer des builds de production (lancer la commande `npm run build` par exemple au lieu de `npm run dev` pour le frontend) et à les exécuter. 
@@ -1001,7 +1010,7 @@ e2e tests:
 
 Voici quelques points importants à noter dans cette configuration :
 - Nous avons ajouté une clé pour le cache de l'API et du frontend. Cette clé est basée sur les fichiers de dépendances de l'API et du frontend. Si ces fichiers changent, le cache est considéré comme obsolète et doit être mis à jour.
-- Il existe d'autres clés possibles pour le cache, comme par exemple les variables d'environnement, les fichiers de configuration, etc. ;  par exemple, GitLab CI propose d'utiliser :
+- Il existe d'autres clés possibles pour le cache, comme par exemple des variables d'environnement, des fichiers de configuration, etc. ;  par exemple, GitLab CI propose d'utiliser :
   - la variable **`$CI_COMMIT_REF_SLUG`** pour partager le cache entre des jobs de la même branche  
   - la variable **`$CI_JOB_NAME`** pour partager le cache entre toutes les branches avec un cache unique par job.
 - Pour pouvoir accéder aux dépendances de Maven, nous avons défini la variable **`MAVEN_OPTS`** pour spécifier le répertoire local du dépôt Maven. Cela permet de stocker les dépendances de Maven dans le cache et de les réutiliser entre les différents jobs.
@@ -1010,7 +1019,7 @@ Voici quelques points importants à noter dans cette configuration :
 
 Après configuration du cache, le temps d'exécution de la pipeline n'est pas significativement plus court. 
 
-Nous ne creuserons pas plus loin pour l'aspect cache de GitLab CI, car nous allons prochainement voir que la containérisation des applications peut nous aider à résoudre plusieurs problèmes de la configuration actuelle de la pipeline de CI.
+Nous ne creuserons pas plus loin pour l'aspect cache de GitLab CI, car nous allons prochainement voir que la containérisation des applications peut nous aider à résoudre plusieurs problèmes de la configuration actuelle du pipeline de CI.
 
 Si vous souhaitez en savoir plus sur le cache de GitLab CI, vous pouvez consulter la documentation officielle de GitLab : https://docs.gitlab.com/ee/ci/caching/
 
@@ -1018,7 +1027,7 @@ Si nécessaire, vous pouvez trouver le code associé aux tests e2e ici : [e2e-te
 
 ## Problème de configuration de l'API
 
-Attention, si vous exécutez l'API avec le profil de test localement, l'API est configurée pour utiliser **`docker`** comme hôte de la base de données dans le pipeline de CI. La configuration de l'API, au sein du fichier **`application-test.properties`**, est la suivante
+Attention, si vous exécutez l'API avec le profil de test localement, l'API est configurée pour utiliser **`docker`** comme hôte de la base de données dans le pipeline de CI. En effet, la configuration de l'API, au sein du fichier **`application-test.properties`**, est la suivante
 
 ```properties
 spring.datasource.url=jdbc:postgresql://docker:5432/cae_db
