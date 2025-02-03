@@ -21,7 +21,7 @@ description: "Style guide pour le frontend"
 
 Le style guide de Google est une référence pour les conventions de code et de nommage en TypeScript. Il fournit des recommandations pour écrire un code propre, lisible et cohérent. En suivant les conventions du style guide de Google, vous pouvez améliorer la qualité de votre code et faciliter la collaboration au sein de l'équipe de développement.
 
-Il est disponible en ligne à l'adresse suivante : [Google TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html).
+Il est disponible en ligne à l'adresse suivante : https://google.github.io/styleguide/tsguide.html.
 
 Le style guide de Google pour TypeScript couvre plusieurs aspects du développement, tels que la syntaxe, le formatage, les conventions de nommage, les bonnes pratiques et les recommandations pour la documentation du code. Il est conçu pour être utilisé avec l'outil de formatage de code Prettier, qui permet de formater automatiquement le code selon les conventions du style guide.
 
@@ -29,49 +29,28 @@ Il est aussi possible d'utiliser le linter ESLint avec le plugin `@typescript-es
 
 # <InternalPageTitle> Résumé du style guide  </InternalPageTitle>
 
-Voici un résumé des principaux points du style guide de Google pour TypeScript :
+Voici un minuscule résumé de quelques points du style guide de Google pour TypeScript afin de vous donner une idée des conventions de codage recommandées :
 
-1. **Nommage des variables et des fonctions** :
-   - Utiliser le camelCase pour les noms de variables et de fonctions.
-   - Utiliser PascalCase pour les noms de classes et d'interfaces.
-   - Les constantes globales doivent être en UPPER_SNAKE_CASE.
+- **Nommage des variables et des fonctions** :
+   - Utiliser le **c**amel**C**ase pour les noms de variables et de fonctions. Par exemple: `myVariable`, `myFunction`.
+   - Utiliser **P**ascal**C**ase pour les noms de composants fonctionnels et d'interfaces. Par exemple : `LoginPage`, `LoginPageProps` (interface).
+   - ...
 
-2. **Types et interfaces** :
+- **Types et interfaces** :
    - Préférer les interfaces aux types pour définir des objets et des fonctions.
    - Utiliser des types pour les unions et les intersections.
    - Toujours annoter les types des paramètres et des retours de fonctions.
 
-3. **Commentaires** :
-   - Utiliser des commentaires JSDoc pour documenter les fonctions, les classes et les interfaces.
-   - Les commentaires doivent être clairs et concis, expliquant le pourquoi et non le comment.
-
-4. **Imports et exports** :
+- **Imports et exports** :
    - Utiliser des imports et exports explicites plutôt que des imports et exports par défaut.
    - Grouper les imports par type : bibliothèques tierces, modules internes, styles, etc.
 
-5. **Formatage du code** :
-   - Utiliser des outils de formatage automatique comme Prettier pour assurer la cohérence du code.
-   - Respecter une largeur de ligne maximale de 80 caractères.
-   - Utiliser des espaces pour l'indentation, avec une taille de tabulation de 2 espaces.
+- **Formatage du code** :
+   - Utiliser des outils de formatage automatique comme `Prettier` pour assurer la cohérence du code.
+   - Respecter une largeur de ligne maximale de `80` caractères.
+   - Utiliser des espaces pour l'indentation, avec une taille de tabulation de `2` espaces.
 
-6. **Gestion des erreurs** :
-   - Toujours gérer les erreurs de manière appropriée, en utilisant des blocs try/catch ou des promesses.
-   - Ne jamais ignorer les erreurs silencieusement.
-
-7. **Utilisation des modules** :
-   - Préférer les modules ES6 aux modules CommonJS.
-   - Utiliser des chemins relatifs pour les imports internes et des chemins absolus pour les bibliothèques tierces.
-
-8. **Tests** :
-   - Écrire des tests unitaires pour toutes les fonctions et classes.
-   - Utiliser des frameworks de test comme Vitest ou Jest.
-   - Les tests doivent être clairs, concis et couvrir tous les cas d'utilisation possibles.
-
-9. **Utilisation des fonctionnalités TypeScript** :
-   - Utiliser les fonctionnalités avancées de TypeScript comme les génériques, les types conditionnels et les types utilitaires pour écrire du code plus robuste et réutilisable.
-   - Toujours activer les options strictes dans le fichier tsconfig.json pour bénéficier des vérifications de type les plus strictes.
-
-
+Plutôt que de devoir apprendre les règles, le plus simple est de mettre en place un linter et un formatter pour vérifier et formater automatiquement le code selon les conventions du style guide de Google.
 
 # <InternalPageTitle> Mise en place du linter et du formatter   </InternalPageTitle>
 
@@ -112,6 +91,12 @@ module.exports = {
 };
 ```
 
+**`"google"`** est un preset de règles d'ESLint qui suit les conventions de codage du style guide de Google.
+
+**`"plugin:prettier/recommended"`** est un plugin ESLint qui permet d'utiliser Prettier pour formater le code.
+
+**`"prettier/prettier": "error"`** est une règle qui indique à ESLint d'afficher une erreur si le code n'est pas formaté correctement. 
+
 Veuillez ensuite créer le fichier de configuration du formatter `.prettierrc` avec le contenu suivant :
 
 ```json
@@ -121,6 +106,12 @@ Veuillez ensuite créer le fichier de configuration du formatter `.prettierrc` a
   "printWidth": 80
 }
 ```
+
+**`"singleQuote": true`** permet d'utiliser des quotes simples pour les chaînes de caractères. Quand vous utiliserez Prettier, il remplacera les quotes doubles par des quotes simples.
+
+**`"trailingComma": "all"`** permet d'ajouter une virgule à la fin des objets et des tableaux, même si c'est le dernier élément. 
+
+**`"printWidth": 80`** permet de limiter la largeur de ligne à 80 caractères.
 
 Veuillez ensuite mettre à `package.json` pour ajouter le script "format" (et vous assurer que le script "lint" est bien présent) :
 

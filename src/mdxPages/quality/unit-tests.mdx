@@ -75,9 +75,11 @@ export default defineConfig({
 });
 ```
 
+Veuillez créer un fichier vide nommé `setupTests.ts` dans le répertoire `/src` de votre projet. Ce fichier pourrait être utilisé pour configurer l'environnement de test. Par exemple, vous pourriez y importer des dépendances nécessaires pour les tests unitaires afin de ne plus les importer dans chaque fichier de test.
+
 ## Exécution des tests
 
-Pour écrire des tests unitaires avec `Vitest`, vous pouvez créer un fichier `*.test.tsx` à côté de votre composant ou fonction à tester.
+Pour écrire des tests unitaires avec `Vitest`, vous pouvez créer un fichier **`NomComposant.test.tsx`** à côté de votre composant ou fonction à tester.
 
 Par défaut, `Vitest` recherche les fichiers contenant **`.test`** ou **`.spec`** dans le nom de fichier pour exécuter les tests.
 
@@ -110,12 +112,12 @@ Pour exécuter les tests directement au sein de VS Code, vous pouvez installer l
 
 Il existe trois principales approches pour enregistrer les spécifications de test :
 - **Approche intégrée** : Les spécifications de test sont enregistrées dans le même fichier que le composant ou la fonction à tester. Cela permet de garder les tests à proximité du code source et de les maintenir ensemble.
-- **Approche séparée dans répertoire du composant** : Les spécifications de test sont enregistrées dans des fichiers séparés avec l'extension `.test.tsx` ou `.spec.tsx`. Cela permet de garder les tests séparés du code source, mais proche. 
+- **Approche séparée dans le répertoire du composant** : Les spécifications de test sont enregistrées dans des fichiers séparés avec l'extension `.test.tsx` ou `.spec.tsx`. Cela permet de garder les tests séparés du code source, mais proche. 
 - **Approche séparée dans un répertoire dédié** : Les spécifications de test sont enregistrées dans un répertoire dédié, par exemple `/src/unit-tests`. Cela permet de garder les tests complètement séparés du code source.
 
 Chaque approche a ses avantages et ses inconvénients. Il est important de choisir celle qui convient le mieux à votre projet et à votre équipe.  Il est recommandé de garder les tests à proximité du code source pour faciliter la maintenance et la compréhension du code. 
 
-Pour le Projet CAE, nous vous demandons de suivre **l'approche séparée dans répertoire du composant**.
+Pour le Projet CAE, nous vous demandons de suivre **l'approche séparée dans le répertoire du composant**.
 
 
 Plus d'information sur `Vitest` : [Vitest](https://vitest.dev/)
@@ -151,14 +153,15 @@ describe('LoginPage', () => {
 });
 ```
 
+Voici une explication du code du test unitaire :
 
 **`describe`** : 
-- permet de regrouper des tests liés entre eux. Ici, elle regroupe les tests pour le composant `LoginPage`.
-- 'LoginPage' est le nom du groupe de tests, ce qui aide à organiser et à identifier les tests dans les rapports de test.
+- permet de regrouper des tests liés entre eux. Ici, cela regroupe les tests pour le composant `LoginPage`.
+- `'LoginPage'` est le nom du groupe de tests, ce qui aide à organiser et à identifier les tests dans les rapports de test.
 
 **`test`** (ou **`it`**) : 
 - est une fonction qui définit un cas de test individuel.
-- 'renders a form with username and password inputs' : est une description du cas de test. Elle explique ce que le test vérifie.
+- `'renders a form with username and password inputs'` : est une description du cas de test. Elle explique ce que le test vérifie.
 - La fonction fléchée **`() => { ... }`** contient le code du test.
 - Est un synonyme de **`it`**.
 
@@ -169,13 +172,13 @@ describe('LoginPage', () => {
 **`<MemoryRouter>`** : 
 - est un composant de `react-router-dom` qui simule un environnement de routage en mémoire.
 - Il est utilisé ici pour fournir le contexte de routage nécessaire au composant LoginPage.
-**`<LoginPage />`** est le composant à tester.
+`<LoginPage />` est le composant à tester.
 
 **`screen`** :
 - est un objet qui représente le DOM rendu.
 
 **`getByLabelText`** :
-- est une méthode de screen qui recherche un élément dans le DOM par son texte de label associé. Ici, il recherche un élément avec le label 'Username'.
+- est une méthode de `screen` qui recherche un élément dans le DOM par son texte de label associé. Ici, il recherche un élément avec le label `'Username'`.
 
 **`expect`** :
 - est une fonction qui crée une assertion.
@@ -190,7 +193,7 @@ Pour exécuter ce test unitaire, vous pouvez utiliser la commande suivante :
 npm run test
 ```
 
-Il est bien sûr possible de le faire dans VS Code avec l'extension `Vitest`, en cliquant sur le bouton "Run Test" à côté de la description du test.
+Il est bien sûr possible de le faire dans VS Code avec l'extension `Vitest`, en cliquant sur le bouton `Run Test` à côté de la description du test.
 
 
 # <InternalPageTitle> Comment mocker un contexte ? </InternalPageTitle>
@@ -421,7 +424,7 @@ vi.mock('react-router-dom', async () => {
 - Elle est utilisée ici pour mocker le module `react-router-dom` et remplacer la fonction `useNavigate` par un mock.
 - **`vi.importActual`** est une fonction qui permet d'importer le module réel pour le mocker. 
 - On récupère ici le module `react-router-dom` et on remplace uniquement la fonction `useNavigate` par un mock. On veut par exemple, garder la vrai fonction `MemoryRouter` pour ne pas la mocker.
-- Si l'on avait souhaité mocker l'ensemble du module `react-router-dom`, on aurait pu simplement écrire **`vi.mock('react-router-dom', vi.fn())`**. Mais nous aurions eu le problème de ne pas pouvoir utiliser `MemoryRouter`...  ?   
+- Si l'on avait souhaité mocker l'ensemble du module `react-router-dom`, on aurait pu simplement écrire **`vi.mock('react-router-dom', vi.fn())`**. Mais nous aurions eu le problème de ne pas pouvoir utiliser `MemoryRouter`...   
 
 Pour info, dans le composant `LoginPage`, voici comment nous utilisons `useNavigate` :
 ```tsx
