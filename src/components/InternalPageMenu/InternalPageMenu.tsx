@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -8,10 +8,38 @@ interface InternalPageMenuProps {
 }
 
 const InternalPageMenu = ({ children }: InternalPageMenuProps) => {
-  const [menuIsHidden, setMenuIsHidden] = useState(false);
+  const [menuIsHidden, setMenuIsHidden] = useState(true);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      setIsScrolled(scrollPosition > 30); // Change position after scrolling 100px
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
-    <div className="sticky top-4 w-full rounded-lg border bg-card text-card-foreground shadow-sm ">
+    <motion.div 
+      className="fixed w-full max-w-xl rounded-lg border bg-card text-card-foreground shadow-sm z-50"
+      initial={{
+        top: "6rem",
+        left: "50%",
+        x: "-50%"
+      }}
+      animate={{
+        top: isScrolled ? "1rem" : "6rem",
+        left: isScrolled ? "auto" : "50%",
+        right: isScrolled ? "1rem" : "auto",
+        x: isScrolled ? 0 : "-50%"
+      }}
+      transition={{ 
+        duration: 0.2,
+        ease: "easeInOut"
+      }}
+    >
       <motion.div 
         className="flex items-center justify-between px-4 pb-2 cursor-pointer select-none hover:bg-accent transition-all"
         onClick={() => setMenuIsHidden(!menuIsHidden)}
@@ -35,7 +63,7 @@ const InternalPageMenu = ({ children }: InternalPageMenuProps) => {
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="px-4 pt-1">
+            <div className="px-4 py-1">
               <nav className="space-y-1">
                 {children}
               </nav>
@@ -43,7 +71,7 @@ const InternalPageMenu = ({ children }: InternalPageMenuProps) => {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 };
 

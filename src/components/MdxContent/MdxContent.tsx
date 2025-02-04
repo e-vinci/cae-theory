@@ -50,7 +50,7 @@ const MdxContent = ({ code }: MdxContentProps) => {
 
   return (
     <PageTransition>
-      <article className="prose prose-slate dark:prose-invert max-w-none">
+      <article className="prose prose-slate dark:prose-invert">
         <Component components={components} />
       </article>
     </PageTransition>
