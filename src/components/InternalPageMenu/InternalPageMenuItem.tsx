@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { snakeCase } from "lodash";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
-import MUILink from "@mui/material/Link";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface InternalPageMenuItemProps {
   children: string;
@@ -11,18 +10,32 @@ interface InternalPageMenuItemProps {
 
 const InternalPageMenuItem = ({ children, to }: InternalPageMenuItemProps) => {
   const itemTextInSnakeCase = snakeCase(children);
+  const href = to || `#${itemTextInSnakeCase}`;
 
   return (
-    <ListItem component="div" sx={{ paddingTop: 0, paddingBottom: 0 }}>
-      <MUILink
-        href={to ? to : "#" + itemTextInSnakeCase}
-        underline="hover"
-        color="inherit"
-        component={Link}
+    <motion.div
+      transition={{ duration: 0.2 }}
+    >
+      <Link 
+        href={href}
+        className={cn(
+          "group flex items-center rounded-md px-3 py-2 text-sm",
+          "text-muted-foreground hover:text-foreground",
+          "hover:bg-accent",
+          "transition-all duration-200"
+        )}
       >
-        <ListItemText primary={children} />
-      </MUILink>
-    </ListItem>
+        <span className="relative">
+          {children}
+          <motion.span
+            className="absolute -bottom-0.5 left-0 h-[1px] bg-foreground"
+            initial={{ width: 0 }}
+            whileHover={{ width: "100%" }}
+            transition={{ duration: 0.2 }}
+          />
+        </span>
+      </Link>
+    </motion.div>
   );
 };
 

@@ -1,41 +1,49 @@
 "use client";
 import React, { useState } from "react";
-import HighlightOffIcon from "@mui/icons-material/HighlightOff";
-import MenuOpenIcon from "@mui/icons-material/MenuOpen";
-import { List } from "@mui/material";
+import { ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface InternalPageMenuProps {
   children: React.ReactNode;
-  id: number;
 }
-
-const style = {
-  width: "100%",
-  borderRadius: 2,
-  border: "1px solid",
-  borderColor: "divider",
-  padding: "0.5rem",
-};
 
 const InternalPageMenu = ({ children }: InternalPageMenuProps) => {
   const [menuIsHidden, setMenuIsHidden] = useState(false);
 
-  const onCloseOpenBtnClick = () => {
-    setMenuIsHidden(!menuIsHidden);
-  };
-
-  if (menuIsHidden)
-    return (
-      <List sx={style}>
-        <MenuOpenIcon onClick={onCloseOpenBtnClick} />
-      </List>
-    );
-
   return (
-    <List sx={style}>
-      <HighlightOffIcon onClick={onCloseOpenBtnClick} />
-      {children}
-    </List>
+    <div className="sticky top-4 w-full rounded-lg border bg-card text-card-foreground shadow-sm ">
+      <motion.div 
+        className="flex items-center justify-between px-4 pb-2 cursor-pointer select-none hover:bg-accent transition-all"
+        onClick={() => setMenuIsHidden(!menuIsHidden)}
+        transition={{ duration: 0.2 }}
+      >
+        <h4 className="text-sm font-medium">Table of Contents</h4>
+        <motion.div
+          animate={{ rotate: menuIsHidden ? 0 : 180 }}
+          transition={{ duration: 0.2 }}
+        >
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        </motion.div>
+      </motion.div>
+
+      <AnimatePresence initial={false}>
+        {!menuIsHidden && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pt-1">
+              <nav className="space-y-1">
+                {children}
+              </nav>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 

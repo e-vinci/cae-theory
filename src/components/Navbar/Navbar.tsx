@@ -1,102 +1,140 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
+import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import { SiteMetaData } from "@/types";
-
-import { useTheme } from "@mui/material/styles";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
+import { cn } from "@/lib/utils";
 
 interface NavbarProps {
   siteMetaData: SiteMetaData;
 }
 
+const ListItem = React.forwardRef<
+  React.ElementRef<"a">,
+  React.ComponentPropsWithoutRef<"a">
+>(({ className, title, children, ...props }, ref) => {
+  return (
+    <li>
+      <NavigationMenuLink asChild>
+        <a
+          ref={ref}
+          className={cn(
+            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors focus:bg-accent focus:text-accent-foreground hover:bg-accent hover:text-accent-foreground",
+            className
+          )}
+          {...props}
+        >
+          <div className="text-sm font-medium leading-none">{title}</div>
+          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+            {children}
+          </p>
+        </a>
+      </NavigationMenuLink>
+    </li>
+  );
+});
+ListItem.displayName = "ListItem";
+
+const isPathActive = (currentPath: string, linkPath: string): boolean => {
+  if (linkPath === "/") {
+    return currentPath === "/";
+  }
+  return currentPath.startsWith(linkPath);
+};
+
+const NavLink = ({ href, children, isActive }: { href: string; children: React.ReactNode; isActive: boolean }) => {
+  return (
+    <Link href={href} legacyBehavior passHref>
+      <NavigationMenuLink 
+        className={cn(
+          navigationMenuTriggerStyle(), 
+          "hover:bg-accent", 
+          "hover:text-inherit",
+          "relative"
+        )}
+      >
+        {children}
+        {isActive && (
+          <motion.div
+            layoutId="underline"
+            className="absolute bottom-0 left-0 h-[2px] w-full bg-blue-500"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2 }}
+          />
+        )}
+      </NavigationMenuLink>
+    </Link>
+  );
+};
+
 const Navbar = ({ siteMetaData }: NavbarProps) => {
-  const theme = useTheme();
-  const [anchorEls, setAnchorEls] = useState<{
-    [key: string]: HTMLElement | null;
-  }>({});
-
-  const handleMenu = (
-    event: React.MouseEvent<HTMLElement>,
-    linkName: string
-  ) => {
-    setAnchorEls((prev) => ({ ...prev, [linkName]: event.currentTarget }));
-  };
-
-  const handleClose = (linkName: string) => {
-    setAnchorEls((prev) => ({ ...prev, [linkName]: null }));
-  };
+  const pathname = usePathname();
 
   return (
-    <AppBar
-      position="static"
-      sx={{ color: theme.palette.primary.contrastText }}
-    >
-      <Toolbar>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          {siteMetaData.title}
-        </Typography>
-        {siteMetaData.menuLinks.map((link) => (
-          <div key={link.name}>
-            {link.subMenu ? (
-              <>
-                {link.link ? (
-                  <Link href={link.link} passHref>
-                    <Button
-                      color="inherit"
-                      onClick={(event) => handleMenu(event, link.name)}
-                      sx={{ color: theme.palette.primary.contrastText }}
-                    >
-                      {link.name}
-                    </Button>
-                  </Link>
+    <div className="border-b">
+      <div className="container flex h-16 items-center justify-center">
+        <NavigationMenu className="max-w-full">
+          <NavigationMenuList className="gap-2">
+            <NavigationMenuItem>
+              <NavLink href="/" isActive={isPathActive(pathname, "/")}>
+                <span className="font-bold text-blue-500">{siteMetaData.title}</span>
+              </NavLink>
+            </NavigationMenuItem>
+
+            {siteMetaData.menuLinks.map((link) => (
+              <NavigationMenuItem key={link.name}>
+                {link.subMenu ? (
+                  <>
+                    <div className="relative">
+                      <NavigationMenuTrigger className="hover:bg-transparent hover:text-inherit data-[state=open]:bg-transparent">
+                        {link.name}
+                      </NavigationMenuTrigger>
+                      {isPathActive(pathname, link.link) && (
+                        <motion.div
+                          layoutId="underline"
+                          className="absolute bottom-0 left-0 h-[2px] w-full bg-blue-500"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.2 }}
+                        />
+                      )}
+                    </div>
+                    <NavigationMenuContent>
+                      <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                        {link.subMenu.map((subLink) => (
+                          <ListItem
+                            key={subLink.name}
+                            title={subLink.name}
+                            href={subLink.link}
+                          >
+                            Découvrez plus d&apos;informations sur {subLink.name.toLowerCase()}
+                          </ListItem>
+                        ))}
+                      </ul>
+                    </NavigationMenuContent>
+                  </>
                 ) : (
-                  <Button
-                    color="inherit"
-                    onClick={(event) => handleMenu(event, link.name)}
-                    sx={{ color: theme.palette.primary.contrastText }}
-                  >
+                  <NavLink href={link.link} isActive={isPathActive(pathname, link.link)}>
                     {link.name}
-                  </Button>
+                  </NavLink>
                 )}
-                <Menu
-                  key={link.link}
-                  anchorEl={anchorEls[link.name]}
-                  open={Boolean(anchorEls[link.name])}
-                  onClose={() => handleClose(link.name)}
-                  color="inherit"
-                >
-                  {link.subMenu.map((subLink) => (
-                    <MenuItem
-                      key={subLink.name}
-                      onClick={() => handleClose(link.name)}
-                    >
-                      <Link href={subLink.link} passHref>
-                        <Button color="inherit">{subLink.name}</Button>
-                      </Link>
-                    </MenuItem>
-                  ))}
-                </Menu>
-              </>
-            ) : (
-              <Link href={link.link} passHref>
-                <Button
-                  color="inherit"
-                  sx={{ color: theme.palette.primary.contrastText }}
-                >
-                  {link.name}
-                </Button>
-              </Link>
-            )}
-          </div>
-        ))}
-      </Toolbar>
-    </AppBar>
+              </NavigationMenuItem>
+            ))}
+          </NavigationMenuList>
+        </NavigationMenu>
+      </div>
+    </div>
   );
 };
 
