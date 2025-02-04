@@ -23,7 +23,7 @@ const InternalPageMenu = ({ children }: InternalPageMenuProps) => {
 
   return (
     <motion.div 
-      className="fixed w-full max-w-xl rounded-lg border bg-card text-card-foreground shadow-sm z-50"
+      className="fixed w-full max-w-xl rounded-lg border bg-card text-card-foreground shadow-sm"
       initial={{
         top: "6rem",
         left: "50%",

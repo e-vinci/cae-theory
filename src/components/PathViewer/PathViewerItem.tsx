@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { snakeCase } from "lodash";
+import { Button } from "../ui/button";
 
 interface PathViewerItemProps {
   children: React.ReactNode;
@@ -19,12 +20,14 @@ const PathViewerItem = ({ children, to, selected }: PathViewerItemProps) => {
             {children}
           </span>
         ) : (
+          <Button variant="ghost" size="sm" className="text-sm" asChild>
           <Link 
             href={path}
-            className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+            className="font-medium text-sm"
           >
             {children}
           </Link>
+          </Button>
         )}
       </li>
       {!selected && (
