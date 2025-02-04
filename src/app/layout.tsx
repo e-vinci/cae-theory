@@ -5,6 +5,8 @@ import Header from "@/components/Header/Header";
 import ScrollToTop from "@/components/ScrollToTop/ScrollToTop";
 import "./global.css";
 import { cn } from "@/lib/utils";
+import { TocProvider } from "@/contexts/toc";
+import MainContent from "@/components/MainContent/MainContent";
 
 export const metadata = {
   title: "CAE Course",
@@ -63,15 +65,15 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <body className={cn(
         "min-h-screen bg-background font-sans antialiased",
       )}>
-        <div className="relative flex min-h-screen flex-col">
-          <Header siteMetaData={siteMetaData} />
-          <main className="flex-1">
-            <div className="container max-w-7xl mx-auto p-4 pt-20">
+        <TocProvider>
+          <div className="relative flex min-h-screen flex-col">
+            <Header siteMetaData={siteMetaData} />
+            <MainContent>
               {children}
-            </div>
-          </main>
-          <ScrollToTop />
-        </div>
+            </MainContent>
+            <ScrollToTop />
+          </div>
+        </TocProvider>
       </body>
     </html>
   );

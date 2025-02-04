@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useToc } from "@/contexts/toc";
 
 interface InternalPageMenuProps {
   children: React.ReactNode;
@@ -10,6 +11,12 @@ interface InternalPageMenuProps {
 const InternalPageMenu = ({ children }: InternalPageMenuProps) => {
   const [menuIsHidden, setMenuIsHidden] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
+  const { setHasToc } = useToc();
+
+  useEffect(() => {
+    setHasToc(true);
+    return () => setHasToc(false);
+  }, [setHasToc]);
 
   useEffect(() => {
     const handleScroll = () => {
