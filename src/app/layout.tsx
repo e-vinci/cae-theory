@@ -76,7 +76,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
           <body>
             <Header siteMetaData={siteMetaData} />
 
-            <Container style={{ padding: "1rem", wordWrap: "break-word" }}>
+            <Container sx={{ padding: "1rem", wordWrap: "break-word" }}>
               {children}
             </Container>
             <ScrollToTop />
