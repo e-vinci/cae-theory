@@ -1,0 +1,31 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_TOP_DOWN()
+
+Person(dev, "Développeur\nDéveloppeuse")
+
+Container_Boundary(docker_host, "Docker Host") {
+    Container(docker_compose, "Docker Compose", "Configuration", "Configure et gère les conteneurs")
+    Container(frontend, "Frontend", "React", "Interface utilisateur")
+    Container(api, "API", "Spring", "Logique métier")
+    Container(db, "Database", "PostgreSQL", "Stockage des données")
+    Container(e2e, "E2E Tests", "Playwright", "Tests end-to-end")
+}
+
+Rel(dev, frontend, "Développe le frontend")
+Rel(dev, api, "Développe l'API")
+Rel(dev, db, "Gère la base de données")
+Rel(dev, e2e, "Écrit des tests end-to-end")
+
+Rel(docker_compose, frontend, "Configure et gère")
+Rel(docker_compose, api, "Configure et gère")
+Rel(docker_compose, db, "Configure et gère")
+Rel(docker_compose, e2e, "Configure et gère")
+
+Rel(frontend, api, "Appels API")
+Rel(api, db, "Requêtes SQL")
+Rel(e2e, frontend, "Tests de l'interface utilisateur")
+Rel(e2e, api, "Tests de l'API")
+
+@enduml

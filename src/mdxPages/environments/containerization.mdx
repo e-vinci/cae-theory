@@ -1,0 +1,86 @@
+---
+title: Conteneurisation
+description: Conteneurisation
+date: 05/02/2025
+---
+
+<InternalPageMenu>
+  <PathViewer>
+    <PathViewerItem to="/"> CAE </PathViewerItem>
+    <PathViewerItem to="/environments"> Environnements </PathViewerItem>
+    <PathViewerItem selected> Conteneurisations </PathViewerItem>
+  </PathViewer>
+  <InternalPageMenuItem> Qu'est ce que la conteneurisation ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment créer un container Docker ? </InternalPageMenuItem>
+  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
+  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
+  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
+  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
+  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
+    <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
+    <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
+  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
+  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
+  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
+</InternalPageMenu>
+
+# <InternalPageTitle> Qu'est ce que la conteneurisation ? </InternalPageTitle>
+
+## Définition
+
+La conteneurisation encapsule une application et ses dépendances dans un conteneur léger et portable. Les conteneurs partagent le noyau du système d'exploitation hôte, mais sont isolés les uns des autres.
+
+Un conteneur est une unité logicielle qui regroupe le code et toutes ses dépendances, de sorte que l'application puisse s'exécuter rapidement et de manière fiable d'un environnement informatique à un autre.
+
+Attention à ne pas confondre la conteneurisation avec la virtualisation. La virtualisation consiste à exécuter plusieurs systèmes d'exploitation sur un seul serveur physique, tandis que la conteneurisation consiste à exécuter plusieurs conteneurs sur un seul système d'exploitation.
+
+## Pourquoi la conteneurisation ?
+
+Dans la partie sur la gestion des environnements, nous avons vu que les environnements de développement, de test et de production peuvent être différents.
+
+La conteneurisation permet de s'assurer que l'application fonctionne de la même manière dans tous les environnements, en encapsulant l'application et toutes ses dépendances dans un conteneur.
+
+## Comment fonctionne la conteneurisation ?
+
+La conteneurisation repose sur une technologie appelée **Docker**. Docker est un outil qui permet de créer, de déployer et de gérer des conteneurs.
+
+Un **conteneur** Docker (**container** en anglais) est une instance d'une image Docker. 
+
+Une **image** Docker est un modèle de conteneur qui contient le code de l'application, ses dépendances et les paramètres d'exécution.
+
+Voici à quoi nous souhaitons que ressemble notre environnement de **test** :
+
+<PlantUML src="/diagrams/conteneurisation.puml" alt="test-environment"  />
+
+Voici quelques explications sur les différents éléments de l'environnement de test :
+
+- **Docker Host** : Représente le serveur hôte où Docker est installé. Nous pourrions décider d'utiliser un serveur local ou un serveur au sein de GitLab CI/CD.
+- **Frontend** : Conteneur pour l'application frontend (par exemple, React).
+- **API** : Conteneur pour l'API (par exemple, Spring Boot).
+- **Database** (DB) : Conteneur pour la base de données (par exemple, PostgreSQL).
+- **E2E Tests** : Conteneur pour les tests end-to-end (par exemple, Playwright).
+- **Développeur** : Personne qui interagit avec les différents conteneurs pour développer et tester l'application.
+
+Afin de faciliter la vie pour les développeurs, nous allons automatiser la création des conteneurs à l'aide de **Docker Compose**.
+
+## Docker Compose
+
+**Docker Compose** est un outil qui permet de définir et de gérer des applications multi-conteneurs. 
+
+Il permet de gérer un réseau de conteneurs Docker, de spécifier les dépendances entre les conteneurs, de configurer les paramètres d'exécution, etc.
+
+Voici un schéma de l'architecture de notre application multi-conteneurs :
+
+<PlantUML src="/diagrams/docker-compose.puml" alt="docker-compose"  />
+
+Pour les développeurs, Docker Compose permet de démarrer et d'arrêter l'application en une seule commande, de configurer les paramètres d'exécution, de gérer les dépendances entre les conteneurs, etc.
+
+# <InternalPageTitle> Comment créer un container Docker ? </InternalPageTitle>
+
+Pour créer un **conteneur** Docker, vous devez d'abord créer une **image** Docker. Vous pouvez créer une **image** Docker à partir d'un fichier de configuration appelé **`Dockerfile`**.
+
+Un **`Dockerfile`** est un fichier texte qui contient les instructions pour créer une image Docker. Il spécifie les dépendances de l'application, les commandes d'installation, les paramètres d'exécution, etc.
+
+Une fois que vous avez créé une **image** Docker, vous pouvez créer un **conteneur** Docker à partir de cette **image** en utilisant la commande **`docker run`**.
+
+
