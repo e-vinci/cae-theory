@@ -28,7 +28,7 @@ const siteMetaData: SiteMetaData = {
     },
     {
       name: `Qualité`,
-      link: `/quality`,
+      link: ``,
       subMenu: [
         { name: "Qualité générale", link: "/quality/general" },
         { name: "Qualité du frontend", link: "/quality/frontend" },
