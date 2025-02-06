@@ -75,7 +75,21 @@ Voici un schéma de l'architecture de notre application multi-conteneurs :
 
 Pour les développeurs, Docker Compose permet de démarrer et d'arrêter l'application en une seule commande, de configurer les paramètres d'exécution, de gérer les dépendances entre les conteneurs, etc.
 
-# <InternalPageTitle> Comment créer un container Docker ? </InternalPageTitle>
+
+
+
+
+# <InternalPageTitle> Comment créer un container Docker et l'exécuter ? </InternalPageTitle>
+
+## Outils nécessaires
+
+Vous aurez besoin d'installer **Docker Desktop** pour créer et gérer des conteneurs Docker sur votre ordinateur.
+
+Suivez bien les instructions d'installation pour votre système d'exploitation : https://docs.docker.com/desktop/
+
+**Docker Desktop** intègre notamment **Docker Compose** afin de pouvoir gérer des applications multi-conteneurs.
+
+## Introduction 
 
 Pour créer un **conteneur** Docker, vous devez d'abord créer une **image** Docker. Vous pouvez créer une **image** Docker à partir d'un fichier de configuration appelé **`Dockerfile`**.
 
@@ -83,4 +97,573 @@ Un **`Dockerfile`** est un fichier texte qui contient les instructions pour cré
 
 Une fois que vous avez créé une **image** Docker, vous pouvez créer un **conteneur** Docker à partir de cette **image** en utilisant la commande **`docker run`**.
 
+Pour ce tutoriel, nous allons directement travailler directement dans votre projet GitLab. Pensez donc à créer une nouvelle branche pour accueillir le code de ce tutoriel.
 
+Si nécessaire, vous pouvez trouver le code de démarrage de ce tutoriel ici : [e2e-tests](https://github.com/e-vinci/cae-theory-demos/tree/main/e2e-tests).
+
+## Créer une image pour l'environnement de développement
+
+Nous allons commencer par créer une **image** Docker pour un environnement de développement.
+
+Nous allons créer une image pour le frontend de notre projet.
+
+Créez un fichier **`Dockerfile`** à la racine de votre projet `/frontend` avec le contenu suivant :
+
+```Dockerfile
+FROM node:20
+
+WORKDIR /usr/src/app
+
+COPY . .
+
+RUN npm install
+
+CMD ["npm", "run", "dev", "--", "--host"]
+```
+
+Voici les explications des différentes instructions du **`Dockerfile`** :
+- **`FROM node:20`** : 
+  - Utilise l'image de base **`node:20`** qui contient Node.js. 
+  - Cette image est téléchargée depuis le Docker Hub. 
+  - La version **`20`** de Node.js est utilisée. Notons que l'image `node` offre aussi **`npm`**.
+  - Vous pouvez trouver d'autres images de base sur le Docker Hub : https://hub.docker.com/
+- **`WORKDIR /usr/src/app`** : 
+  - Définit le répertoire de travail pour les commandes suivantes.
+  - Crée le répertoire **`/usr/src/app`** dans l'image.
+  - Pourquoi **`/usr/src/app`** ? C'est une convention pour les applications Node.js.
+- **`COPY . .`** :
+  - Copie tous les fichiers du répertoire courant (votre projet) dans le répertoire de travail de l'image.
+- **`RUN npm install`** :
+  - **`RUN`** exécute une commande dans l'image.
+  - Installe les dépendances du projet avec **`npm`**.
+- **`CMD ["npm", "run", "dev", "--", "--host"]`** :
+  - **`CMD`** définit la commande par défaut à exécuter lorsque le conteneur est démarré.
+  - Exécute la commande **`npm run dev`** pour démarrer l'application en mode développement.
+  - L'option **`--host`** permet de spécifier l'hôte sur lequel l'application doit écouter. Comme aucune adresse IP n'est spécifiée, l'application écoute sur toutes les interfaces réseau.
+
+Pour créer l'image Docker, nous pourrions exécuter la commande suivante à la racine de notre projet `/frontend` :
+
+```bash
+docker build -t frontend .
+```
+
+Cependant, nous allons automatiser la création des conteneurs à l'aide de **Docker Compose**.
+
+## Créer un fichier `docker-compose.yml`
+
+Créez un fichier **`docker-compose.yml`** à la racine de votre projet avec le contenu suivant :
+
+```yaml
+services:
+  frontend:
+    image: frontend-dev
+    build: ./frontend
+    ports:
+      - 5173:5173
+    volumes:
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules
+```
+
+Voici les explications des différentes instructions du **`docker-compose.yml`** :
+- **`services`** : 
+  - Définit les services (conteneurs) de l'application.
+- **`frontend`** : 
+  - Nom du service.
+- **`image: frontend-dev`** : 
+  - Nom de l'image à utiliser pour le service.
+  - Si l'image n'existe pas, elle sera créée à partir du **`Dockerfile`**.
+- **`build: ./frontend`** : 
+  - Chemin vers le répertoire contenant le **`Dockerfile`**.
+- **`ports: - 5173:5173`** :
+  - Redirige le port **`5173`** du conteneur vers le port **`5173`** de l'hôte.
+  - **L'hôte** est votre ordinateur si l'on considère l'environnement de développement.
+  - Cela permet d'accéder à l'application depuis l'hôte.
+- **`volumes: - ./frontend:/usr/src/app`** :
+  - Monte le répertoire du projet sur l'hôte dans le répertoire de travail du conteneur.
+  - Cela permet de synchroniser les fichiers entre l'hôte et le conteneur.
+  - Si à partir de son éditeur de code, le développeur modifie un fichier, les modifications seront automatiquement prises en compte dans le conteneur. Docker Compose se charge de synchroniser les fichiers et de redémarrer le conteneur si nécessaire.
+- **`volumes: - /usr/src/app/node_modules`** :
+  - Montage d'un volume pour le répertoire **`node_modules`**.
+  - Cela permet de conserver les dépendances installées par **`npm`** entre les redémarrages du conteneur. 
+  - les volumes sont stockés sur l'hôte Docker (votre machine) et non à l'intérieur du conteneur. Ils permettent de persister des données même si le conteneur est supprimé ou recréé.
+  - **Utilisation comme cache** : Lorsqu'un volume est utilisé pour stocker des dépendances (par exemple, des modules Node.js), il permet de réutiliser ces dépendances entre les exécutions de conteneurs, ce qui peut accélérer les temps de construction et de démarrage.
+
+Veuillez démarrer :
+- Docker Desktop ; il suffit normalement de cliquer sur l'icône de Docker Desktop pour le démarrer.
+- Votre base de données PostgreSQL en tapant la commande suivante à la racine de votre projet `/api` : `docker compose up --build`.
+- Votre API Spring Boot se trouvant dans le répertoire `/api` à l'aide d'IntelliJ ou de Maven. 
+- VS Code pour travailler dans le répertoire `/frontend`.
+
+Veuillez démarrer votre frontend à l'aide de **Docker Compose** en exécutant la commande suivante à la racine de votre projet GitLab :
+
+```bash
+docker compose up --build
+```
+
+Quelques explications sur la commande **`docker compose up --build`** :
+- **`docker compose up`** : 
+  - Démarre l'application multi-conteneurs.
+  - Crée et démarre les conteneurs définis dans le fichier **`docker-compose.yml`**.
+- **`--build`** :
+  - Si vous avez modifié le **`Dockerfile`** ou le **`docker-compose.yml`**, vous devez reconstruire les images. Cela permet de s'assurer que les modifications sont prises en compte.
+
+
+Une fois le frontend lancé, vous devriez voir que celui-ci s'affiche presque bien.  
+Le souci est que le frontend n'arrive pas à communiquer avec l'API.  
+Mais pourquoi ?  
+En fait, comme le frontend est démarré dans un container, il y a un lien qui est fait entre le frontend et l'hôte via le port 5173.  
+Par contre, le frontend essaie d'accéder à l'API via **localhost**, ce qui ne fonctionnera pas car localhost fait référence au conteneur lui-même, et non à l'hôte ou à un autre conteneur. Ainsi, comme l'API tourne directement sur l'hôte, le frontend ne peut pas communiquer avec l'API.
+
+Pour résoudre ce problème, nous allons dockeriser l'API et l'ajouter au **`docker-compose.yml`**.  
+De cette façon, le frontend pourra communiquer avec l'API via le nom du service défini dans le **`docker-compose.yml`**.
+
+## Visualiser la synchronisation des fichiers
+
+Mais avant de continuer, observons ce qui se passe lorsque l'on modifie un fichier dans le frontend.
+
+Veuillez mettre à jour le fichier **`/frontend/src/components/pages/HomePage.tsx`** de votre frontend pour afficher un titre différent :
+
+```tsx {2}
+<Typography variant="h2" component="h1" gutterBottom>
+        My Amazing HomePage
+</Typography>
+```
+
+Ici, nous avons ajouté le mot **`Amazing`** pour rendre le titre plus attrayant. Comme nous avons monté le répertoire du projet sur l'hôte dans le conteneur, les modifications apportées au fichier **`HomePage.tsx`** sont automatiquement synchronisées avec le conteneur. Et **Vite** s'occupe d'automatiquement recharger la page pour afficher les modifications !
+
+## Arrêt de l'application
+
+Pour arrêter l'application, vous pouvez : 
+- soit appuyer sur **`CTRL C`** ;
+- soit exécutez la commande suivante :
+
+```bash
+docker compose down
+```
+
+## Conclusion
+
+Dans ce tutoriel, nous avons vu comment créer une image Docker pour un environnement de développement, comment créer un conteneur Docker à partir de cette image, et comment démarrer une image.
+
+Néanmoins, tout n'est pas parfait. En effet :
+- le frontend ne peut pas communiquer avec l'API car l'API n'est pas dockerisée.
+- nous avons créé une image pour l'environnement de développement, mais ça n'est pas vraiment utile pour le moment. En effet, nous aurions pu simplement démarrer l'application en local sans Docker.
+- la taille de l'image du frontend est assez grande : 1.48GB ! 
+
+Nous allons dans un premier temps voir comment créer une image pour un environnement de test ou de production.  
+
+Puis nous verrons comment dockeriser l'API et l'ajouter au **`docker-compose.yml`** pour que le frontend puisse communiquer avec l'API.  
+Nous verrons aussi comment configurer les conteneurs pour qu'ils puissent communiquer entre eux.
+
+
+# <InternalPageTitle> Comment créer un container Docker pour la production ? </InternalPageTitle>
+
+## Introduction
+
+Lorsque nous souhaitons réaliser des tests ou déployer notre application, nous avons besoin de créer une image Docker pour un environnement de test ou de production.
+
+Dans la phase de test, nous voulons tester l'application dans un environnement similaire à celui de production. Cela nous permet de détecter les problèmes potentiels avant de déployer l'application en production.
+
+Ainsi, nous devons apprendre à créer une image Docker qui est optimisée pour la production.
+
+## Créer une image pour l'environnement de production
+
+Pour créer une image Docker pour l'environnement de production, nous devons optimiser l'image pour la performance.
+
+Pour ce tutoriel, nous allons donc mettre à jour l'image Docker pour le frontend de notre projet.
+
+Veuillez mettre à jour le fichier **`Dockerfile`** à la racine de votre projet `/frontend` avec le contenu suivant :
+
+```Dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+RUN npm install -g serve
+
+EXPOSE 5172
+
+CMD ["serve", "-s", "dist", "-l", "5172"]
+```
+
+Voici les explications des différentes instructions du **`Dockerfile`** :
+- **`FROM node:20-alpine`** : 
+  - Utilise l'image de base **`node:20-alpine`** qui contient Node.js.
+  - **`alpine`** est une version allégée de l'image de base.
+- **`WORKDIR /app`** : 
+  - Définit le répertoire de travail pour les commandes suivantes.
+- **`COPY package*.json ./`** :
+  - Copie les fichiers **`package.json`** et **`package-lock.json`** dans le répertoire de travail.
+- **`RUN npm install`** : 
+  - Installe les dépendances du projet.
+- **`COPY . .`** :
+  - Copie tous les fichiers du répertoire courant (votre projet) dans le répertoire de travail de l'image.
+- **`RUN npm run build`** :
+  - Construit l'application en mode production.
+  - Tous les fichiers de l'application sont générés dans le répertoire **`dist`** du frontend.
+- **`RUN npm install -g serve`** :
+  - Installe le serveur **`serve`** pour servir l'application. C'est un serveur de fichiers statiques.
+- **`EXPOSE 5172`** :
+  - Expose le port **`5172`** du conteneur.
+- **`CMD ["serve", "-s", "dist", "-l", "5172"]`** :
+  - Démarre le serveur **`serve`** pour servir l'application en mode production.
+  - **`-s dist`** : Spécifie le répertoire à servir.
+  - **`-l 5172`** : Spécifie le port sur lequel le serveur doit écouter.  
+
+Pourquoi avoir séparé la copie des fichiers **`package.json`** et **`package-lock.json`** de l'installation des dépendances ?  
+En effet, si le fichier **`package.json`** n'a pas changé, Docker peut utiliser le cache pour éviter de réinstaller les dépendances à chaque modification du code.
+
+Pour créer et exécuter l'image Docker, nous allons utiliser **Docker Compose**.
+
+Veuillez mettre à jour le fichier **`docker-compose.yml`** à la racine de votre projet avec le contenu suivant :
+
+```yaml
+services:
+  frontend:
+    container_name: frontend-prod
+    image: frontend-prod
+    build: ./frontend
+    ports:
+      - 5172:5172
+```
+
+Maintenant que nous avons mis à jour le **`Dockerfile`** et le **`docker-compose.yml`**, nous pouvons créer et exécuter l'image Docker pour l'environnement de production.
+
+Veuillez exécuter la commande suivante à la racine de votre projet GitLab :
+
+```bash
+docker compose up --build
+```
+
+Quelle est la taille actuelle de l'image Docker pour l'environnement de production ? 726.99 MB. C'est déjà mieux que l'image pour l'environnement de développement (1.48 GB), mais nous pouvons encore l'optimiser.
+
+# <InternalPageTitle> Comment optimiser une image Docker pour la production ? </InternalPageTitle>
+
+## Introduction
+
+Lorsque nous créons une image Docker pour l'environnement de production, nous devons optimiser l'image pour la performance. Nous allons voir quelques bonnes pratiques pour optimiser une image Docker pour la production :
+- **Utiliser une image de base légère** : Utilisez une image de base légère comme **`alpine`** pour réduire la taille de l'image.
+- **Copier les fichiers de manière sélective** : Copiez les fichiers nécessaires pour l'application et évitez de copier les fichiers inutiles.
+- **Utiliser des couches de manière efficace** : Utilisez des couches pour réduire le temps de construction de l'image.
+- **Nettoyer les dépendances inutiles** : Supprimez les dépendances inutiles pour réduire la taille de l'image.
+- **Utiliser des volumes pour les données persistantes** : Utilisez des volumes pour stocker les données persistantes en dehors de l'image.
+- **Utiliser des fichiers `.dockerignore`** : Utilisez des fichiers **`.dockerignore`** pour exclure les fichiers inutiles de l'image. On peut par exemple exclure les dépendances car elles sont installées à chaque construction de l'image.
+- **Utiliser des variables d'environnement** : Utilisez des variables d'environnement pour configurer l'application. 
+
+## Système de couches de Docker
+
+Docker utilise un système de couches pour construire et gérer les images. Chaque instruction dans un Dockerfile crée une nouvelle couche dans l'image Docker. Les couches sont empilées les unes sur les autres pour former l'image finale. Voici comment cela fonctionne :
+- **Base Layer** : La première couche est généralement une image de base (par exemple, **`node:20-alpine`**).
+- **Intermediate Layers** : Chaque instruction suivante dans le Dockerfile crée une nouvelle couche intermédiaire.
+- **Final Layer** : La dernière couche est l'image finale qui inclut toutes les modifications apportées par les instructions précédentes.
+
+## Cache des Couches
+
+Docker utilise un système de cache pour accélérer la construction des images. Si une couche n'a pas changé depuis la dernière construction, Docker peut utiliser le cache pour éviter de reconstruire cette couche. Cela permet de réduire le temps de construction de l'image.
+
+Pour profiter du cache, il est important de structurer le Dockerfile de manière à ce que les parties qui changent le plus souvent soient les dernières instructions. Par exemple, les instructions qui copient les fichiers de l'application doivent être les dernières instructions du Dockerfile.
+
+## Utilisation de multi-stages builds
+
+Les **multi-stages builds** permettent de réduire la taille de l'image finale en utilisant plusieurs étapes de construction. Chaque étape de construction crée une image intermédiaire qui est utilisée pour construire l'étape suivante. Cela permet de réduire la taille de l'image finale en ne conservant que les fichiers nécessaires pour l'application.
+
+L'image finale n'est pas la somme des images intermédiaires, mais seulement la dernière image intermédiaire.
+
+Voici l'image du frontend optimisée pour la production en utilisant deux étapes de construction ; veuillez mettre à jour le fichier **`Dockerfile`** à la racine de votre projet `/frontend` avec le contenu suivant :
+
+```Dockerfile
+FROM node:20-alpine AS build
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+FROM node:20-alpine AS prod
+
+WORKDIR /app
+
+COPY --from=build /app/dist ./dist
+
+RUN npm install -g serve
+
+EXPOSE 517
+
+CMD ["serve", "-s", "dist", "-l", "5173"]
+```
+
+Nous avons un frontend qui est construit dans une première étape de construction (**`build`**), puis copié dans une deuxième étape de construction (**`prod`**). Cela permet de réduire la taille de l'image finale en ne conservant que les fichiers nécessaires pour l'application. 
+
+La taille de l'image Docker pour l'environnement de production est maintenant de 155,26 MB.
+
+## Optimisation de l'image Docker de base
+
+Pour optimiser davantage l'image Docker du frontend, nous pouvons utiliser une image de base plus légère. Nous utiliserons une image de base offrant juste un serveur de fichier statique pour servir l'application.
+
+Veuillez mettre à jour le fichier **`Dockerfile`** à la racine de votre projet `/frontend` avec le contenu suivant :
+
+```Dockerfile
+FROM node:20-alpine AS build
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+FROM nginx:alpine AS prod
+
+WORKDIR /usr/share/nginx/html
+
+COPY --from=build /app/dist .
+
+EXPOSE 80
+```
+
+Voici les explications des différentes nouvelles instructions du **`Dockerfile`** :
+- **`FROM node:20-alpine AS build`** : 
+  - Utilise l'image de base **`node:20-alpine`** pour la première étape de construction.
+  - `AS build` : Nomme l'étape de construction (= un **stage**) **`build`**.
+- **`FROM nginx:alpine AS prod`** : 
+  - Utilise l'image de base **`nginx:alpine`** pour la deuxième étape de construction.
+  - **nginx** est un serveur web léger qui peut servir des fichiers statiques. Nous verrons plus tard que **nginx** est souvent utilisé pour servir des applications web en production, pour offrir des services de proxy, de cache, etc.
+  - `AS prod` : Nomme l'étape de construction **`prod`**.
+- **`WORKDIR /usr/share/nginx/html`** : 
+  - Définit le répertoire de travail pour les commandes suivantes.
+  - **nginx** sert les fichiers statiques à partir de ce répertoire.
+- **`COPY --from=build /app/dist .`** :
+  - Copie les fichiers de l'étape de construction **`build`** dans le répertoire de travail de l'étape de construction **`prod`**.
+  - Cela copie les fichiers de l'application frontend dans le répertoire de **nginx** pour les servir.  
+- **`EXPOSE 80`** :
+  - Expose le port **`80`** du conteneur. **nginx** écoute sur le port **`80`** par défaut. Le seul moyen de configurer ce port est de modifier la configuration de **nginx**, mais nous n'en avons pas besoin pour le moment.
+
+Pour créer et exécuter l'image Docker, nous allons utiliser **Docker Compose**.
+
+Veuillez mettre à jour le fichier **`docker-compose.yml`** à la racine de votre projet avec le contenu suivant :
+
+```yaml {7}
+services:
+  frontend:
+    container_name: frontend-prod
+    image: frontend-prod
+    build: ./frontend
+    ports:
+      - 5173:80
+```
+
+Maintenant que nous avons mis à jour le **`Dockerfile`** et le **`docker-compose.yml`**, nous pouvons créer et exécuter l'image Docker pour l'environnement de production.
+
+Veuillez exécuter la commande suivante à la racine de votre projet GitLab :
+
+```bash
+docker compose up --build
+```
+
+La taille de l'image Docker pour l'environnement de production est maintenant de 59,58 MB. C'est une taille beaucoup plus raisonnable pour une application frontend.
+
+## Utilisation de `.dockerignore`
+
+Le fichier **`.dockerignore`** permet d'exclure les fichiers inutiles de l'image Docker. Cela permet de réduire la taille de l'image en excluant les fichiers inutiles.
+
+Par exemple, vous pouvez exclure les dépendances installées par **`npm`** car elles sont installées à chaque construction de l'image.
+
+Veuillez créer un fichier **`.dockerignore`** à la racine de votre projet `/frontend` avec le contenu suivant :
+
+```plaintext
+node_modules
+package-lock.json
+```
+
+Dans ce fichier, nous excluons les fichiers **`node_modules`** et **`package-lock.json`** de l'image Docker. Ces fichiers ne sont pas nécessaires pour l'application frontend car les dépendances sont installées à chaque construction de l'image.
+
+Par rapport aux optimisations déjà réalisée, celle-ci n'apporte pas de changement significatif sur la taille de l'image Docker pour l'environnement de production. En effet, dans notre stage nommé **prod**, nous n'installons pas les dépendances, et nous copions directement les fichiers de l'étape de construction **build**. Ainsi, les dépendances ne sont pas copiées dans l'image finale.
+
+Ce fichier aurait été utile si nous avions pas utilisé les multi-stages builds. En effet, si nous avions installé les dépendances dans notre première configuration pour un environnement de build, nous aurions pu exclure les dépendances de l'image finale.
+
+
+## Conclusion
+
+Dans ce tutoriel, nous avons vu plusieurs moyens d'optimiser une image Docker pour la production. 
+
+Au final, obtenir une image légère permet :
+- **d'augmenter la sécurité** : moins de dépendances signifie moins de failles de sécurité potentielles.
+- **d'améliorer les performances** : une image légère se déploie plus rapidement et consomme moins de ressources.
+- **de réduire les coûts** : une image légère nécessite moins de stockage et de bande passante.
+
+Il existe encore d'autre façons d'optimiser une image Docker pour la production que nous ne verrons pas dans ce cours. N'hésitez pas à creuser le sujet si cela vous intéresse.
+
+
+# <InternalPageTitle> Comment créer une application multi-conteneurs ? </InternalPageTitle>
+
+## Introduction
+
+Dans la partie précédente, nous avons vu comment créer une image Docker pour un environnement de production. Nous avons vu comment optimiser l'image Docker pour la performance en utilisant des multi-stages builds, en utilisant une image de base légère, en utilisant des couches de manière efficace, etc.
+
+Dans ce tutoriel, nous allons voir comment dockeriser l'API et l'ajouter au **`docker-compose.yml`** pour que le frontend puisse communiquer avec l'API. Nous verrons aussi comment configurer les conteneurs pour qu'ils puissent communiquer entre eux.
+
+## Dockeriser l'API
+
+Pour dockeriser l'API, nous allons créer une image Docker pour la production. Nous allons utliser un **multi-stages build** pour optimiser l'image Docker :
+- La première étape de construction (**`build`**) installe les dépendances et construit l'application à l'aide d'une image **Maven**. Le but est d'obtenir un fichier **`.jar`**.
+- La deuxième étape de construction (**`prod`**) copie le fichier **`.jar`** dans une image **Java** pour l'exécuter.
+
+Veuillez ajouter un fichier **`Dockerfile`** à la racine de votre projet `/api` avec le contenu suivant :
+
+```Dockerfile
+FROM maven:3.9.9-amazoncorretto-21 AS build
+
+WORKDIR /app
+
+COPY pom.xml .
+COPY src ./src
+
+RUN mvn clean package -Dno-build-failure
+
+FROM amazoncorretto:21
+
+WORKDIR /app
+
+COPY --from=build /app/target/*.jar app.jar
+
+EXPOSE 3000
+
+CMD ["java", "-jar", "app.jar"]
+```
+
+Voici quelques explications pour les parties importantes du **`Dockerfile`** :
+- **Application Maven** : 
+  - L'API Spring Boot utilise Maven comme outil de build. Nous utilisons donc une image **Maven** pour construire l'application.
+  - Une application Maven est composée de plusieurs fichiers, dont un fichier **`pom.xml`** qui contient les dépendances et les configurations du projet et un répertoire **`src`** qui contient le code source de l'application.
+  - Nous ne souhaitons pas exécuter les tests lors de la construction de l'image, c'est pourquoi nous utilisons l'option **`-Dno-build-failure`**. Cela active le profil **`no-build-failure`** qui est défini dans le **`pom.xml`** et qui permet de construire l'application même si les tests échouent.
+- **Application Java** :
+  - L'API Spring Boot est une application Java qui s'exécute sur une machine virtuelle Java (JVM). Nous utilisons donc une image **Java** pour exécuter l'application.
+  - Nous copions le fichier **`.jar`** de l'étape de construction **`build`** dans l'image **Java** pour l'exécuter.
+
+Pour créer et exécuter l'image Docker, nous allons utiliser **Docker Compose**.
+
+Veuillez mettre à jour le fichier **`docker-compose.yml`** à la racine de votre projet avec le contenu suivant :
+
+```yaml {9-14,16-24}
+services:
+  frontend:
+    container_name: frontend-prod
+    image: frontend-prod
+    build: 
+      context: ./frontend
+    ports:
+      - 5173:80
+    depends_on:
+      - api
+
+  api:
+    container_name: api-prod
+    image: api-prod
+    build: ./api
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+    entrypoint: ["java", "-jar", "app.jar", "--spring.profiles.active=test"]
+
+  db:
+    image: postgres:latest
+    container_name: db-test
+    environment:
+      POSTGRES_DB: cae_db
+      POSTGRES_USER: cae_user
+      POSTGRES_PASSWORD: cae
+    ports:
+      - "5432:5432"
+```
+
+Nous avons ajouté un service **`api`** pour l'API Spring Boot. Nous avons également ajouté un service **`db`** pour la base de données PostgreSQL.
+
+Maintenant que nous avons mis à jour le **`Dockerfile`** et le **`docker-compose.yml`**, nous pouvons créer et exécuter l'image Docker pour l'environnement de production.
+
+Veuillez exécuter la commande suivante à la racine de votre projet GitLab :
+
+```bash
+docker compose up --build
+```
+
+Vite exposes env variables on the special import.meta.env object, which are statically replaced at build time. Some built-in variables are available in all cases:
+
+L'image de l'API est trop volumineuse. En effet, elle fait 572.46 MB.
+
+## Optimisation de l'image Docker de l'API
+
+Utilisation d'une version alpine pour java
+````
+FROM maven:3.9.9-amazoncorretto-21 AS build
+
+WORKDIR /app
+
+COPY pom.xml .
+COPY src ./src
+
+RUN mvn clean package -Dno-build-failure
+
+FROM amazoncorretto:21-alpine
+
+WORKDIR /app
+
+COPY --from=build /app/target/*.jar app.jar
+
+EXPOSE 3000
+
+CMD ["java", "-jar", "app.jar"]
+```
+367,93 MB.
+
+Puis on peut ajouter un fichier **`.dockerignore`** à la racine de notre projet `/api` avec le contenu suivant :
+
+```plaintext
+target/
+.git/
+.gitignore
+Dockerfile
+docker-compose.yml
+README.md
+```
+ça ne change rien
+
+Utilisation d'une autre version :
+
+```Dockerfile
+FROM maven:3.9.9-amazoncorretto-21 AS build
+
+WORKDIR /app
+
+COPY pom.xml .
+COPY src ./src
+
+RUN mvn clean package -Dno-build-failure
+
+FROM eclipse-temurin:21-jre-jammy
+
+WORKDIR /app
+
+COPY --from=build /app/target/*.jar app.jar
+
+EXPOSE 3000
+
+CMD ["java", "-jar", "app.jar"]
+```
