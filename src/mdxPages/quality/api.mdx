@@ -183,6 +183,20 @@ Les phases suivantes sont exécutées :
 2. **compile** : Compile le code source du projet.
 3. **spring-boot:run** : Démarre l'application Spring Boot en utilisant le code compilé. Cette commande compile le code, mais n'exécute pas les tests.
 
+## Installation de Maven
+
+Pour utiliser Maven, vous devez d'abord l'installer sur votre machine. Voici comment installer Maven sur différentes plateformes :
+- **Windows** : Téléchargez l'archive binaire de Maven depuis le site officiel de Maven, extrayez-la dans un répertoire de votre choix et configurez les variables d'environnement. Voici un tutoriel pour installer Maven sur Windows : https://phoenixnap.com/kb/install-maven-windows
+- **MacOS** : Vous pouvez installer Maven à l'aide de Homebrew en exécutant la commande suivante : **`brew install maven`**  
+Si vous n'avez pas Homebrew, vous pouvez l'installer en exécutant la commande suivante : **`/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`**
+- **Linux** : Vous pouvez installer Maven à l'aide de votre gestionnaire de paquets Linux. Voici un tutoriel pour installer Maven sur Ubuntu : https://www.digitalocean.com/community/tutorials/install-maven-linux-ubuntu
+
+Pour vérifier que Maven est correctement installé sur votre machine, exécutez la commande suivante dans un terminal :
+
+```sh
+mvn -version
+```
+
 ## Démarrer votre API à l'aide de Maven
 
 Veuillez tenter de démarrer votre API à l'aide de Maven en exécutant la commande suivante au sein d'un terminal d'IntelliJ :
