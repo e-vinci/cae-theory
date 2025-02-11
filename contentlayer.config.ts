@@ -1,6 +1,8 @@
 import { defineDocumentType, makeSource } from "contentlayer2/source-files";
 import remarkGfm from "remark-gfm";
-import rehypePrism from 'rehype-prism-plus'
+import rehypePrism from 'rehype-prism-plus';
+import rehypeSlug from 'rehype-slug';
+import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 
 const Page = defineDocumentType(() => ({
   name: "Page",
@@ -18,6 +20,17 @@ export default makeSource({
   documentTypes: [Page],
   mdx: {
     remarkPlugins: [remarkGfm],
-    rehypePlugins: [rehypePrism],
+    rehypePlugins: [
+      rehypePrism,
+      rehypeSlug,
+      [
+        rehypeAutolinkHeadings,
+        {
+          properties: {
+            className: ['anchor'],
+          },
+        },
+      ],
+    ],
   },
 });

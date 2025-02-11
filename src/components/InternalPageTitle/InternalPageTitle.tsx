@@ -1,4 +1,6 @@
+"use client";
 import { snakeCase } from "lodash";
+import React from "react";
 
 interface InternalPageTitleProps {
   children: React.ReactNode;
@@ -13,7 +15,12 @@ interface InternalPageTitleProps {
  */
 const InternalPageTitle = ({ children }: InternalPageTitleProps) => {
   const internalPageMenuItemId = snakeCase(children?.toString() ?? "");
-  return <a id={internalPageMenuItemId}>{children}</a>;
+  
+  return (
+    <span id={internalPageMenuItemId} className="block">
+      {children}
+    </span>
+  );
 };
 
 export default InternalPageTitle;

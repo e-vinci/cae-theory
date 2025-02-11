@@ -1,12 +1,17 @@
 import "./code-block.css";
 import "prism-themes/themes/prism-vsc-dark-plus.css"; // Import Prism CSS
-import { Container } from "@mui/material";
-import "@fontsource/roboto";
 import { SiteMetaData } from "@/types";
 import Header from "@/components/Header/Header";
 import ScrollToTop from "@/components/ScrollToTop/ScrollToTop";
-import { ClientThemeProvider } from "@/components/ClientThemeProvider/ClientThemeProvider";
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
+import "./global.css";
+import { cn } from "@/lib/utils";
+import { TocProvider } from "@/contexts/toc";
+import MainContent from "@/components/MainContent/MainContent";
+
+export const metadata = {
+  title: "CAE Course",
+  description: "Course materials for CAE",
+};
 
 const siteMetaData: SiteMetaData = {
   version: "", // "2.0.0",
@@ -18,10 +23,6 @@ const siteMetaData: SiteMetaData = {
   facebookUrl: "facebookUrl",
   instagramUrl: "instagramUrl",
   menuLinks: [
-    {
-      name: `Home`,
-      link: `/`,
-    },
     {
       name: `Intro`,
       link: `/intro`,
@@ -48,34 +49,32 @@ interface RootLayoutProps {
   children: React.ReactNode;
 }
 
-const RootLayout = ({ children }: RootLayoutProps) => {
+export default function RootLayout({ children }: RootLayoutProps) {
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
   const faviconUrl = `${basePath}/favicon.svg`;
 
   return (
-    <AppRouterCacheProvider>
-      <ClientThemeProvider>
-        <html>
-          <head>
-            <title>CAE Course</title>
-            <link
-              rel="icon"
-              type="image/svg+xml"
-              href={faviconUrl}
-            />
-          </head>
-          <body>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <link
+          rel="icon"
+          type="image/svg+xml"
+          href={faviconUrl}
+        />
+      </head>
+      <body className={cn(
+        "min-h-screen bg-background font-sans antialiased",
+      )}>
+        <TocProvider>
+          <div className="relative flex min-h-screen flex-col">
             <Header siteMetaData={siteMetaData} />
-
-            <Container style={{ padding: "1rem", wordWrap: "break-word" }}>
+            <MainContent>
               {children}
-            </Container>
+            </MainContent>
             <ScrollToTop />
-          </body>
-        </html>
-      </ClientThemeProvider>
-    </AppRouterCacheProvider>
+          </div>
+        </TocProvider>
+      </body>
+    </html>
   );
-};
-
-export default RootLayout;
+}
