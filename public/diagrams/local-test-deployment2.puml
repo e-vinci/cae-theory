@@ -15,7 +15,7 @@
 
 LAYOUT_TOP_DOWN()
 
-title Production Environment : C4 Deployment Diagram\nwith reverse proxy
+title Test Environment with reverse proxy : local or GitLab CI/CD (C4 Deployment Diagram)
 
 Node(docker_host, "Docker Host") {
     Node(docker_compose, "Docker Compose Network", "Configuration", "Configure and manage containers",  $sprite=docker) {
@@ -42,7 +42,7 @@ System_Boundary(external, "External Systems") {
 }
 
 Rel(browser, nginx, "Requests Files", "HTTP")
-Rel(browser, nginx, "Makes API calls", "HTTP", "CORS issues", $tags="apiRel")
+Rel(browser, nginx, "Makes API calls", "HTTP")
 Rel(nginx, frontend, "Forwards requests to", "https")
 Rel(nginx, api, "Forwards /api requests to", "https")
 Rel(api, db, "Reads/Writes", "JDBC")

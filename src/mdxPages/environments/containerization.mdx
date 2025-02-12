@@ -14,14 +14,12 @@ date: 05/02/2025
   <InternalPageMenuItem> Comment créer un container Docker et l'exécuter ? </InternalPageMenuItem>
   <InternalPageMenuItem> Comment créer un container Docker pour la production ? </InternalPageMenuItem>
   <InternalPageMenuItem> Comment optimiser une image Docker pour la production ? </InternalPageMenuItem>
-  <InternalPageMenuItem> Comment créer une application multi-conteneurs ?  </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment créer une application multi-conteneurs ? </InternalPageMenuItem>
   <InternalPageMenuItem> Comment connecter tous les services dans une application multi-conteneurs ? </InternalPageMenuItem>
-  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
-    <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
-    <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
-  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
-  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
-  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment réaliser les tests e2e dans l'environnement de production local ? </InternalPageMenuItem>
+    <InternalPageMenuItem> Comment ignorer les fichiers qui ne peuvent pas se retrouver dans l'image ? </InternalPageMenuItem>
+    <InternalPageMenuItem> Comment exécuter docker compose dans notre pipeline ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment gérer des règles pour notre pipelines ? </InternalPageMenuItem>
 </InternalPageMenu>
 
 # <InternalPageTitle> Qu'est ce que la conteneurisation ? </InternalPageTitle>
@@ -256,7 +254,7 @@ Néanmoins, tout n'est pas parfait. En effet :
 - nous avons créé une image pour l'environnement de développement, mais ça n'est pas vraiment utile pour le moment. En effet, nous aurions pu simplement démarrer l'application en local sans Docker.
 - la taille de l'image du frontend est assez grande : 1.48GB ! 
 
-Nous allons dans un premier temps voir comment créer une image pour un environnement de test ou de production.  
+Nous allons dans un premier temps voir comment créer une image pour un environnement de tests très proche d'un environnement de production.  
 
 Puis nous verrons comment dockeriser l'API et l'ajouter au **`docker-compose.yml`** pour que le frontend puisse communiquer avec l'API.  
 Nous verrons aussi comment configurer les conteneurs pour qu'ils puissent communiquer entre eux.
@@ -266,7 +264,7 @@ Nous verrons aussi comment configurer les conteneurs pour qu'ils puissent commun
 
 ## Introduction
 
-Lorsque nous souhaitons réaliser des tests ou déployer notre application, nous avons besoin de créer une image Docker pour un environnement de test ou de production.
+Lorsque nous souhaitons réaliser des tests ou déployer notre application, nous avons besoin de créer une image Docker pour un environnement de tests ou de production.
 
 Dans la phase de test, nous voulons tester l'application dans un environnement similaire à celui de production. Cela nous permet de détecter les problèmes potentiels avant de déployer l'application en production.
 
@@ -556,7 +554,7 @@ Dans ce tutoriel, nous allons voir comment dockeriser l'API et l'ajouter au **`d
 
 ## Dockeriser l'API
 
-Pour dockeriser l'API, nous allons directement créer une image Docker pour la production de l'application Spring. Nous allons utiliser un **multi-stages build** pour optimiser l'image Docker :
+Pour dockeriser l'API, nous allons directement créer une image Docker de l'application Spring pour la production. Nous allons utiliser un **multi-stages build** pour optimiser l'image Docker :
 - La première étape de construction (**`build`**) installera les dépendances et construira l'application à l'aide d'une image **Maven**. Le but est d'obtenir un fichier **`.jar`**.
 - La deuxième étape de construction (**`prod`**) copiera le fichier **`.jar`** dans une image **Java** pour l'exécuter.
 
@@ -753,7 +751,7 @@ Voici un schéma de l'environnement de développement :
 Dans cet environnement :
 - le frontend peut communiquer avec l'API Spring Boot via l'adresse **`http://localhost:3000`**. 
 - L'API Spring Boot peut communiquer avec la base de données PostgreSQL via l'adresse **`jdbc:postgresql://localhost:5432/cae_db`**.
-- C'est le frontend, via **Vite** qui s'occupe de faire office de serveur de proxy pour rediriger les requêtes vers l'API. En effet, le frontend est exécuté sur le port **`5173`** et l'API sur le port **`3000`**. Pour que le frontend puisse communiquer avec l'API, il faut rediriger les requêtes du frontend vers l'API. C'est ce que fait **Vite** à l'aide de la configuration du fichier **`vite.config.ts`**.  
+- C'est le frontend, via **Vite** qui s'occupe de faire office de serveur de proxy pour rediriger les requêtes vers l'API. En effet, le frontend est exécuté sur le port **`5173`** et l'API sur le port **`3000`**. Pour que le frontend puisse communiquer avec l'API, il faut rediriger les requêtes du frontend vers l'API. C'est ce que fait **Vite** et son proxy intégré au serveur de développement à l'aide de la configuration du fichier **`vite.config.ts`**.  
 ```ts
 server: {
     proxy: {
@@ -767,13 +765,13 @@ server: {
 ```
 - Pour chaque requête qui commence par **`/api`**, **Vite** redirige la requête vers **`http://localhost:3000`**. Par exemple, dans le frontend, si vous faites une requête vers **`/api/pizza`**, **Vite** redirigera la requête vers **`http://localhost:3000/pizzas`**. Vous trouverez cette requête dans le fichier **`/frontend/src/components/App/index.tsx`** du frontend.
 
-## Compréhension de l'environnement de production actuel
+## Compréhension de l'environnement de tests actuel
 
-Dans l'environnement de production, toutes les applications sont dockerisées. Le frontend, l'API Spring Boot et la base de données PostgreSQL sont exécutés dans des conteneurs Docker.
+Dans l'environnement de tests (proche de l'environnement de production final), toutes les applications sont dockerisées. Le frontend, l'API Spring Boot et la base de données PostgreSQL sont exécutés dans des conteneurs Docker.
 
-Voici un schéma de l'environnement de production actuel :
+Voici un schéma de l'environnement de tests actuel :
 
-<PlantUML src="/diagrams/local-prod-deployment1.puml" alt="Environnement de production"/>
+<PlantUML src="/diagrams/local-test-deployment1.puml" alt="Environnement de production"/>
 
 Dans cet environnement, le frontend ne peut pas encore communiquer avec l'API Spring Boot car l'API est exécutée dans un conteneur Docker. Le frontend est exécuté sur le port **`80`** de l'hôte, et l'API est exécutée sur le port **`3000`** du conteneur Docker. 
 
@@ -830,9 +828,9 @@ Comme nous ne pouvons pas avoir deux applications qui écoutent sur le même por
 
 Comme le **`nginx`** du serveur de fichiers statiques du frontend ne peut pas tourner sur le même port que le **`nginx`** du reverse proxy, nous allons changer le port du **`nginx`** du serveur de fichiers statiques du frontend pour qu'il écoute sur le port **`5172`** au lieu du port **`80`**.
 
-Voici un schéma de l'environnement de production avec un reverse proxy :
+Voici un schéma de l'environnement de tests avec un reverse proxy :
 
-<PlantUML src="/diagrams/local-prod-deployment2.puml" alt="Environnement de production avec un reverse proxy"/>
+<PlantUML src="/diagrams/local-test-deployment2.puml" alt="Environnement de tests avec un reverse proxy"/>
 
 Tout passe par le reverse proxy **`nginx`** qui redirige les requêtes vers le frontend ou l'API en fonction du chemin de la requête.
 
@@ -1009,7 +1007,7 @@ Nous avons ajouté un service **`reverse-proxy`** pour le reverse proxy. Le reve
 
 Nous avons ajouté un volume pour monter le fichier **`nginx.conf`** dans le conteneur **`reverse-proxy`**. Cela permet de mettre à jour la configuration du reverse proxy sans avoir à reconstruire l'image Docker.
 
-Maintenant que nous avons configuré les conteneurs pour qu'ils puissent communiquer entre eux en utilisant un reverse proxy, nous pouvons créer et exécuter les images Docker pour l'environnement de production.
+Maintenant que nous avons configuré les conteneurs pour qu'ils puissent communiquer entre eux en utilisant un reverse proxy, nous pouvons créer et exécuter les images Docker pour l'environnement de tests.
 
 Veuillez exécuter la commande suivante à la racine de votre projet GitLab :
 
@@ -1017,15 +1015,532 @@ Veuillez exécuter la commande suivante à la racine de votre projet GitLab :
 docker compose up --build
 ```
 
-L'application est maintenant dockerisée et quasi prête pour la production. Vous pouvez ouvrir un navigateur et accéder à l'adresse **`http://localhost`** pour voir l'application frontend en production. Vous devriez voir l'application frontend servie par le reverse proxy **`nginx`**, et tout devrait être fonctionnel 🚀 !. 
+L'application est maintenant dockerisée et quasi prête pour les tests. Vous pouvez ouvrir un navigateur et accéder à l'adresse **`http://localhost`** pour voir l'application frontend en tests (très proche de l'environnement de production). Vous devriez voir l'application frontend servie par le reverse proxy **`nginx`**, et tout devrait être fonctionnel 🚀 !. 
 
 Vous devriez aussi pouvoir accéder à l'API via l'adresse **`http://localhost/api`**.
 
 Plus tard, nous ajouterons les tests e2e pour vérifier que tout fonctionne correctement.
 
-# <InternalPageTitle> Comment réaliser les tests e2e dans l'environnement de production local ? </InternalInternalPageTitle>
+# <InternalPageTitle> Comment réaliser les tests e2e dans l'environnement de production local ? </InternalPageTitle>
 
 ## Introduction
 
-Dans ce tutoriel, nous allons voir comment réaliser les tests e2e dans l'environnement de production local. Nous allons utiliser **Playwright** et tout ce qui a été mis en place précédemment pour réaliser les tests e2e.
+Dans ce tutoriel, nous allons voir comment réaliser les tests e2e dans l'environnement  de tests . Nous allons utiliser **Playwright** et tout ce qui a été mis en place précédemment pour réaliser les tests e2e.
+
+### Création d'une image Docker pour les tests e2e
+
+Pour réaliser les tests e2e dans l'environnement de tests , nous allons créer une image Docker pour les tests e2e. Cette image Docker contiendra les tests e2e et les dépendances nécessaires pour les exécuter.
+
+Veuillez ajouter un fichier **`Dockerfile`** dans le répertoire **`e2e`** (répertoire contenant vos tests e2e) avec le contenu suivant :
+
+```Dockerfile
+FROM mcr.microsoft.com/playwright:v1.50.1-jammy
+WORKDIR /app
+COPY package*.json ./
+COPY . .
+RUN npm ci
+CMD ["npx", "playwright", "test"]
+```
+
+Nous avons déjà vu comment créer une image Docker pour les tests e2e dans le tutoriel sur les tests e2e. Nous utilisons l'image **`mcr.microsoft.com/playwright:v1.50.1-jammy`** qui contient **Playwright** et toutes les dépendances nécessaires pour exécuter les tests e2e.
+
+### Exécution des tests e2e dans l'environnement de tests
+
+Pour exécuter les tests e2e dans l'environnement de tests, nous allons ajouter un service **`e2e`** au **`docker-compose.yml`**. Ce service exécutera les tests e2e dans l'environnement de tests.
+
+Veuillez mettre à jour le fichier **`docker-compose.yml`** à la racine de votre projet avec le contenu suivant :
+
+```yaml {43-52} showLineNumbers
+services:
+  frontend:
+    container_name: frontend-prod
+    image: frontend-prod
+    build:
+      context: ./frontend
+    ports:
+      - 5172:5172
+    depends_on:
+      - api
+
+  api:
+    container_name: api-prod
+    image: api-prod
+    build: ./api
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+    entrypoint: ["java", "-jar", "app.jar", "--spring.profiles.active=test"]
+
+  db:
+    image: postgres:latest
+    container_name: db-test
+    environment:
+      POSTGRES_DB: cae_db
+      POSTGRES_USER: cae_user
+      POSTGRES_PASSWORD: cae
+    ports:
+      - "5432:5432"
+
+  reverse-proxy:
+    container_name: reverse-proxy-prod
+    image: nginx:alpine
+    ports:
+      - 80:80
+    depends_on:
+      - frontend
+      - api
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+
+  e2e:
+    container_name: e2e-prod
+    image: e2e-prod
+    build: ./e2e
+    environment:
+      NODE_ENV: production
+    depends_on:
+      - api
+      - frontend
+    entrypoint: ["sh", "-c", "sleep 20 && npx playwright test"]
+```
+
+Nous avons ajouté un service **`e2e`** pour les tests e2e. Ce service exécutera les tests e2e dans l'environnement de tests. Nous avons ajouté une dépendance au service **`api`** et au service **`frontend`** car les tests e2e dépendent de ces services.
+
+De plus, nous avons ajouté une instruction **`sleep 20`** avant d'exécuter les tests e2e. Cela permet d'attendre que les services **`api`** et **`frontend`** soient prêts avant d'exécuter les tests e2e.
+
+Finalement, nous avons ajouté une variable d'environnement **`NODE_ENV: production`** pour indiquer que les tests e2e sont exécutés dans un environnement conforme à la production. Cette variable d'environnement sera utilisée pour déterminer l'URL à utiliser dans les tests e2e.
+
+Attention que les tests e2e doivent contacter le frontend via le reverse proxy. Il faut donc mettre à jour les URLs des tests e2e pour utiliser :
+- l'URL du reverse proxy **`http://reverse-proxy:80`** (au lieu de l'URL du frontend **`http://localhost:5173`**) lorsqu'on est dans l'environnement de tests. Comme c'est le reverse proxy qui redirige les requêtes vers le frontend, les tests e2e doivent contacter le reverse proxy pour accéder au frontend. Et comme c'est le container qui exécute les tests e2e qui doit contacter le reverse proxy, il faut utiliser le nom du service **`reverse-proxy`** pour accéder au reverse proxy (et pas **`localhost`**).
+- l'URL du frontend directement **`http://frontend:5173`** seulement lorsqu'on est dans l'environnement de développement local.
+
+Pour mettre à jour les URLs des tests e2e pour utiliser l'URL du reverse proxy ou celle du frontend selon l'environnement nous allons changer la configuration des tests e2e pour qu'elle détecte dans quel environnement elle est exécutée. Nous allons utiliser une variable d'environnement pour déterminer l'URL à utiliser.
+
+Veuillez mettre à jour le fichier **`e2e/playwright.config.ts`** avec le contenu suivant :
+
+```ts {18-22} showLineNumbers
+import { defineConfig, devices } from "@playwright/test";
+
+export default defineConfig({
+  testDir: "./tests",
+  /* Run tests in files in parallel */
+  fullyParallel: true,
+  /* Fail the build on CI if you accidentally left test.only in the source code. */
+  forbidOnly: !!process.env.CI,
+  /* Retry on CI only */
+  retries: process.env.CI ? 2 : 0,
+  /* Opt out of parallel tests on CI. */
+  workers: process.env.CI ? 1 : undefined,
+  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
+  reporter: "html",
+  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  use: {
+    /* Base URL to use in actions like `await page.goto('/')`. */
+    baseURL:
+      process.env.NODE_ENV === undefined ||
+      process.env.NODE_ENV === "development"
+        ? "http://localhost:5173"
+        : "http://reverse-proxy:80",
+
+    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+    trace: "on-first-retry",
+  },
+
+  /* Configure projects for major browsers */
+  projects: [
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+    },
+  ],
+});
+```
+
+Nous avons ajouté une condition pour déterminer l'URL à utiliser en fonction de la variable d'environnement **`NODE_ENV`**. Si la variable d'environnement **`NODE_ENV`** n'est pas définie ou si elle est égale à **`development`**, nous utilisons l'URL du frontend **`http://localhost:5173`**. Sinon, nous utilisons l'URL du reverse proxy **`http://reverse-proxy:80`**.
+
+Nous devons aussi mettre à jour les tests e2e pour utiliser l'URL définie dans la configuration des tests e2e. Veuillez mettre à jour les fichiers de tests e2e dans le répertoire **`e2e/tests`** pour utiliser l'URL définie dans la configuration des tests e2e. Pour l'instant nous n'avons qu'un seul fichier à mettre à jour, c'est le fichier **`e2e/tests/helper.spec.ts`** :
+
+```ts {4,6} showLineNumbers
+import { Page, expect } from "@playwright/test";
+
+const goFromHomePageToRegisterPage = async (page: Page) => {
+  await page.goto("/");
+  await page.getByText("créer un utilisateur").click();
+  await expect(page).toHaveURL("/register");
+};
+
+const registerWith = async (page: Page, username: string, password: string) => {
+  await page.getByRole("textbox", { name: "username" }).fill(username);
+  await page.getByRole("textbox", { name: "password" }).fill(password);
+  await page.getByRole("button", { name: "Créer le compte" }).click();
+};
+
+export { registerWith, goFromHomePageToRegisterPage };
+```
+
+Nous avons supprimé l'URL **`http://localhost:5173`** et nous avons remplacé par **`/`** pour utiliser la **`baseURL`** définie dans la configuration des tests e2e.
+
+Maintenant que nous avons configuré les tests e2e pour qu'ils puissent être exécutés dans l'environnement de tests, nous pouvons créer et exécuter les images Docker pour l'environnement de tests.  
+Pour cela, veuillez exécuter la commande suivante à la racine de votre projet GitLab :
+
+```bash
+docker compose up --build
+```
+
+Les tests e2e sont exécutés dans l'environnement de tests. Vous devriez voir les tests e2e s'exécuter et vérifier que tout fonctionne correctement. Si les tests échouent, vous devriez voir les erreurs dans la sortie de la commande.
+
+## De quoi est constitué mon image ?
+
+Quand on regarde avec Docker Desktop la taille de l'image pour le service **`e2e`**, on voit qu'elle est de 2,32 GB. C'est une taille assez conséquente pour des tests e2e.
+
+En cliquant sur l'onglet **`Images`** de Docker Desktop, puis sur l'image **`e2e-prod`**, on peut voir les différentes couches de l'image Docker dans **`Layers`**. On peut voir des choses très intéressantes, comme par exemple :
+- La couche 14 contient les dépendances de **`Playwright`** (dépendances système et pour les browsers). Pour voir la commande associée, on peut cliquer sur l'onglet **`Command`**. C'est la plus grosse couche de l'image, elle fait 1,91 GB ! 
+On ne peut pas optimiser cette couche, car elle contient les dépendances nécessaires pour exécuter les tests e2e avec **`Playwright`**, et aussi, parce qu'elle fait partie de l'image de base **`mcr.microsoft.com/playwright:v1.50.1-jammy`**.
+- La couche 18 contient l'installation des dépendances de notre projet de tests e2e (**`npm ci`**). Elle est peu volumineuse, elle fait 27,12 MB. 
+
+# <InternalPageTitle> Comment ignorer les fichiers qui ne peuvent pas se retrouver dans l'image ? </InternalPageTitle>
+
+Lorsqu'on souhaite créer une image Docker, il est important de n pas inclure les fichiers qui pourraient causer des soucis, comme révéler des secrets, ou rendre l'image trop volumineuse. Pour cela, on peut utiliser un fichier **`.dockerignore`** pour exclure les fichiers et répertoires que l'on ne souhaite pas inclure dans l'image Docker.
+
+Attention, il s'agit ici d'exclure les fichiers qui se trouvent sur l'hôte. Si vous souhaitez exclure des fichiers qui se trouvent dans l'image, il faudra le faire dans le **`Dockerfile`**.
+
+Par exemple, si vous voulez vous assurer de ne pas utiliser les **`node_modules`** de l'hôte (votre machine) mais de toujours les installer dans le conteneur, vous pouvez ajouter un fichier **`.dockerignore`** à la racine du projet **`e2e`** avec le contenu suivant :
+
+```git
+node_modules
+```
+
+De la même manière, il est important de penser d'ajouter dans le fichier **`.dockerignore`** tous les fichiers et répertoires que vous ne souhaitez pas inclure dans l'image Docker, comme :
+- l'éventuel **`.git`**
+- l'éventuel **`.env`**
+- l'inutile **`Dockerfile`** pour exécuter les tests e2e...
+- le **`Readme`**, les fichiers de documentation...
+
+Voila tout ce que nous pourrions exclure de l'image Docker pour les tests e2e :
+
+```git
+node_modules
+dist
+.git
+.gitignore
+Dockerfile
+docker-compose.yml
+README.md
+.DS_Store
+```
+
+# <InternalPageTitle> Comment exécuter docker compose dans notre pipeline ? </InternalPageTitle>
+
+## Introduction
+
+Nous souhaitons maintenant exécuter notre application, avec tous ses services, dans notre pipeline GitLab. 
+
+L'idée est de se simplifier au maximum la vie et de ne pas avoir à changer nos conteneurs pour passer dans l'environnement de tests. Nous allons donc utiliser **Docker Compose** pour exécuter notre application dans notre pipeline.
+
+## Configuration de notre pipeline
+
+Pour ce tutoriel, vous devez penser à créer une nouvelle branche dans votre projet GitLab. Vous pouvez par exemple créer une branche **`feature/dockerized`**.
+
+Pour exécuter notre application avec Docker Compose dans notre pipeline, nous allons ajouter un stage **`e2e`**. Ce stage exécutera **Docker Compose** pour démarrer tous les services de notre application.
+
+Veuillez mettre à jour le fichier **`.gitlab-ci.yml`** à la racine de votre projet avec le contenu suivant :
+
+```yaml {3,43-62} showLineNumbers
+stages:
+  - test
+  - e2e
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+
+api test:
+  stage: test
+  image: maven:3.9.9-amazoncorretto-21
+  cache:
+    key:
+      files:
+        - api/pom.xml
+    paths:
+      - $CI_PROJECT_DIR/.m2/repository
+  script:
+    - cd api
+    - mvn clean test
+  artifacts:
+    paths:
+      - api/target/reports/
+      - api/target/site/
+      - api/target/surefire-reports/
+
+frontend test:
+  stage: test
+  image: node:20
+  cache:
+    key:
+      files:
+        - frontend/package-lock.json
+    paths:
+      - frontend/node_modules
+  script:
+    - cd frontend
+    - npm install
+    - npm run lint
+    - npm run coverage
+  artifacts:
+    paths:
+      - frontend/coverage/
+
+e2e tests:
+  stage: e2e
+  image: docker:latest
+  services:
+    - docker:20-dind
+  before_script:
+    - docker-compose up --build -d
+  script:
+    - EXIT_CODE=$(docker wait e2e-prod)
+    - docker-compose logs e2e
+    - docker cp e2e-prod:/app/playwright-report ./e2e/playwright-report
+    - docker cp e2e-prod:/app/test-results ./e2e/test-results
+    - if [ "$EXIT_CODE" -ne 0 ]; then echo "E2E tests failed"; exit 1; fi
+    - docker-compose down
+  after_script:
+    - docker-compose down
+  artifacts:
+    paths:
+      - e2e/playwright-report/
+      - e2e/test-results/
+```
+
+Voici les explications sur le stage **`e2e`** :
+- Nous utilisons l'image **`docker:latest`** pour exécuter **Docker Compose** dans notre pipeline.
+- Nous utilisons le service **`docker:20-dind`** pour exécuter Docker dans Docker (DinD).
+- Nous utilisons la commande **`docker-compose up --build -d`** pour démarrer tous les services de notre application en arrière-plan.
+- Nous utilisons la commande **`docker wait e2e-prod`** pour attendre que les tests e2e se terminent.
+- Nous utilisons la commande **`docker cp`** pour copier les rapports des tests e2e et les résultats des tests e2e dans le répertoire **`e2e`**.
+- **`EXIT_CODE`** contient le code de sortie des tests e2e. Si les tests échouent :
+  - Le code de sortie est différent de 0.
+  - Nous affichons un message d'erreur.
+  - Nous sortons du pipeline avec un code de sortie différent de 0 : **`exit 1`** ; cela mettra le pipeline en échec.
+- Nous utilisons la commande **`docker-compose down`** pour arrêter tous les services de notre application.
+
+Maintenant que nous avons configuré notre pipeline pour exécuter notre application avec Docker Compose, nous pouvons exécuter notre pipeline GitLab. Il suffit de pousser votre branche (**`feature/dockerized`** par exemple) sur votre projet GitLab.
+
+Nous devrions voir que tout fonctionne correctement et que les tests e2e s'exécutent dans notre pipeline GitLab. 
+
+Mais comment réagit notre pipeline si les tests e2e échouent ? Nous allons voir cela dans la prochaine section.
+
+## Que se passe-t-il si les tests e2e échouent ?
+
+Veuillez mettre à jour votre fichier **`/e2e/tests/helper.spec.ts`** pour que les tests échouent. Par exemple, vous pouvez simplement faire aller sur une page qui n'existe pas ("**`/d`**") :
+
+```ts {3}
+const goFromHomePageToRegisterPage = async (page: Page) => {
+  await page.goto("/d");
+  await page.getByText("créer un utilisateur").click();
+  await expect(page).toHaveURL("/register");
+};
+```
+
+Poussez vos modifications sur votre branche **`feature/dockerized`**. Après plus de 5 minutes, vous devriez voir que les tests e2e continuent indéfiniment dans votre pipeline.
+
+Par défaut, **Playwright** applique un timeout de 30 secondes pour les tests e2e. Si un test prend plus de 30 secondes, il est considéré comme échoué.  
+Si vous souhaitez en savoir plus sur les timeouts dans **Playwright**, vous pouvez consulter la documentation officielle : https://playwright.dev/docs/test-timeouts
+
+En fait, par défaut, playwright lance un serveur web pour afficher les résultats des tests. Si le test échoue, le serveur web ne s'arrête pas et le pipeline ne se termine pas. Pour résoudre ce problème, nous devons empêcher le serveur web de Playwright d'afficher les résultats des tests.
+
+Veuillez mettre à jour le fichier **`e2e/playwright.config.ts`** avec le contenu suivant :
+
+```ts {14-16} showLineNumbers
+import { defineConfig, devices } from "@playwright/test";
+
+export default defineConfig({
+  testDir: "./tests",
+  /* Run tests in files in parallel */
+  fullyParallel: true,
+  /* Fail the build on CI if you accidentally left test.only in the source code. */
+  forbidOnly: !!process.env.CI,
+  /* Retry on CI only */
+  retries: process.env.CI ? 2 : 0,
+  /* Opt out of parallel tests on CI. */
+  workers: process.env.CI ? 1 : undefined,
+  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
+  reporter: [
+    ['html', { open: 'never' }],
+],
+  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  use: {
+    /* Base URL to use in actions like `await page.goto('/')`. */
+    baseURL:
+      process.env.NODE_ENV === undefined ||
+      process.env.NODE_ENV === "development"
+        ? "http://localhost:5173"
+        : "http://reverse-proxy:80",
+
+    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+    trace: "on-first-retry",
+  },
+
+  /* Configure projects for major browsers */
+  projects: [
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+    },
+  ],
+});
+```
+
+Nous avons ajouté une option **`open: 'never'`** à la configuration du reporter **`html`**. Les résultats des tests seront enregistrés dans un fichier HTML, mais le navigateur ne sera pas ouvert pour les afficher.
+
+Maintenant que nous avons empêché le serveur web de Playwright d'afficher les résultats des tests, nous pouvons exécuter à nouveau notre pipeline GitLab. Après environ 5 minutes de patience, vous devriez voir que les tests échouent et que le pipeline se termine en échec 🚀.
+
+Veuillez maintenant remettre le fichier **`/e2e/tests/helper.spec.ts`** comme il était avant pour que les tests passent à nouveau.
+
+# <InternalPageTitle> Comment gérer des règles pour notre pipelines ? </InternalPageTitle>
+
+## Introduction
+
+Dans notre tutoriel en cours sur la conteneurisation, nous avons vu comment exécuter notre application avec Docker Compose dans notre pipeline GitLab. Nous avons ajouté un stage **`e2e`** pour exécuter les tests e2e de notre application.
+
+Néanmoins, voici quelques faiblesses de notre pipeline actuel :
+- On n'a pas de stage pour construire les images Docker de notre application avant de faire les tests e2e.
+- On ne déploie pas notre application sur le cloud.
+- On n'exécute pas les tests e2e sur l'application déployée.
+- Les tests e2e sont longs à s'exécuter et on doit actuellement le faire à chaque push sur notre branche.
+
+Dans ce tutoriel, nous allons pas encore nous occuper du déploiement. Nous allons plutôt voir comment mieux organiser notre pipeline GitLab. Nous allons ajouter un stage **`build`** pour construire les images Docker de notre application avant de faire les tests e2e. 
+
+## Configuration de notre pipeline avec un stage **`build`**
+
+Nous souhaitons exécuter ces 3 stages en séquence dans notre pipeline :
+1. **`test`** : Exécuter les tests unitaires et les tests statiques de notre application.
+2. **`build`** : Construire les images Docker de notre application.
+3. **`e2e`** : Exécuter les tests e2e de notre application seulement lors d'un événement spécifique. 
+
+Un événement spécifique pourrait être :  
+- Une merge request sur la branche **`main`**.
+- Un push sur une branche spécifique 
+- Un push contenant un mot-clé dans le message du commit.
+- ...
+Pour ce tutoriel, nous allons choisir de déclencher les tests e2e seulement lors d'une Merge Request sur la branche **`main`**.
+
+
+Veuillez mettre à jour le fichier **`.gitlab-ci.yml`** à la racine de votre projet avec le contenu suivant :
+
+```yaml {1-4,45-51,58-59} showLineNumbers
+stages:
+  - test
+  - build
+  - e2e
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+
+api test:
+  stage: test
+  image: maven:3.9.9-amazoncorretto-21
+  cache:
+    key:
+      files:
+        - api/pom.xml
+    paths:
+      - $CI_PROJECT_DIR/.m2/repository
+  script:
+    - cd api
+    - mvn clean test
+  artifacts:
+    paths:
+      - api/target/reports/
+      - api/target/site/
+      - api/target/surefire-reports/
+
+frontend test:
+  stage: test
+  image: node:20
+  cache:
+    key:
+      files:
+        - frontend/package-lock.json
+    paths:
+      - frontend/node_modules
+  script:
+    - cd frontend
+    - npm install
+    - npm run lint
+    - npm run coverage
+  artifacts:
+    paths:
+      - frontend/coverage/
+
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:20-dind
+  script:
+    - docker-compose build
+
+e2e tests:
+  stage: e2e
+  image: docker:latest
+  services:
+    - docker:20-dind
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+  before_script:
+    - docker-compose up -d
+  script:
+    - EXIT_CODE=$(docker wait e2e-prod)
+    - docker-compose logs e2e
+    - docker cp e2e-prod:/app/playwright-report ./e2e/playwright-report
+    - docker cp e2e-prod:/app/test-results ./e2e/test-results
+    - if [ "$EXIT_CODE" -ne 0 ]; then echo "E2E tests failed"; exit 1; fi
+    - docker-compose down
+  after_script:
+    - docker-compose down
+  artifacts:
+    paths:
+      - e2e/playwright-report/
+      - e2e/test-results/
+```
+
+Voici les explications sur le stage **`build`** :
+- Nous utilisons l'image **`docker:latest`** pour exécuter **Docker Compose** dans notre pipeline.
+- Nous utilisons le service **`docker:20-dind`** pour exécuter Docker dans Docker (DinD).
+- Nous utilisons la commande **`docker-compose build`** pour construire les images Docker de notre application.
+
+Voici les explications sur le stage **`e2e`** :
+- Nous utilisons la règle **`rules`** pour exécuter les tests e2e seulement lors d'une Merge Request sur la branche **`main`**.
+- Nous utilisons la variable **`$CI_PIPELINE_SOURCE`** pour vérifier si l'événement est une Merge Request.
+- Nous utilisons la variable **`$CI_MERGE_REQUEST_TARGET_BRANCH_NAME`** pour vérifier si la branche cible de la Merge Request est la branche par défaut (généralement la branche **`main`**).
+- Notons qu'à chaque push sur une branche qui contient une Merge Request sur la branche **`main`**, les tests e2e s'exécuteront. Ceci est pratique, car à chaque fois que vous poussez une branche, vous pouvez être sûr que les tests e2e s'exécuteront sur la branche **`main`**.
+
+Maintenant que nous avons ajouté un stage **`build`** pour construire les images Docker de notre application, nous pouvons exécuter notre pipeline GitLab. Il suffit de pousser notre branche (**`feature/dockerized`** par exemple) sur notre projet GitLab.
+
+Nous devrions voir que tout fonctionne correctement et que les images Docker de notre application sont construites avec succès. Bien sûr, il n'y a que les stages **`test`** et **`build`** qui s'exécutent pour le moment. Les tests e2e ne s'exécutent que lors d'une Merge Request sur la branche **`main`**.
+
+Veuillez maintenant créer une Merge Request sur la branche **`main`** pour voir les tests e2e s'exécuter dans votre pipeline GitLab.
+
+## Conclusion sur la conteneurisation
+
+Nous avons mis en place l'environnement de tests qui s'exécute dans notre pipeline GitLab. Nous avons ajouté un stage **`build`** pour construire les images Docker de notre application avant de faire les tests e2e. Nous avons ajouté un stage **`e2e`** pour exécuter les tests e2e seulement lors d'une Merge Request sur la branche **`main`**.
+
+Voici à quoi ressemble l'environnement de tests dans notre pipeline GitLab :
+
+<PlantUML src="/diagrams/test-deployment.puml" alt="Environnement de tests"/>
+
+Lorsque les tests e2e s'exécutent, **Playwright** simule un utilisateur réel qui interagit avec l'application. Cela permet de vérifier que l'application fonctionne correctement et que l'expérience utilisateur est bonne. C'est donc l'application Playwright, via ses browsers intégrés, qui va ouvrir le navigateur, cliquer sur les boutons, remplir les formulaires, etc. 
+En fait, Playwright va ouvrir un navigateur en mode headless (sans interface graphique) pour exécuter les tests. Ce browser va naviguer vers **`http://reverse-proxy:80`** pour accéder à l'application. Le reverse proxy va rediriger les requêtes vers le frontend ou l'API en fonction du chemin de la requête.
+Une fois la SPA récupérée par le browser de Playwright, les tests vont pouvoir s'exécuter, les appels à l'API vont pouvoir être passé par le reverse proxy, etc. 
+Playwright, via ses browsers intégrés, va donc pouvoir tester l'application dans son ensemble, comme si un utilisateur réel utilisait l'application.
+
+Dans la partie sur la conteneurisation, nous avons appris à exécuter tout notre environnement de tests :
+- Soit localement avec Docker Compose et une seule commande **`docker compose up --build`** !
+- Soit dans notre pipeline GitLab avec les stages **`test`**, **`build`** et **`e2e`** lors de simples pushs sur notre branche et de la création d'une Merge Request.
+
+C'est une grande avancée pour nos projets 🚀 ! Nous avons maintenant un environnement de tests complet qui s'exécute automatiquement à chaque push sur notre branche. Nous pouvons être sûr que notre application fonctionne correctement et que les tests e2e valident l'application avant d'intégrer les changements dans la branche **`main`**.
+
+Dans la suite, nous allons voir comment déployer notre application sur le cloud, dans un véritable environnement de production. Et nous allons voir comment exécuter les tests e2e sur cet environnement de production.
+
+Si nécessaire, vous pouvez trouver le code associé à la conteneurisation ici : [containerization](https://github.com/e-vinci/cae-theory-demos/tree/main/containerization).
 

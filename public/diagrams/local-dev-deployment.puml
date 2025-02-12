@@ -19,7 +19,7 @@
 !include <tupadr3/devicons/docker>
 !include <tupadr3/devicons/chrome>
 
-title Fastest Local Dev environment : C4 deployment diagram
+title Fastest local development environment (C4 deployment diagram)
 
 Node(devLaptop, "Developer Laptop", , , $sprite=laptop) {
 

@@ -43,7 +43,7 @@ const siteMetaData: SiteMetaData = {
       subMenu: [
         { name:"Gestion des environnements", link: "/environments/general" },
         { name: "Conteneurisation", link: "/environments/containerization" },
-        { name: "Déploiement", link: "/environments/deployment" },
+        // { name: "Déploiement", link: "/environments/deployment" },
       ],
     },
     {

@@ -15,7 +15,7 @@
 
 LAYOUT_TOP_DOWN()
 
-title Production Environment : C4 Deployment Diagram
+title Test Environment with CORS issue : local or GitLab CI/CD (C4 Deployment Diagram)
 
 Node(docker_host, "Docker Host") {
     Node(docker_compose, "Docker Compose Network", "Configuration", "Configure and manage containers",  $sprite=docker) {    
