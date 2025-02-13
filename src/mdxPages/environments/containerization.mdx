@@ -34,7 +34,7 @@ Attention à ne pas confondre la conteneurisation avec la virtualisation. La vir
 
 ## Pourquoi la conteneurisation ?
 
-Dans la partie sur la gestion des environnements, nous avons vu que les environnements de développement, de test et de production peuvent être différents.
+Dans la partie sur la gestion des environnements, nous avons vu que les environnements de développement, de tests et de production peuvent être différents.
 
 La conteneurisation permet de s'assurer que l'application fonctionne de la même manière dans tous les environnements, en encapsulant l'application et toutes ses dépendances dans un conteneur.
 
@@ -46,18 +46,18 @@ Un **conteneur** Docker (**container** en anglais) est une instance d'une image 
 
 Une **image** Docker est un modèle de conteneur qui contient le code de l'application, ses dépendances et les paramètres d'exécution.
 
-Voici à quoi nous souhaitons que ressemble notre environnement de **test** :
+Voici à quoi nous souhaitons que ressemble notre environnement de **tests**, qui doit être proche du futur environnement de production :
 
 <PlantUML src="/diagrams/conteneurisation.puml" alt="test-environment"  />
 
-Voici quelques explications sur les différents éléments de l'environnement de test :
+Voici quelques explications sur les différents éléments de l'environnement de tests :
 
 - **Docker Host** : Représente le serveur hôte où Docker est installé. Nous pourrions décider d'utiliser un serveur local ou un serveur au sein de GitLab CI/CD.
 - **Frontend** : Conteneur pour l'application frontend (par exemple, React).
 - **API** : Conteneur pour l'API (par exemple, Spring Boot).
 - **Database** (DB) : Conteneur pour la base de données (par exemple, PostgreSQL).
 - **E2E Tests** : Conteneur pour les tests end-to-end (par exemple, Playwright).
-- **Développeur** : Personne qui interagit avec les différents conteneurs pour développer et tester l'application.
+- **Développeur / Développeuse** : Personne qui interagit avec les différents conteneurs pour développer et tester l'application.
 
 Afin de faciliter la vie pour les développeurs, nous allons automatiser la création des conteneurs à l'aide de **Docker Compose**.
 
@@ -72,10 +72,6 @@ Voici un schéma de l'architecture de notre application multi-conteneurs :
 <PlantUML src="/diagrams/docker-compose.puml" alt="docker-compose"  />
 
 Pour les développeurs, Docker Compose permet de démarrer et d'arrêter l'application en une seule commande, de configurer les paramètres d'exécution, de gérer les dépendances entre les conteneurs, etc.
-
-
-
-
 
 # <InternalPageTitle> Comment créer un container Docker et l'exécuter ? </InternalPageTitle>
 
@@ -93,7 +89,7 @@ Pour créer un **conteneur** Docker, vous devez d'abord créer une **image** Doc
 
 Un **`Dockerfile`** est un fichier texte qui contient les instructions pour créer une image Docker. Il spécifie les dépendances de l'application, les commandes d'installation, les paramètres d'exécution, etc.
 
-Une fois que vous avez créé une **image** Docker, vous pouvez créer un **conteneur** Docker à partir de cette **image** en utilisant la commande **`docker run`**.
+Une fois que vous avez créé une **image** Docker, vous pouvez notamment créer un **conteneur** Docker à partir de cette **image** en utilisant la commande **`docker run`**.
 
 Pour ce tutoriel, nous allons travailler directement dans notre projet GitLab. Pensez donc à créer une nouvelle branche pour accueillir le code de ce tutoriel.
 
@@ -105,7 +101,7 @@ Nous allons commencer par créer une **image** Docker pour un environnement de d
 
 Nous allons créer une image pour le frontend de notre projet.
 
-Créez un fichier **`Dockerfile`** à la racine de votre projet `/frontend` avec le contenu suivant :
+Créez un fichier **`Dockerfile`** à la racine de votre projet **`/frontend`** avec le contenu suivant :
 
 ```Dockerfile
 FROM node:20
@@ -128,7 +124,7 @@ Voici les explications des différentes instructions du **`Dockerfile`** :
 - **`WORKDIR /usr/src/app`** : 
   - Définit le répertoire de travail pour les commandes suivantes.
   - Crée le répertoire **`/usr/src/app`** dans l'image.
-  - Pourquoi **`/usr/src/app`** ? C'est une convention pour les applications Node.js.
+  - Pourquoi **`/usr/src/app`** ? C'est une convention pour les applications Node.js. On aurait pu mettre ce que l'on souhaite, comme **`/app`** par exemple.
 - **`COPY . .`** :
   - Copie tous les fichiers du répertoire courant (votre projet) dans le répertoire de travail de l'image.
 - **`RUN npm install`** :
@@ -139,7 +135,7 @@ Voici les explications des différentes instructions du **`Dockerfile`** :
   - Exécute la commande **`npm run dev`** pour démarrer l'application en mode développement.
   - L'option **`--host`** permet de spécifier l'hôte sur lequel l'application doit écouter. Comme aucune adresse IP n'est spécifiée, l'application écoute sur toutes les interfaces réseau.
 
-Pour créer l'image Docker, nous pourrions exécuter la commande suivante à la racine de notre projet `/frontend` :
+Pour créer l'image Docker, nous pourrions exécuter la commande suivante à la racine de notre projet **`/frontend`** :
 
 ```bash
 docker build -t frontend .
@@ -189,9 +185,9 @@ Voici les explications des différentes instructions du **`docker-compose.yml`**
 
 Veuillez démarrer :
 - Docker Desktop ; il suffit normalement de cliquer sur l'icône de Docker Desktop pour le démarrer.
-- Votre base de données PostgreSQL en tapant la commande suivante à la racine de votre projet `/api` : `docker compose up --build`.
-- Votre API Spring Boot se trouvant dans le répertoire `/api` à l'aide d'IntelliJ ou de Maven. 
-- VS Code pour travailler dans le répertoire `/frontend`.
+- Votre base de données PostgreSQL en tapant la commande suivante à la racine de votre projet **`/api` : `docker compose up --build`**.
+- Votre API Spring Boot se trouvant dans le répertoire **`/api`** à l'aide d'IntelliJ ou de Maven. 
+- VS Code pour travailler dans le répertoire **`/frontend`**.
 
 Veuillez démarrer votre frontend à l'aide de **Docker Compose** en exécutant la commande suivante à la racine de votre projet GitLab (là où se trouve le nouveau fichier **`docker-compose.yml`**) :
 
@@ -233,13 +229,18 @@ Veuillez mettre à jour le fichier **`/frontend/src/components/pages/HomePage.ts
 </Typography>
 ```
 
-Ici, nous avons ajouté le mot **`Amazing`** pour rendre le titre plus attrayant. Comme nous avons monté le répertoire du projet sur l'hôte dans le conteneur, les modifications apportées au fichier **`HomePage.tsx`** sont automatiquement synchronisées avec le conteneur. Et **Vite** (builder de notre frontend) *s'occupe d'automatiquement recharger la page pour afficher les modifications !
+Ici, nous avons ajouté le mot **`Amazing`** pour rendre le titre plus attrayant. Comme nous avons monté le répertoire du projet sur l'hôte dans le conteneur, les modifications apportées au fichier **`HomePage.tsx`** sont automatiquement synchronisées avec le conteneur. Et **Vite** (le builder de notre frontend) s'occupe d'automatiquement recharger la page pour afficher les modifications !
 
 ## Arrêt de l'application
 
-Pour arrêter l'application, vous pouvez : 
+Pour arrêter l'application lancée par Docker Compose sans supprimer les conteneurs, vous pouvez : 
 - soit appuyer sur **`CTRL C`** ;
-- soit exécutez la commande suivante :
+- soit sur Docker Desktop, sélectionnez l'onglet **`Containers`**, cliquer sur le bouton **`Stop`** associé à votre container.
+
+Dans ce cas là, les conteneurs, les réseaux, les volumes, etc. sont conservés.
+Vous pouvez redémarrer l'application en exécutant la commande **`docker compose up`**.
+
+Pour arrêter l'application et supprimer les conteneurs, les réseaux, les volumes anonymes, etc., vous pouvez exécutez la commande suivante :
 
 ```bash
 docker compose down
@@ -266,7 +267,7 @@ Nous verrons aussi comment configurer les conteneurs pour qu'ils puissent commun
 
 Lorsque nous souhaitons réaliser des tests ou déployer notre application, nous avons besoin de créer une image Docker pour un environnement de tests ou de production.
 
-Dans la phase de test, nous voulons tester l'application dans un environnement similaire à celui de production. Cela nous permet de détecter les problèmes potentiels avant de déployer l'application en production.
+Dans la phase de tests, nous voulons tester l'application dans un environnement similaire à celui de production. Cela nous permet de détecter les problèmes potentiels avant de déployer l'application en production.
 
 Ainsi, nous devons apprendre à créer une image Docker qui est optimisée pour la production.
 
@@ -285,7 +286,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm ci
 
 COPY . .
 
@@ -307,8 +308,11 @@ Voici les explications des différentes instructions du **`Dockerfile`** :
   - Définit le répertoire de travail pour les commandes suivantes.
 - **`COPY package*.json ./`** :
   - Copie les fichiers **`package.json`** et **`package-lock.json`** dans le répertoire de travail.
-- **`RUN npm install`** : 
-  - Installe les dépendances du projet.
+- **`RUN npm ci`** : 
+  - Installe les dépendances du projet sur base du fichier **`package-lock.json`**.
+  - Cela permet de garantir que les dépendances installées sont les mêmes dans l'environnement de tests et de production que celles utilisées lors du développement. Pour ce cas, dans le **`Dockerfile`**, on copie d'abord les fichiers **`package*.json`** et on installe les dépendances avec **`RUN npm ci`**. 
+  - Cela impose que l'environnement de développement soit le même que l'environnement de production. En cas de souci, il faudra donc vérifier que les versions de Node.js et de npm sont les mêmes dans les différents environnements.
+  - NB : si l'on souhaitait une flexibilité entre l'environnement de développement et les environnements de tests et de production concernant l'installation des dépendances, on installerait les dépendances avec **`RUN npm install`**.
 - **`COPY . .`** :
   - Copie tous les fichiers du répertoire courant (votre projet) dans le répertoire de travail de l'image.
 - **`RUN npm run build`** :
@@ -324,7 +328,7 @@ Voici les explications des différentes instructions du **`Dockerfile`** :
   - **`-l 5172`** : Spécifie le port sur lequel le serveur doit écouter.  
 
 Pourquoi avoir séparé la copie des fichiers **`package.json`** et **`package-lock.json`** de l'installation des dépendances ?  
-Si le fichier **`package.json`** n'a pas changé, Docker peut utiliser le cache pour éviter de réinstaller les dépendances à chaque modification du code.
+Si le fichier **`package.json`** n'a pas changé, Docker peut utiliser le cache pour éviter de réinstaller les dépendances à chaque modification du code. Nous allons voir plus tard comment Docker utilise le cache pour accélérer la construction des images.
 
 Pour créer et exécuter l'image Docker, nous allons utiliser **Docker Compose**.
 
@@ -364,6 +368,8 @@ Lorsque nous créons une image Docker pour l'environnement de production, nous d
 - **Utiliser des variables d'environnement** : Utilisez des variables d'environnement pour configurer l'application. 
 - **Utiliser des multi-stages builds** : Utilisez des multi-stages builds pour réduire la taille de l'image finale.
 
+Nous allons détailler certaines de ces bonnes pratiques pour optimiser l'image Docker pour l'environnement de production.
+
 ## Utilisation d'une image de base légère
 
 Pour optimiser l'image Docker pour l'environnement de production, nous vous recommandons d'utiliser une image de base légère comme **`alpine`**. Les images **`alpine`** sont plus petites que les images de base standard, ce qui les rend idéales pour les environnements de production.
@@ -396,13 +402,14 @@ Docker utilise un système de couches pour construire et gérer les images. Chaq
 
 Docker utilise un système de cache pour accélérer la construction des images. Si une couche n'a pas changé depuis la dernière construction, Docker peut utiliser le cache pour éviter de reconstruire cette couche. Cela permet de réduire le temps de construction de l'image.
 
-Pour profiter du cache, il est important de structurer le Dockerfile de manière à ce que les parties qui changent le plus souvent soient les dernières instructions. Par exemple, les instructions qui copient les fichiers de l'application doivent être les dernières instructions du Dockerfile.
+Que se passe-t-il si une couche change ? Toutes les couches suivantes doivent être reconstruites. C'est pourquoi il est important de structurer le Dockerfile de manière à ce que les parties qui changent le plus souvent soient les dernières instructions.
 
 ## Utilisation de `.dockerignore`
 
-Le fichier **`.dockerignore`** permet d'exclure les fichiers inutiles de l'image Docker. Cela permet de réduire la taille de l'image en excluant les fichiers inutiles.
-
-Par exemple, vous pouvez exclure les dépendances installées par **`npm`** car elles sont installées à chaque construction de l'image.
+Le fichier **`.dockerignore`** permet d'exclure les fichiers inutiles, présents sur l'hôte, de l'image Docker. Cela permet principalement :
+- de réduire la taille de l'image en excluant les fichiers inutiles.
+- d'accélérer la construction de l'image en évitant de copier des fichiers inutiles.
+- d'assurer que les dépendances installée correspondent à celles spécifiées dans le **`package-lock.json`** (si vous utilisez **`npm ci`**) ou dans le **`package.json`** (si vous utilisez **`npm install`**). En effet, on ne veut pas que des dépendances installées dans l'environnement de développement soient copiées dans l'image de production. 
 
 Veuillez créer un fichier **`.dockerignore`** à la racine de votre projet `/frontend` avec le contenu suivant :
 
@@ -420,8 +427,6 @@ Dans ce fichier, nous excluons principalement tout ce qui se trouve dans **`node
 
 Avec cet ajout, la taille de l'image Docker pour l'environnement de production est maintenant de 495,35 MB. C'est une taille un peu plus raisonnable pour une application frontend, mais nous pouvons encore faire mieux.
 
-Par rapport aux optimisations déjà réalisée, celle-ci n'apporte pas de changement significatif sur la taille de l'image Docker pour l'environnement de production. En effet, dans notre stage nommé **prod**, nous n'installons pas les dépendances, et nous copions directement les fichiers de l'étape de construction **build**. Ainsi, les dépendances ne sont pas copiées dans l'image finale.
-
 ## Utilisation de multi-stages builds
 
 Les **multi-stages builds** permettent de réduire la taille de l'image finale en utilisant plusieurs étapes de construction. Chaque étape de construction crée une image intermédiaire qui est utilisée pour construire l'étape suivante. Cela permet de réduire la taille de l'image finale en ne conservant que les fichiers nécessaires pour l'application.
@@ -437,7 +442,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm ci
 
 COPY . .
 
@@ -464,7 +469,7 @@ La taille de l'image Docker pour l'environnement de production est maintenant de
 
 Pour optimiser davantage l'image Docker du frontend, nous pouvons utiliser une image de base plus légère pour la dernière étape de construction de notre image (pour le stage nommé **`prod`**) . Nous utiliserons une image de base offrant juste un serveur de fichiers statiques pour servir l'application.
 
-Veuillez mettre à jour le fichier **`Dockerfile`** à la racine de votre projet `/frontend` avec le contenu suivant :
+Veuillez mettre à jour le fichier **`Dockerfile`** à la racine de votre projet **`/frontend`** avec le contenu suivant :
 
 ```Dockerfile
 FROM node:20-alpine AS build
@@ -473,7 +478,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm ci
 
 COPY . .
 
@@ -491,11 +496,11 @@ EXPOSE 80
 Voici les explications des différentes nouvelles instructions du **`Dockerfile`** :
 - **`FROM node:20-alpine AS build`** : 
   - Utilise l'image de base **`node:20-alpine`** pour la première étape de construction.
-  - `AS build` : Nomme l'étape de construction (= un **stage**) **`build`**.
+  - **`AS build`** : Nomme l'étape de construction (= un **stage**) **`build`**.
 - **`FROM nginx:alpine AS prod`** : 
   - Utilise l'image de base **`nginx:alpine`** pour la deuxième étape de construction.
   - **nginx** est un serveur web léger qui peut servir des fichiers statiques. Nous verrons plus tard que **nginx** est souvent utilisé pour servir des applications web en production, pour offrir des services de proxy, de cache, etc.
-  - `AS prod` : Nomme l'étape de construction **`prod`**.
+  - **`AS prod`** : Nomme l'étape de construction **`prod`**.
 - **`WORKDIR /usr/share/nginx/html`** : 
   - Définit le répertoire de travail pour les commandes suivantes.
   - **nginx** sert les fichiers statiques à partir de ce répertoire.
@@ -521,7 +526,7 @@ services:
 
 Avec **`80:80`**, nous redirigeons le port **`80`** du conteneur vers le port **`80`** de l'hôte. **nginx** écoute sur le port **`80`** par défaut.
 
-Maintenant que nous avons mis à jour le **`Dockerfile`** et le **`docker-compose.yml`**, nous pouvons créer et exécuter l'image Docker pour l'environnement de production.
+Maintenant que nous avons mis à jour le **`Dockerfile`** et le **`docker-compose.yml`**, nous pouvons créer et exécuter l'image Docker pour l'environnement de tests et de production.
 
 Veuillez exécuter la commande suivante à la racine de votre projet GitLab :
 
@@ -532,7 +537,7 @@ docker compose up --build
 La taille de l'image Docker pour l'environnement de production est maintenant de 59,58 MB !  
 C'est une taille beaucoup plus raisonnable pour une application frontend.
 
-Veuillez ouvrir un navigateur et accéder à l'adresse **`http://localhost`** pour voir l'application frontend en production. Vous devriez voir l'application frontend servie par **nginx**. Néanmoins, vous ne verrez pas tout car l'application frontend n'arrive pas à communiquer avec l'API. Nous allons prochainement voir comment dockeriser l'API et l'ajouter au **`docker-compose.yml`** pour que le frontend puisse communiquer avec l'API.
+Veuillez ouvrir un navigateur et accéder à l'adresse **`http://localhost`** pour voir l'application frontend tel qu'elle serait en production. Vous devriez voir l'application frontend servie par **nginx**. Néanmoins, vous ne verrez pas tout car l'application frontend n'arrive pas à communiquer avec l'API. Nous allons prochainement voir comment dockeriser l'API et l'ajouter au **`docker-compose.yml`** pour que le frontend puisse communiquer avec l'API.
 
 ## Conclusion sur l'optimisation d'une image Docker pour la production
 
@@ -627,7 +632,7 @@ services:
       - "5432:5432"
 ```
 
-Nous avons ajouté un service **`api`** pour l'API Spring Boot. Nous avons également ajouté un service **`db`** pour la base de données PostgreSQL.
+Nous avons ajouté un service **`api`** pour l'API Spring Boot.
 
 Comme la base de données est utilisé par le service **`api`**, nous avons ajouté un service **`db`**. Comme le service **`db`** est au sein du même `docker-compose` que le service **`api`**, le service **`api`** pourra communiquer avec le service **`db`** via le nom du service **`db`**.
 
@@ -642,7 +647,7 @@ Nous avons également ajouté un **`entrypoint`** pour le service **`api`** :
 - L'**`entrypoint`** est une commande qui est exécutée lorsque le conteneur est démarré. Ici, nous exécutons l'application Spring Boot en mode `test`. Nous avons vu dans le tutoriel sur les profils Spring Boot que nous pouvons utiliser le profil **`test`** pour exécuter l'application en mode test.
 - L'**`entrypoint`** remplace la commande **`CMD`** dans le **`Dockerfile`** de l'API. Il est souvent utilisé pour passer des arguments à l'application.
 
-Nous avons utilisé le profile **`test`** pour exécuter l'application en mode test. Cela permet de démarrer l'application en mode test. Nous devons donc changer la configuration de l'API en mode test pour que l'application puisse communiquer avec la base de données.  
+Nous avons utilisé le profile **`test`** pour exécuter l'application en mode test. Nous devons donc changer la configuration de l'API en mode test pour que l'application puisse communiquer avec la base de données.  
 Veuillez mettre à jour le fichier **`application-test.properties`** dans le répertoire **`src/main/resources`** de l'API :
 
 ```properties
@@ -651,7 +656,7 @@ spring.datasource.url=jdbc:postgresql://db:5432/cae_db
 
 L'API qui tournera dans le conteneur Docker pourra communiquer avec la base de données PostgreSQL via le nom du service **`db`**.
 
-Maintenant que nous avons mis à jour le **`Dockerfile`** et le **`docker-compose.yml`**, nous pouvons créer et exécuter l'image Docker pour l'environnement de production.
+Maintenant que nous avons mis à jour le **`Dockerfile`** et le **`docker-compose.yml`**, nous pouvons créer et exécuter l'image Docker pour l'environnement de tests et de production.
 
 Veuillez exécuter la commande suivante à la racine de votre projet GitLab :
 
@@ -659,14 +664,12 @@ Veuillez exécuter la commande suivante à la racine de votre projet GitLab :
 docker compose up --build
 ```
 
-**Vite** exposes env variables on the special import.meta.env object, which are statically replaced at build time. Some built-in variables are available in all cases:
-
 L'image de l'API est trop volumineuse. En effet, elle fait 572.46 MB.  
 Nous allons voir comment optimiser l'image Docker de l'API pour la production.
 
 ## Optimisation de l'image Docker de l'API
 
-Nous pouvons tenter d'utiliser une version `alpine` pour java. Veuillez mettre à jour le fichier **`Dockerfile`** à la racine de votre projet `/api` avec le contenu suivant :
+Nous pouvons tenter d'utiliser une version `alpine` pour java. Veuillez mettre à jour le fichier **`Dockerfile`** à la racine de votre projet **`/api`** avec le contenu suivant :
 
 ```Dockerfile {8}
 FROM maven:3.9.9-amazoncorretto-21 AS build
@@ -695,7 +698,7 @@ Notons qu'ici, comme nous avons déjà appliqué un multi-stages build, nous n'a
 
 Après quelques recherches sur internet pour trouver une image Java plus légère, nous avons trouvé l'image **`eclipse-temurin`** qui est une distribution d'OpenJDK. Nous allons donc utiliser cette image pour l'API.
 
-Veuillez mettre à jour le fichier **`Dockerfile`** à la racine de votre projet `/api` avec le contenu suivant :
+Veuillez mettre à jour le fichier **`Dockerfile`** à la racine de votre projet **`/api`** avec le contenu suivant :
 
 ```Dockerfile {10}
 FROM maven:3.9.9-amazoncorretto-21 AS build
@@ -736,7 +739,7 @@ Néanmoins, même si dans le terminal vous voyez que l'API est démarrée, vous 
 
 ## Introduction
 
-Dans ce tutoriel, nous allons voir comment configurer les conteneurs pour qu'ils puissent communiquer entre eux. Nous allons voir comment connecter les services dans une application multi-conteneurs.
+Dans ce tutoriel, nous allons voir comment configurer les conteneurs pour qu'ils puissent communiquer entre eux. Nous allons connecter les services dans une application multi-conteneurs.
 
 Revenons d'abord quelques instants sur la compréhension de l'environnement de développement.
 
@@ -780,14 +783,14 @@ Comme c'est le serveur de fichiers statiques **`nginx`** qui sert l'application 
 Pour que le frontend puisse communiquer avec l'API, on peut soit :
 - Option 1 : faire en sorte que le frontend exécute directement les requêtes vers l'URL de l'API dans le conteneur Docker, c'est à dire **`http://frontend:3000`**. 
 - Option 2 : soit utiliser un serveur de proxy pour rediriger les requêtes du frontend vers l'API. 
-- Option 3 : soit utiliser un reverse proxy pour rediriger tant les requêtes du frontend que celles de l'API
+- Option 3 : soit utiliser un reverse proxy pour rediriger tant les requêtes du frontend que celles de l'API.
 
 
 ## Option 1 : Changer les URLs dans le frontend lors des appels à l'API dans le conteneur Docker
 
 Nous pourrions faire en sorte que le frontend exécute directement les requêtes vers l'URL de l'API dans le conteneur Docker. Pour cela, il suffit de changer les URLs dans le frontend lors des appels à l'API.
 
-Une première difficulté pour cette cette option est que nous devons changer les URLs dans le frontend à chaque fois que nous passons de l'environnement de développement à l'environnement de production. Nous pouvons automatiser ça en utilisant des variables d'environnement. Quand nous sommes dans l'environnement de développement, nous utilisons l'URL **`http://localhost:3000`**. Quand nous sommes dans l'environnement de production, nous utilisons l'URL **`http://frontend:3000`** pour faire les appels à l'API.  
+Une première difficulté pour cette cette option est que nous devons changer les URLs dans le frontend à chaque fois que nous passons de l'environnement de développement à l'environnement de tests ou de production. Nous pouvons automatiser ça en utilisant des variables d'environnement. Quand nous sommes dans l'environnement de développement, nous utilisons l'URL **`http://localhost:3000`**. Quand nous sommes dans l'environnement de tests ou de production, nous utilisons l'URL **`http://frontend:3000`** pour faire les appels à l'API.  
 
 Nous pouvons mettre imaginer cette option assez simple et mettre à jour les fichiers du frontend partout où il y a des appels à l'API : **`/frontend/src/components/App/index.tsx`** et **`/frontend/src/contexts/UserContext.tsx`**. :
 
@@ -807,7 +810,7 @@ C'est pourquoi, nous allons voir une autre option plus élégante pour configure
 
 ## Option 2 : Utiliser un serveur de proxy pour rediriger les requêtes du frontend vers l'API
 
-Pour cette option, il s'agit d'ajouter une nouvelle application **`nginx`** qui ferait office de proxy : son rôle serait, pour toutes les requêtes faites par le frontend sur le port **`80` et contenant l'url **`/api`**, de les transférer vers  vers l'API sur le port **`3000` du conteneur Docker.
+Pour cette option, il s'agit d'ajouter une nouvelle application **`nginx`** qui ferait office de proxy : son rôle serait, pour toutes les requêtes faites par le frontend sur le port **`80`** et contenant l'url **`/api`**, de les transférer vers  vers l'API sur le port **`3000`** du conteneur Docker.
 
 Le côté gênant de cette option, c'est que pour éviter les problèmes de CORS, le serveur de proxy doit fonctionner sur le même port que le serveur de fichiers statiques du frontend. En effet, si le serveur de proxy fonctionne sur un autre port, les requêtes du frontend vers l'API seront bloquées par le navigateur.
 
@@ -877,7 +880,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm ci
 
 COPY . .
 
@@ -913,7 +916,7 @@ services:
 
 ### Configuration du reverse proxy
 
-Nous allons ajouter un service **`reverse-proxy`** pour le reverse proxy. Le reverse proxy écoutera sur le port **`80`** et redirigera les requêtes vers le frontend ou l'API en fonction du chemin de la requête.
+Nous allons ajouter un service **`reverse-proxy`**. Le reverse proxy écoutera sur le port **`80`** et redirigera les requêtes vers le frontend ou l'API en fonction du chemin de la requête.
 
 Veuillez ajouter un fichier **`nginx.conf`** à la racine du projet GitLab avec le contenu suivant :
 
@@ -957,9 +960,9 @@ Nous avons deux blocs de configuration dans le fichier **`nginx.conf`** :
   - Redirige toutes les autres requêtes vers le frontend sur le port **`5172`** du conteneur Docker.
   - **`proxy_pass http://frontend:5172;`** : Redirige les requêtes vers le service **`frontend`**.
 
-Il ne reste plus qu'à ajouter le service **`reverse-proxy`** au **`docker-compose.yml`**. Veuillez mettre à jour le fichier **`docker-compose.yml`** à la racine de votre projet avec le contenu suivant :
+Il ne reste plus qu'à exposer le port du frontend sur l'hôte (**`5172:5172`**) et ajouter le service **`reverse-proxy`** au **`docker-compose.yml`**. Veuillez mettre à jour le fichier **`docker-compose.yml`** à la racine de votre projet avec le contenu suivant :
 
-```yaml {3241} showLineNumbers
+```yaml {8,32-41} showLineNumbers
 services:
   frontend:
     container_name: frontend-prod
@@ -1003,7 +1006,7 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf
 ```
 
-Nous avons ajouté un service **`reverse-proxy`** pour le reverse proxy. Le reverse proxy écoutera sur le port **`80`** et redirigera les requêtes vers le frontend ou l'API en fonction du chemin de la requête.
+Nous avons ajouté un service **`reverse-proxy`**. Le reverse proxy écoutera sur le port **`80`** et redirigera les requêtes vers le frontend ou l'API en fonction du chemin de la requête.
 
 Nous avons ajouté un volume pour monter le fichier **`nginx.conf`** dans le conteneur **`reverse-proxy`**. Cela permet de mettre à jour la configuration du reverse proxy sans avoir à reconstruire l'image Docker.
 
@@ -1201,7 +1204,10 @@ On ne peut pas optimiser cette couche, car elle contient les dépendances néces
 
 # <InternalPageTitle> Comment ignorer les fichiers qui ne peuvent pas se retrouver dans l'image ? </InternalPageTitle>
 
-Lorsqu'on souhaite créer une image Docker, il est important de n pas inclure les fichiers qui pourraient causer des soucis, comme révéler des secrets, ou rendre l'image trop volumineuse. Pour cela, on peut utiliser un fichier **`.dockerignore`** pour exclure les fichiers et répertoires que l'on ne souhaite pas inclure dans l'image Docker.
+Nous avons déjà vu comment optimiser les images Docker en utilisant un fichier **`.dockerignore`** pour exclure les fichiers inutiles. Nous allons revoir cela ici pour les tests e2e.
+
+
+Lorsqu'on souhaite créer une image Docker, il est important de ne pas inclure les fichiers qui pourraient causer des soucis, comme révéler des secrets, ou rendre l'image trop volumineuse. Pour rappel, on peut utiliser un fichier **`.dockerignore`** pour exclure les fichiers et répertoires que l'on ne souhaite pas inclure dans l'image Docker.
 
 Attention, il s'agit ici d'exclure les fichiers qui se trouvent sur l'hôte. Si vous souhaitez exclure des fichiers qui se trouvent dans l'image, il faudra le faire dans le **`Dockerfile`**.
 
@@ -1273,7 +1279,7 @@ api test:
 
 frontend test:
   stage: test
-  image: node:20
+  image: node:20-alpine
   cache:
     key:
       files:
@@ -1282,7 +1288,7 @@ frontend test:
       - frontend/node_modules
   script:
     - cd frontend
-    - npm install
+    - npm ci
     - npm run lint
     - npm run coverage
   artifacts:
@@ -1331,7 +1337,7 @@ Mais comment réagit notre pipeline si les tests e2e échouent ? Nous allons voi
 
 ## Que se passe-t-il si les tests e2e échouent ?
 
-Veuillez mettre à jour votre fichier **`/e2e/tests/helper.spec.ts`** pour que les tests échouent. Par exemple, vous pouvez simplement faire aller sur une page qui n'existe pas ("**`/d`**") :
+Veuillez mettre à jour votre fichier **`/e2e/tests/helper.spec.ts`** pour que les tests échouent. Par exemple, vous pouvez simplement tenter de naviguer vers une page qui n'existe pas ("**`/d`**") :
 
 ```ts {3}
 const goFromHomePageToRegisterPage = async (page: Page) => {
@@ -1346,7 +1352,7 @@ Poussez vos modifications sur votre branche **`feature/dockerized`**. Après plu
 Par défaut, **Playwright** applique un timeout de 30 secondes pour les tests e2e. Si un test prend plus de 30 secondes, il est considéré comme échoué.  
 Si vous souhaitez en savoir plus sur les timeouts dans **Playwright**, vous pouvez consulter la documentation officielle : https://playwright.dev/docs/test-timeouts
 
-En fait, par défaut, playwright lance un serveur web pour afficher les résultats des tests. Si le test échoue, le serveur web ne s'arrête pas et le pipeline ne se termine pas. Pour résoudre ce problème, nous devons empêcher le serveur web de Playwright d'afficher les résultats des tests.
+En fait, par défaut, playwright lance un serveur web pour afficher les résultats des tests. Si le test échoue, le serveur web ne s'arrête pas et le pipeline ne se termine pas. Pour résoudre ce problème, une des solutions est d'empêcher le serveur web de Playwright d'afficher les résultats des tests.
 
 Veuillez mettre à jour le fichier **`e2e/playwright.config.ts`** avec le contenu suivant :
 
@@ -1419,9 +1425,10 @@ Nous souhaitons exécuter ces 3 stages en séquence dans notre pipeline :
 
 Un événement spécifique pourrait être :  
 - Une merge request sur la branche **`main`**.
-- Un push sur une branche spécifique 
+- Un push sur une branche spécifique .
 - Un push contenant un mot-clé dans le message du commit.
 - ...
+
 Pour ce tutoriel, nous allons choisir de déclencher les tests e2e seulement lors d'une Merge Request sur la branche **`main`**.
 
 
@@ -1456,7 +1463,7 @@ api test:
 
 frontend test:
   stage: test
-  image: node:20
+  image: node:20-alpine
   cache:
     key:
       files:
@@ -1465,7 +1472,7 @@ frontend test:
       - frontend/node_modules
   script:
     - cd frontend
-    - npm install
+    - npm ci
     - npm run lint
     - npm run coverage
   artifacts:
@@ -1513,13 +1520,13 @@ Voici les explications sur le stage **`e2e`** :
 - Nous utilisons la règle **`rules`** pour exécuter les tests e2e seulement lors d'une Merge Request sur la branche **`main`**.
 - Nous utilisons la variable **`$CI_PIPELINE_SOURCE`** pour vérifier si l'événement est une Merge Request.
 - Nous utilisons la variable **`$CI_MERGE_REQUEST_TARGET_BRANCH_NAME`** pour vérifier si la branche cible de la Merge Request est la branche par défaut (généralement la branche **`main`**).
-- Notons qu'à chaque push sur une branche qui contient une Merge Request sur la branche **`main`**, les tests e2e s'exécuteront. Ceci est pratique, car à chaque fois que vous poussez une branche, vous pouvez être sûr que les tests e2e s'exécuteront sur la branche **`main`**.
+- Notons qu'à chaque push sur une branche qui contient une Merge Request sur la branche **`main`**, les tests e2e s'exécuteront. Ceci est pratique, car à chaque fois que vous poussez une branche en dans le cadre de la review de la Merge Request, vous pouvez être sûr que les tests e2e s'exécuteront sur la branche **`main`**.
 
 Maintenant que nous avons ajouté un stage **`build`** pour construire les images Docker de notre application, nous pouvons exécuter notre pipeline GitLab. Il suffit de pousser notre branche (**`feature/dockerized`** par exemple) sur notre projet GitLab.
 
 Nous devrions voir que tout fonctionne correctement et que les images Docker de notre application sont construites avec succès. Bien sûr, il n'y a que les stages **`test`** et **`build`** qui s'exécutent pour le moment. Les tests e2e ne s'exécutent que lors d'une Merge Request sur la branche **`main`**.
 
-Veuillez maintenant créer une Merge Request sur la branche **`main`** pour voir les tests e2e s'exécuter dans votre pipeline GitLab.
+Veuillez maintenant créer une Merge Request de votre "feature branch" vers la branche **`main`** pour voir les tests e2e s'exécuter dans votre pipeline GitLab.
 
 ## Conclusion sur la conteneurisation
 
@@ -1529,7 +1536,7 @@ Voici à quoi ressemble l'environnement de tests dans notre pipeline GitLab :
 
 <PlantUML src="/diagrams/test-deployment.puml" alt="Environnement de tests"/>
 
-Lorsque les tests e2e s'exécutent, **Playwright** simule un utilisateur réel qui interagit avec l'application. Cela permet de vérifier que l'application fonctionne correctement et que l'expérience utilisateur est bonne. C'est donc l'application Playwright, via ses browsers intégrés, qui va ouvrir le navigateur, cliquer sur les boutons, remplir les formulaires, etc. 
+Lorsque les tests e2e s'exécutent, **Playwright** simule un utilisateur qui interagit avec l'application. Cela permet de vérifier que l'application fonctionne correctement et que l'expérience utilisateur est bonne. C'est donc l'application Playwright, via ses browsers intégrés, qui va ouvrir le navigateur, cliquer sur les boutons, remplir les formulaires, etc. 
 En fait, Playwright va ouvrir un navigateur en mode headless (sans interface graphique) pour exécuter les tests. Ce browser va naviguer vers **`http://reverse-proxy:80`** pour accéder à l'application. Le reverse proxy va rediriger les requêtes vers le frontend ou l'API en fonction du chemin de la requête.
 Une fois la SPA récupérée par le browser de Playwright, les tests vont pouvoir s'exécuter, les appels à l'API vont pouvoir être passé par le reverse proxy, etc. 
 Playwright, via ses browsers intégrés, va donc pouvoir tester l'application dans son ensemble, comme si un utilisateur réel utilisait l'application.

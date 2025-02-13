@@ -27,11 +27,11 @@ Un environnement est un ensemble de ressources matérielles et logicielles qui p
 
 Il existe plusieurs types d'environnements, parmi lesquels on peut citer :
 - **L'environnement de développement** : C'est l'environnement dans lequel les développeurs travaillent pour écrire le code de l'application. Il est généralement installé sur les ordinateurs des développeurs.
-- **L'environnement de test** : C'est l'environnement dans lequel les tests unitaires et les tests d'intégration sont exécutés. 
+- **L'environnement de tests** : C'est l'environnement dans lequel les tests unitaires et les tests d'intégration sont exécutés. 
 - **L'environnement de staging** : C'est l'environnement dans lequel l'application est déployée pour être testée par les utilisateurs finaux avant sa mise en production.
 - **L'environnement de production** : C'est l'environnement dans lequel l'application est déployée pour être utilisée par les utilisateurs finaux.
 
-Notons que l'environnement de développement est généralement installé sur les ordinateurs des développeurs, tandis que les environnements de test, de staging et de production sont généralement installés sur des serveurs.
+Notons que l'environnement de développement est généralement installé sur les ordinateurs des développeurs, tandis que les environnements de tests, de staging et de production sont généralement installés sur des serveurs.
 
  # <InternalPageTitle> Comment gérer ces environnements ? </InternalPageTitle>
 
@@ -71,7 +71,8 @@ Nous allons voir les avantages et les inconvénients de chaque approche dans les
 
 **Inconvénients** :
 - Performance légèrement inférieure à celle des serveurs dédiés physiques en raison de la surcharge de virtualisation.
-- Complexité de gestion des hyperviseurs et des VM.
+- Complexité de gestion des hyperviseurs et des machines virtuelles (VM).  
+NB : l'hyperviseur distribue à chaque VM les ressources qui ont été allouées et gère la planification des ressources des VM selon les ressources physiques disponibles.
 
 ### Conteneurisation
 **Description** : Utilisation de conteneurs (par exemple, Docker) pour isoler les applications et leurs dépendances dans des environnements légers et portables.
@@ -124,7 +125,7 @@ Les inconvénients du cloud computing sont également à prendre en compte, parm
 
 Lorsque vous souhaitez passer sur le cloud, vous avez le choix entre différents types de services cloud, parmi lesquels on peut citer :
 - **IaaS (Infrastructure as a Service)** : Fournit des ressources informatiques virtualisées sur Internet. Les utilisateurs peuvent louer des serveurs, du stockage, des réseaux et d'autres infrastructures de base.
-- **PaaS (Platform as a Service)** : Fournit une plateforme complète pour le développement, le test, le déploiement et la gestion des applications. Les utilisateurs peuvent se concentrer sur le développement de leurs applications sans se soucier de l'infrastructure sous-jacente.
+- **PaaS (Platform as a Service)** : Fournit une plateforme complète pour le développement, les tests, le déploiement et la gestion des applications. Les utilisateurs peuvent se concentrer sur le développement de leurs applications sans se soucier de l'infrastructure sous-jacente.
 - **SaaS (Software as a Service)** : Fournit des applications logicielles complètes sur Internet. Les utilisateurs peuvent accéder aux applications via un navigateur web sans avoir à les installer ou à les gérer localement.
 
 ## Avantages et inconvénients de chaque type de service cloud
@@ -147,13 +148,13 @@ Lorsque vous souhaitez passer sur le cloud, vous avez le choix entre différents
 **Avantages** :
 - Simplifie le développement et le déploiement des applications.
 - Gestion automatique de l'infrastructure, des mises à jour et de la sécurité.
-- Évolutivité intégrée. 
+- Faut peu de compétences en administration système.
 
 **Inconvénients** :
 - Moins de contrôle sur l'infrastructure sous-jacente.
 - Risque de dépendance à un fournisseur spécifique.
 
-**Exemples** : Heroku, Google App Engine, Microsoft Azure App Services.
+**Exemples** :  Microsoft Azure App Services, AWS Elastic Beanstalk, Heroku, Google App Engine.
 
 ### SaaS (Software as a Service)
 
@@ -170,26 +171,22 @@ Lorsque vous souhaitez passer sur le cloud, vous avez le choix entre différents
 - Google Workspace, Microsoft Office 365, Salesforce.
 - GitLab CI/CD offert par gitlab.com. 
 
-### Lien avec la gestion des environnements
-- **IaaS** : Permet de créer des environnements de développement, de test, de staging et de production en louant des ressources informatiques. Les utilisateurs ont un contrôle total sur la configuration et la gestion de ces environnements.
+### Lien des services cloud avec la gestion des environnements
+- **IaaS** : Permet de créer des environnements de développement, de tests, de staging et de production en louant des ressources informatiques. Les utilisateurs ont un contrôle total sur la configuration et la gestion de ces environnements.
 - **PaaS** : Simplifie la gestion des environnements en fournissant une plateforme complète pour le développement et le déploiement des applications. Les utilisateurs peuvent facilement créer et gérer des environnements sans se soucier de l'infrastructure sous-jacente.
 - **SaaS** : Les utilisateurs accèdent aux applications directement via le cloud, sans avoir à gérer les environnements. Les fournisseurs de SaaS gèrent l'infrastructure, les mises à jour et la sécurité.
 
 En résumé, IaaS, PaaS et SaaS offrent différentes approches pour la gestion des environnements, allant du contrôle total avec IaaS à la simplicité et à la gestion complète par le fournisseur avec SaaS. Le choix du modèle dépend des besoins spécifiques du projet en termes de flexibilité, de contrôle, de coût et de complexité de gestion.
 
-## Quel service cloud choisir pour la gestion des environnements ?
+La plupart des temps, si les développeurs veulent se concentrer sur le développement des applications sans se soucier de l'infrastructure sous-jacente, le **PaaS** (comme Azure App Service) est souvent privilégié pour le déploiement.
 
-Le choix du service cloud pour la gestion des environnements dépend des besoins spécifiques du projet en termes de contrôle, de flexibilité, de coût et de complexité de gestion.
-
-La plupart des temps, si les développeurs veulent se concentrer sur le développement des applications sans se soucier de l'infrastructure sous-jacente, le **PaaS** est souvent privilégié. Il permet de simplifier la gestion des environnements en fournissant une plateforme complète pour le développement, le test, le déploiement et la gestion des applications.
-
-Dans le cadre du **DevOps**, le **PaaS** est souvent utilisé pour automatiser les tâches de déploiement, de test et de gestion des environnements.
+Dans le cadre du **DevOps**, le **SaaS** (comme GitLab CI/CD) est souvent utilisé pour simplifier le développement, automatiser les tâches de déploiement, de test et de gestion des environnements.
 
 # <InternalPageTitle> Quel environnement choisir pour le projet CAE ? </InternalPageTitle>
 
-Dans le cadre de ce cours, nous allons utiliser la conteneurisation pour gérer les environnements de développement, de test, de staging et de production. Nous souhaitons avoir chaque composant de l'application (frontend, api, base de données...) encapsulé dans un conteneur distinct, avec une gestion multi-conteneurs à l'aide de **Docker Compose** pour faciliter les communications entre les composants et la gestion des dépendances.
+Dans le cadre de ce cours, nous allons utiliser la conteneurisation pour gérer les environnements de développement, de tests, de staging et de production. Nous souhaitons avoir chaque composant de l'application (frontend, api, base de données...) encapsulé dans un conteneur distinct, avec une gestion multi-conteneurs à l'aide de **Docker Compose** pour faciliter les communications entre les composants et la gestion des dépendances.
 
-Concernant l'infrastructure pour les environnement de test, de staging et de production, nous allons utiliser : 
+Concernant l'infrastructure pour les environnement de tests, de staging et de production, nous allons utiliser : 
 - **GitLab CI/CD** pour l'intégration continue et le déploiement continu. C'est un service **SaaS** qui permet d'automatiser les tests et le déploiement des applications.
 - **Azure App Services** pour le déploiement des applications sur le cloud. C'est un service **PaaS** qui fournit une plateforme complète pour le développement, le test et le déploiement des applications. Azure App Services sera utilisé pour l'environnement de **staging** et de **production** uniquement.
 
