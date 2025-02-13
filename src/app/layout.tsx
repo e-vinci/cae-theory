@@ -28,13 +28,22 @@ const siteMetaData: SiteMetaData = {
     },
     {
       name: `Qualité`,
-      link: `/quality`,
+      link: ``,
       subMenu: [
         { name: "Qualité générale", link: "/quality/general" },
         { name: "Qualité du frontend", link: "/quality/frontend" },
         { name: "Qualité de l'API", link: "/quality/api" },
         { name: "Intégration Continue", link: "/quality/ci" },
         { name: "Tests e2e", link: "/quality/e2e" },
+      ],
+    },
+    {
+      name: "Environnements",
+      link: "",
+      subMenu: [
+        { name:"Gestion des environnements", link: "/environments/general" },
+        { name: "Conteneurisation", link: "/environments/containerization" },
+        // { name: "Déploiement", link: "/environments/deployment" },
       ],
     },
     {
@@ -67,7 +76,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
           <body>
             <Header siteMetaData={siteMetaData} />
 
-            <Container style={{ padding: "1rem", wordWrap: "break-word" }}>
+            <Container sx={{ padding: "1rem", wordWrap: "break-word" }}>
               {children}
             </Container>
             <ScrollToTop />

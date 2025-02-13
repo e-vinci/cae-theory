@@ -1,0 +1,45 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Deployment.puml
+
+!include <C4/C4_Deployment>
+!include <tupadr3/common>
+!include <tupadr3/font-awesome/server>
+!include <tupadr3/font-awesome/database>
+!include <tupadr3/font-awesome/users>
+!include <tupadr3/font-awesome/laptop>
+!include <tupadr3/devicons/react>
+!include <tupadr3/devicons/postgresql>
+!include <tupadr3/devicons/java>
+!include <tupadr3/devicons/docker>
+!include <tupadr3/devicons/chrome>
+
+LAYOUT_TOP_DOWN()
+
+title Test Environment with CORS issue : local or GitLab CI/CD (C4 Deployment Diagram)
+
+Node(docker_host, "Docker Host") {
+    Node(docker_compose, "Docker Compose Network", "Configuration", "Configure and manage containers",  $sprite=docker) {    
+        Node(frontContainer, "Front container", "nginx:alpine", "Host the front", $sprite=docker) {
+            Container(frontend, "Frontend", "HTML/JS/CSS", "The main UI that the customer interacts with", $sprite=react)
+        }
+        Node(apiContainer, "API container", "eclipse-temurin:21-jre-jammy", "Runs the API", $sprite=docker) {
+            Container(api, "API", "Spring Boot", "Handles all business logic", $sprite=img:https://upload.wikimedia.org/wikipedia/commons/7/79/Spring_Boot.svg{scale=0.5})
+        }
+        Node(dbContainer, "Postgres container", "postgres:latest", "Runs the db", $sprite=docker) {
+            ContainerDb(db, "Database", "PostgreSQL", "Holds pizzeria's information", $sprite=postgresql)
+        }
+    }
+}
+
+System_Boundary(external, "External Systems") {
+    System(browser, "Browser", "HTML/JS/CSS", $sprite=chrome)
+}
+
+AddRelTag("apiRel", $lineColor="red", $textColor="red")
+
+
+Rel(browser, frontend, "Requests Files", "HTTP")
+Rel(browser, api, "Makes API calls", "HTTP", "CORS issues", $tags="apiRel")
+Rel(api, db, "Reads/Writes", "JDBC")
+
+@enduml

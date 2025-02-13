@@ -1,0 +1,196 @@
+---
+title: Environnements
+description: Gestions d'environnement
+date: 05/02/2025
+---
+
+<InternalPageMenu>
+  <PathViewer>
+    <PathViewerItem to="/"> CAE </PathViewerItem>
+    <PathViewerItem to="/environments"> Environnements </PathViewerItem>
+    <PathViewerItem selected> Gestions d'environnements </PathViewerItem>
+  </PathViewer>
+  <InternalPageMenuItem> Qu'est ce qu'un environnement ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment gérer ces environnements ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Quel service cloud choisir ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Quel environnement choisir pour le projet CAE ? </InternalPageMenuItem>
+</InternalPageMenu>
+
+# <InternalPageTitle> Qu'est ce qu'un environnement ? </InternalPageTitle>
+
+## Introduction
+
+Qu'est-ce qu'on entend par environnement dans le cadre de la conception d'applications d'entreprise ?  
+Un environnement est un ensemble de ressources matérielles et logicielles qui permettent à une application de fonctionner.  
+
+## Les différents types d'environnements
+
+Il existe plusieurs types d'environnements, parmi lesquels on peut citer :
+- **L'environnement de développement** : C'est l'environnement dans lequel les développeurs travaillent pour écrire le code de l'application. Il est généralement installé sur les ordinateurs des développeurs.
+- **L'environnement de tests** : C'est l'environnement dans lequel les tests unitaires et les tests d'intégration sont exécutés. 
+- **L'environnement de staging** : C'est l'environnement dans lequel l'application est déployée pour être testée par les utilisateurs finaux avant sa mise en production.
+- **L'environnement de production** : C'est l'environnement dans lequel l'application est déployée pour être utilisée par les utilisateurs finaux.
+
+Notons que l'environnement de développement est généralement installé sur les ordinateurs des développeurs, tandis que les environnements de tests, de staging et de production sont généralement installés sur des serveurs.
+
+ # <InternalPageTitle> Comment gérer ces environnements ? </InternalPageTitle>
+
+## Introduction
+
+La gestion des environnements est une tâche importante dans le développement d'applications d'entreprise. Elle consiste à s'assurer que chaque environnement dispose des ressources nécessaires pour fonctionner correctement et à isoler les environnements les uns des autres pour éviter les conflits.
+
+## Différentes approches de gestion des environnements
+
+Il existe plusieurs approches pour gérer les environnements, parmi lesquelles on peut citer :
+- **Serveurs dédiés physiques** : Utilisation de serveurs physiques dédiés pour chaque environnement.
+- **Serveurs virtualisés** : Utilisation de machines virtuelles (VM) pour créer des environnements isolés sur des serveurs physiques partagés.
+- **Conteneurisation** : Utilisation de conteneurs (par exemple, Docker) pour isoler les applications et leurs dépendances dans des environnements légers et portables.
+
+Nous allons voir les avantages et les inconvénients de chaque approche dans les sections suivantes.
+
+## Avantages et inconvénients des différentes approches
+
+### Serveurs dédiés physiques
+
+**Avantages** :
+- Performance optimale car les ressources ne sont pas partagées.
+- Isolation complète entre les environnements.
+
+**Inconvénients** :
+- Coût élevé en termes de matériel et de maintenance.
+- Scalabilité limitée par le nombre de serveurs physiques disponibles.
+- Complexité de gestion des serveurs, donc cela nécessite des administrateurs systèmes.
+
+### Serveurs virtualisés
+
+**Avantages** :
+- Meilleure utilisation des ressources matérielles.
+- Facilité de gestion et de déploiement des environnements.
+- Scalabilité améliorée par la création de nouvelles machines virtuelles.
+- Ne nécessite pas de gérer le matériel physique. Cela peut être fait par un fournisseur de cloud.
+
+**Inconvénients** :
+- Performance légèrement inférieure à celle des serveurs dédiés physiques en raison de la surcharge de virtualisation.
+- Complexité de gestion des hyperviseurs et des machines virtuelles (VM).  
+NB : l'hyperviseur distribue à chaque VM les ressources qui ont été allouées et gère la planification des ressources des VM selon les ressources physiques disponibles.
+
+### Conteneurisation
+**Description** : Utilisation de conteneurs (par exemple, Docker) pour isoler les applications et leurs dépendances dans des environnements légers et portables.
+
+**Avantages** :
+- Démarrage rapide et utilisation efficace des ressources.
+- Portabilité et consistance entre les environnements de développement, de test, de staging et de production.
+- Facilité de déploiement et de mise à l'échelle.
+
+**Inconvénients** :
+- Isolation moins complète que les VM, car les conteneurs partagent le même noyau du système d'exploitation.
+- Nécessite une bonne gestion des orchestrateurs de conteneurs (par exemple, Kubernetes, Docker Swarm...).  
+NB : Un orchestrateur de conteneurs est un système qui gère automatiquement les conteneurs, y compris leur déploiement, leur mise à l'échelle, leur mise en réseau et leur gestion de cycle de vie.
+
+## Quelle approche choisir pour la gestion des environnements ?
+
+La gestion des environnements peut se faire de différentes manières, chacune ayant ses avantages et ses inconvénients. Le choix entre serveurs dédiés physiques, serveurs virtualisés et conteneurisation dépend des besoins spécifiques du projet en termes de performance, de coût, de scalabilité et de facilité de gestion.
+
+Néanmoins, lorsque l'on fait du DevOps, la conteneurisation est souvent privilégiée pour sa facilité de déploiement, sa portabilité et sa scalabilité. Elle permet de créer des environnements cohérents et reproductibles, ce qui facilite le développement, les tests et le déploiement des applications.
+
+De plus, comme les entreprises se tournent de plus en plus vers le cloud pour héberger leurs applications, la conteneurisation est un choix naturel car elle permet :
+- de déployer des applications sur des infrastructures cloud de manière cohérente et portable ; en effet, les conteneurs peuvent être déployés sur n'importe quel cloud public ou privé qui prend en charge les conteneurs.
+- de simplifier la gestion des différents composants (frontend, api, base de données...) d'une application d'entreprise, car chaque composant peut être encapsulé dans un conteneur distinct, chacun ayant ses propres dépendances et configurations.
+- de réunir différents composants (frontend, api, base de données...) d'une application d'entreprise dans un système de multi-conteneurs, ce qui facilite les communications entre les composants et la gestion des dépendances.
+- de pouvoir réutiliser un même conteneur pour plusieurs environnements (dev, test, staging, prod), ce qui permet de garantir la cohérence des environnements et de réduire les risques d'erreurs de configuration. Par exemple, un même conteneur peut être utilisé pour exécuter une application en local sur un ordinateur de développeur, puis être déployé sur un serveur de test, puis sur un serveur de staging, puis sur un serveur de production, sans avoir à modifier la configuration du conteneur à chaque étape.
+- de faciliter la mise à l'échelle des applications en fonction de la demande, car les conteneurs peuvent être facilement dupliqués et répartis sur plusieurs nœuds.
+- de réduire les coûts d'infrastructure en optimisant l'utilisation des ressources matérielles et en permettant une gestion plus efficace des environnements.
+
+# <InternalPageTitle> Quel service cloud choisir ? </InternalPageTitle>
+
+## Introduction
+
+Le cloud computing est un modèle de fourniture de services informatiques via internet, qui permet d'accéder à des ressources informatiques (serveurs, stockage, bases de données, réseaux, logiciels, analyse, intelligence artificielle...) à la demande et à l'échelle, sans avoir à gérer l'infrastructure sous-jacente.
+
+## Pourquoi passer sur le cloud ?
+
+Les avantages du cloud computing sont nombreux, parmi lesquels on peut citer :
+- **Élasticité** : Capacité à augmenter ou à réduire les ressources informatiques en fonction de la demande.
+- **Agilité** : Capacité à déployer rapidement de nouvelles applications et à les mettre à jour.
+- **Économies d'échelle** : Réduction des coûts d'infrastructure en mutualisant les ressources entre plusieurs clients.
+- **Sécurité** : Amélioration de la sécurité des données et des applications grâce à des services de sécurité avancés.
+
+Les inconvénients du cloud computing sont également à prendre en compte, parmi lesquels on peut citer :
+- **Dépendance** : Risque de dépendance à un fournisseur de cloud.
+- **Sécurité** : Risque de sécurité des données et des applications en cas de faille de sécurité chez le fournisseur de cloud.
+- **Coût** : Risque de coûts cachés liés à l'utilisation des services cloud.
+- **Problèmes écologiques** : Parfois, le cloud computing peut être moins écologique que l'utilisation de serveurs physiques. En effet, les data centers des fournisseurs de cloud consomment beaucoup d'énergie et peuvent avoir un impact négatif sur l'environnement. Les communications entre les data centers et les utilisateurs peuvent également avoir un impact négatif sur l'environnement, alors que parfois, un serveur physique au sein d'une entreprise peut être plus écologique.
+
+## IaaS, PaaS et SaaS : c'est quoi ?
+
+Lorsque vous souhaitez passer sur le cloud, vous avez le choix entre différents types de services cloud, parmi lesquels on peut citer :
+- **IaaS (Infrastructure as a Service)** : Fournit des ressources informatiques virtualisées sur Internet. Les utilisateurs peuvent louer des serveurs, du stockage, des réseaux et d'autres infrastructures de base.
+- **PaaS (Platform as a Service)** : Fournit une plateforme complète pour le développement, les tests, le déploiement et la gestion des applications. Les utilisateurs peuvent se concentrer sur le développement de leurs applications sans se soucier de l'infrastructure sous-jacente.
+- **SaaS (Software as a Service)** : Fournit des applications logicielles complètes sur Internet. Les utilisateurs peuvent accéder aux applications via un navigateur web sans avoir à les installer ou à les gérer localement.
+
+## Avantages et inconvénients de chaque type de service cloud
+
+### IaaS (Infrastructure as a Service)
+
+**Avantages** :
+- Flexibilité et contrôle total sur l'infrastructure.
+- Paiement à l'utilisation, ce qui peut réduire les coûts.
+- Évolutivité pour répondre aux besoins changeants.
+
+**Inconvénients** :
+- Nécessite une gestion et une maintenance de l'infrastructure par l'utilisateur. Il faut donc avoir des compétences en administration système.
+- Complexité de configuration et de gestion.
+
+**Exemples** : Amazon Web Services (AWS), Microsoft Azure, Google Cloud Platform (GCP).
+
+### PaaS (Platform as a Service)
+
+**Avantages** :
+- Simplifie le développement et le déploiement des applications.
+- Gestion automatique de l'infrastructure, des mises à jour et de la sécurité.
+- Faut peu de compétences en administration système.
+
+**Inconvénients** :
+- Moins de contrôle sur l'infrastructure sous-jacente.
+- Risque de dépendance à un fournisseur spécifique.
+
+**Exemples** :  Microsoft Azure App Services, AWS Elastic Beanstalk, Heroku, Google App Engine.
+
+### SaaS (Software as a Service)
+
+**Avantages** :
+- Aucune gestion de l'infrastructure ou des applications requise par l'utilisateur.
+- Accès facile et rapide aux applications.
+- Mises à jour automatiques et gestion de la sécurité par le fournisseur.
+
+**Inconvénients** :
+- Moins de personnalisation et de contrôle sur les applications.
+- Risque de dépendance à un fournisseur spécifique.
+
+**Exemples** : 
+- Google Workspace, Microsoft Office 365, Salesforce.
+- GitLab CI/CD offert par gitlab.com. 
+
+### Lien des services cloud avec la gestion des environnements
+- **IaaS** : Permet de créer des environnements de développement, de tests, de staging et de production en louant des ressources informatiques. Les utilisateurs ont un contrôle total sur la configuration et la gestion de ces environnements.
+- **PaaS** : Simplifie la gestion des environnements en fournissant une plateforme complète pour le développement et le déploiement des applications. Les utilisateurs peuvent facilement créer et gérer des environnements sans se soucier de l'infrastructure sous-jacente.
+- **SaaS** : Les utilisateurs accèdent aux applications directement via le cloud, sans avoir à gérer les environnements. Les fournisseurs de SaaS gèrent l'infrastructure, les mises à jour et la sécurité.
+
+En résumé, IaaS, PaaS et SaaS offrent différentes approches pour la gestion des environnements, allant du contrôle total avec IaaS à la simplicité et à la gestion complète par le fournisseur avec SaaS. Le choix du modèle dépend des besoins spécifiques du projet en termes de flexibilité, de contrôle, de coût et de complexité de gestion.
+
+La plupart des temps, si les développeurs veulent se concentrer sur le développement des applications sans se soucier de l'infrastructure sous-jacente, le **PaaS** (comme Azure App Service) est souvent privilégié pour le déploiement.
+
+Dans le cadre du **DevOps**, le **SaaS** (comme GitLab CI/CD) est souvent utilisé pour simplifier le développement, automatiser les tâches de déploiement, de test et de gestion des environnements.
+
+# <InternalPageTitle> Quel environnement choisir pour le projet CAE ? </InternalPageTitle>
+
+Dans le cadre de ce cours, nous allons utiliser la conteneurisation pour gérer les environnements de développement, de tests, de staging et de production. Nous souhaitons avoir chaque composant de l'application (frontend, api, base de données...) encapsulé dans un conteneur distinct, avec une gestion multi-conteneurs à l'aide de **Docker Compose** pour faciliter les communications entre les composants et la gestion des dépendances.
+
+Concernant l'infrastructure pour les environnement de tests, de staging et de production, nous allons utiliser : 
+- **GitLab CI/CD** pour l'intégration continue et le déploiement continu. C'est un service **SaaS** qui permet d'automatiser les tests et le déploiement des applications.
+- **Azure App Services** pour le déploiement des applications sur le cloud. C'est un service **PaaS** qui fournit une plateforme complète pour le développement, le test et le déploiement des applications. Azure App Services sera utilisé pour l'environnement de **staging** et de **production** uniquement.
+
+Notons que si nous n'utilisions pas **Docker Compose** pour la gestion multi-conteneurs, chaque composant de l'application (frontend, api, base de données...) devrait être déployé dans des applications distinctes sur **Azure App Services**. Cela augmenterait la complexité de gestion des communications entre les composants !
+
+Un énorme avantage d'utiliser **Docker Compose** est de pouvoir réunir les différents composants (frontend, api, base de données...) d'une application d'entreprise dans un système de multi-conteneurs, ce qui facilite les communications et qui va grandement simplifier le déploiement des applications sur **Azure App Services**.  
+Nous verrons tout cela en détail dans les prochains cours !
