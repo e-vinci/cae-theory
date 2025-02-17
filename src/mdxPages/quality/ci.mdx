@@ -369,9 +369,9 @@ Si vous aviez un compte Ultimate, voici comment vous pourriez configurer les rè
 
 Voici un premier workflow que nous souhaitons appliquer pour l'intégration continue de code dans GitLab :
 
-1. Un développeur crée une nouvelle feature branche à partir de la branche principale.
-2. Le développeur travaille sur sa feature et pousse ses modifications sur la branche distante.
-3. Le développeur crée une *merge request* pour fusionner sa branche avec la branche principale.
+1. Un développeur ou une développeuse crée une nouvelle feature branche à partir de la branche principale.
+2. Le développeur ou la développeuse travaille sur sa feature et pousse ses modifications sur la branche distante.
+3. Le développeur ou la développeuse crée une *merge request* pour fusionner sa branche avec la branche principale.
 4. Un autre membre de l'équipe approuve la *merge request*.
 
 Nous allons commencer par ajouter le boilerplate d'une API Spring à votre projet GitLab.
@@ -542,9 +542,15 @@ Veuillez demander à un autre membre de votre équipe, généralement à la pers
 En résumé, pour revoir et approuver une *merge request*, vous devriez :
 1. Accéder à la MR.
 2. Vérifier que le pipeline a été exécuté avec succès. Si ça n'est pas le cas, demander au créateur de la MR de corriger les erreurs.
-3. Regarder les modifications apportées par la MR via l'onglet `Commits` et l'onglet `Changes`.
+3. Regarder les modifications apportées par la MR via l'onglet `Commits` et l'onglet `Changes`. Si les modifications touchent à plusieurs aspects du code, il est recommandé de visualiser localement les modifications. En effet, il est souvent importer de jeter un oeil sur le code pour s'assurer que les modifications sont correctes, mais aussi, d'exécuter l'application pour se rendre compte d'éventuels changements visuels, ou de comportement.
+
+Pour ce faire, nous vous recommandons :
+- de cloner la branche de la MR sur votre machine locale.
+- de tester les modifications localement.
+- il est aussi possible d'installer des extensions à votre éditeur de code pour visualiser localement les Merge Request. Par exemple, pour VS Code, vous pouvez installer l'extension **`GitLab Workflow`**. Dans l'onglet **`ISSUES AND MERGE REQUESTS`**, en faisant un clic droit sur une MR, vous pouvez choisir **`Check out Merge Request Branch`** pour cloner la branche de la MR sur votre machine locale. Vous pouvez ensuite visualiser les modifications apportées par la MR, tester les modifications localement, et ajouter des commentaires sur des lignes spécifiques si nécessaire.
+
 4. Si vous avez des remarques : 
-- vous pouvez les ajouter dans l'onglet `Changes`. Pour chaque fichier modifié, vous pouvez ajouter des commentaires sur des lignes spécifiques.
+- vous pouvez les ajouter dans l'onglet `Changes` sur GitLab (ou directement dans VS Code via l'extension **`GitLab Workflow`**). Pour chaque fichier modifié, vous pouvez ajouter des commentaires sur des lignes spécifiques.
 - vous pouvez ajouter des commentaires généraux dans l'onglet `Overview` de la MR.
 - vous devez atteindre que le créateur de la MR corrige les erreurs avant d'approuver la MR. Pour cela, le créateur de la MR doit pousser de nouveaux commits sur la branche de la MR.
 - vous pouvez revoir les nouveaux commits en cliquant sur le bouton `Commits` de la MR. N'hésitez pas à ajouter des commentaires sur des lignes spécifiques si nécessaire...
@@ -571,11 +577,11 @@ Attention, le git pull n'est possible que si le pipeline de la branche principal
 
 ## Résumé du workflow actuel pour l'intégration continue
 
-1. Un développeur crée une nouvelle feature branche à partir de la branche principale.
-2. Le développeur travaille sur sa feature et pousse ses modifications sur la branche distante.
-3. Le pipeline d'intégration continue est déclenché automatiquement. Si le pipeline échoue, le développeur doit corriger les erreurs avant de continuer.
-4. Le développeur crée une *MR* pour fusionner sa branche avec la branche principale et lui assigne un `Reviewer`.
-5. Un autre membre de l'équipe, le `Reviewer`, fait une review des modifications et approuve la *MR* seulement s'il n'a plus de remarques. Tant qu'il y a des remarques, le développeur (le créateur de la MR) doit corriger les erreurs et pousser de nouveaux commits.
+1. Un développeur ou une développeuse crée une nouvelle feature branche à partir de la branche principale.
+2. Le développeur ou la développeuse travaille sur sa feature et pousse ses modifications sur la branche distante.
+3. Le pipeline d'intégration continue est déclenché automatiquement. Si le pipeline échoue, le développeur ou la développeuse doit corriger les erreurs avant de continuer.
+4. Le développeur ou la développeuse crée une *MR* pour fusionner sa branche avec la branche principale et lui assigne un `Reviewer`.
+5. Un autre membre de l'équipe, le `Reviewer`, fait une review des modifications, généralement teste localement les modifications, et approuve la *MR* seulement s'il n'a plus de remarques. Tant qu'il y a des remarques, le développeur ou la développeuse (le créateur la créatrice de la MR) doit corriger les erreurs et pousser de nouveaux commits.
 6. La *MR* est fusionnée avec la branche principale.
 
 # <InternalPageTitle> Comment gérer des tâches en parallèle dans un pipeline ? </InternalPageTitle>
