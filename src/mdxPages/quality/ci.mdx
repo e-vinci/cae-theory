@@ -577,12 +577,17 @@ Attention, le git pull n'est possible que si le pipeline de la branche principal
 
 ## Résumé du workflow actuel pour l'intégration continue
 
+Sous forme de résumé visuel, voici le workflow actuel pour l'intégration continue de code dans GitLab :
+
+<PlantUML src="/diagrams/ci-workflow-iteration1.puml" alt="Workflow de l'intégration continue" />
+
+Voici le résumé sous forme de texte :
 1. Un développeur ou une développeuse crée une nouvelle feature branche à partir de la branche principale.
 2. Le développeur ou la développeuse travaille sur sa feature et pousse ses modifications sur la branche distante.
 3. Le pipeline d'intégration continue est déclenché automatiquement. Si le pipeline échoue, le développeur ou la développeuse doit corriger les erreurs avant de continuer.
 4. Le développeur ou la développeuse crée une *MR* pour fusionner sa branche avec la branche principale et lui assigne un `Reviewer`.
 5. Un autre membre de l'équipe, le `Reviewer`, fait une review des modifications, généralement teste localement les modifications, et approuve la *MR* seulement s'il n'a plus de remarques. Tant qu'il y a des remarques, le développeur ou la développeuse (le créateur la créatrice de la MR) doit corriger les erreurs et pousser de nouveaux commits.
-6. La *MR* est fusionnée avec la branche principale.
+6. La *MR* est fusionnée avec la branche principale à la demande du développeur ou de la développeuse.
 
 # <InternalPageTitle> Comment gérer des tâches en parallèle dans un pipeline ? </InternalPageTitle>
 

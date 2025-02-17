@@ -1,0 +1,29 @@
+@startuml
+actor Developer
+actor Reviewer
+participant "CI Pipeline" as CI
+participant "Remote Repository :\nFeature Branch" as RemoteRepo
+participant "Remote Repository :\nMain Branch" as MainBranch
+
+Developer -> Developer: Crée une nouvelle feature branche\nà partir de la branche principale
+Developer -> Developer: Travaille sur sa feature
+Developer -> RemoteRepo: Pousse les modifications\nsur la branche distante
+RemoteRepo -> CI: Déclenche le pipeline d'intégration continue
+CI -> Developer: Pipeline échoue ?\nCorrige les erreurs
+Developer -> RemoteRepo: Pousse les nouvelles modifications
+RemoteRepo -> CI: Déclenche à nouveau le pipeline
+CI -> Developer: Pipeline réussi
+
+Developer -> RemoteRepo: Crée une MR\net assigne un Reviewer
+Reviewer -> RemoteRepo: Fait un pull de la feature branch
+Reviewer -> Reviewer: Fait une review des modifications
+Reviewer -> Developer: Remarques ?
+Developer -> RemoteRepo: Corrige les erreurs\net pousse de nouveaux commits
+RemoteRepo -> CI: Déclenche à nouveau le pipeline
+CI -> Developer: Pipeline réussi
+
+Reviewer -> RemoteRepo: Approuve la MR
+Developer -> RemoteRepo: Demande la fusion de la MR
+RemoteRepo -> MainBranch: Fusionne la MR\navec la branche principale
+
+@enduml
