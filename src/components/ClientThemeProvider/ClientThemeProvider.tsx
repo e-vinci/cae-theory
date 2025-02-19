@@ -27,6 +27,12 @@ const ClientThemeProvider = ({ children }: ClientThemeProviderProps) => {
       <CssBaseline />
       <GlobalStyles
         styles={{
+          blockquote: {
+            borderLeft: `5px solid ${theme.palette.primary.main}`,
+            backgroundColor: theme.palette.action.hover,
+            padding: "0.5em",
+            margin: "1em 0",
+          },
           table: {
             width: "100%",
             borderCollapse: "collapse",
