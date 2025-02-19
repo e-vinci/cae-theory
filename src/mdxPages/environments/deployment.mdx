@@ -24,6 +24,239 @@ date: 05/02/2025
   <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
 </InternalPageMenu>
 
-# <InternalPageTitle> Comment créer votre compte GitLab ? </InternalPageTitle>
+# <InternalPageTitle> Pourquoi et où déployer ? </InternalPageTitle>
 
-**👉 CONSIGNE** : 
+## Introduction
+
+Le déploiement d'une application web est une étape cruciale dans le cycle de vie d'une application web. Il s'agit de rendre l'application accessible à ses utilisateurs finaux.
+
+Dans ce cours, dans la partie sur la [gestion des environnements](general), nous avons déjà vu que nous allions utiliser :
+- **GitLab CI/CD** pour automatiser le déploiement de notre application (SaaS).
+- **Azure App Service** pour héberger notre application (PaaS).
+
+En effet, lorsqu'on fait du DevOps, on va généralement utiliser des services cloud pour déployer nos applications. Cela permet de ne pas avoir à gérer l'infrastructure sous-jacente, et de se concentrer sur le développement de l'application.
+
+## Staging environnement
+
+Le staging environnement est un environnement de test qui est une réplique de l'environnement de production. Il permet de tester l'application dans des conditions proches de la production avant de la déployer pour tous les utilisateurs finaux.
+
+Le staging environnement est généralement utilisé pour :
+- Tester les nouvelles fonctionnalités avant de les déployer en production.
+- Vérifier que les mises à jour de l'application ne causent pas de régressions.
+- Effectuer des tests de performance et de charge.
+
+Pour ce cours, nous allons d'abord déployer notre application sur le staging environnement. Nous verrons plus tard comment déployer l'application en production après la réussite de tests dans l'environnement de staging.
+
+Tout ce que nous allons apprendre sur le déploiement de l'application sur le staging environnement sera applicable pour le déploiement en production.
+
+Voici à quoi nous souhaitons que le staging environnement ressemble pour cette première étape de déploiement :
+
+<PlantUML src="/diagrams/staging-deployment1.puml" alt="Environnement de staging (partie 1 )" />
+
+Voici quelques points importants à noter sur le diagramme ci-dessus :
+- Le frontend et l'API sont déployés sur un **Azure App Service**.
+- Pour les étudiants Vinci, le hosting de la DB est offert par la Haute École de Vinci. Pour les autres, vous pouvez utiliser un service cloud comme **Azure Databse for PostgreSQL**.
+
+Pour le déploiement, nous allons procéder en plusieurs étapes :
+1. Déploiement de la base de données vers le staging environnement.
+2. Déploiement du reverse proxy, du frontend et de l'API sur le staging environnement.
+3. Réalisation des tests e2e sur le staging environnement à partir de GitLab CI/CD.
+
+Avant d'aller plus loin, nous allons d'abord voir comment créer un compte sur Azure afin d'avoir des crédits gratuits pour déployer notre application.
+
+# <InternalPageTitle> Comment créer un compte Azure avec des crédits gratuits ? </InternalPageTitle>
+
+Afin d'héberger notre application sur Azure, nous allons devoir créer un compte Azure. Heureusement, Microsoft offre des crédits gratuits :
+- pour les étudiants : https://azure.microsoft.com/en-us/free/students/
+- pour les non-étudiants : https://azure.microsoft.com/en-us/free/ (attention, les crédits gratuits ne sont valables que pour 30 jours, et vous devrez ajouter une carte de crédit).
+- pour les startups : https://www.microsoft.com/en-us/startups
+
+Pour les étudiants Vinci, veuillez donc suivre les instructions sur le lien suivant : https://azure.microsoft.com/en-us/free/students/  
+Vous devrez : 
+- vous logguer avec votre compte Vinci
+- introduire vos données et le Nom de l'école
+- cliquer sur **`Verify academic status`** et suivre les instructions
+
+
+# <InternalPageTitle> Comment déployer notre DB ? </InternalPageTitle>
+
+## Introduction
+
+Actuellement, notre application utilise une base de données locale dans un conteneur Docker. 
+
+Pour les étudiants Vinci, vous avez ou allez recevoir un email avec les informations de connexion à la base de données de la Haute École de Vinci.  
+
+Pour les autres :
+- vous pouvez utiliser un service cloud comme **Azure Database for PostgreSQL** : https://azure.microsoft.com/en-us/products/postgresql/ 
+- veuillez créer une base de données PostgreSQL et noter les informations de connexion :
+  - **`url`** de connexion si vous l'avez, sinon vous pouvez la construire avec les informations suivantes : 
+    - **`Host`**
+    - **`Database`**
+    - **`Port`**
+    - L'URL ressemblera à cela : **`jdbc:postgresql://<Host>:<Port>/<Database>`**
+   - **`Username`**
+  - **`Password`**
+
+
+## Connexion à votre DB visible sur internet
+
+### Comment gérer l'environnement de développement et de staging ?
+
+Pour ce tutorial (nommé `staging`), nous souhaitons pouvoir créer un environnement locale qui se connecte à la DB de staging à l'aide de Docker Compose.
+
+En fait, nous souhaitons :
+- Quand nous démarrons notre API à l'aide d'IntelliJ, via notre environnement de développement, qu'elle se connecte à la DB dans le container Docker local.
+- Quand nous démarrons notre API à l'aide de Docker Compose, via notre environnement de staging, qu'elle se connecte à la DB de staging.
+
+Comment rendre cela possible ?  
+Nous souhaitons que l'API se connecte à la DB en utilisant une URL de connexion qui est différente selon l'environnement. Pour ce faire, nous allons utiliser deux fichiers de configuration différents :
+- **`application.properties`** pour l'environnement de développement.
+- **`application-staging.properties`** pour l'environnement de staging.
+
+### Comment gérer la configuration de l'environnement de staging ?
+
+Nous pourrions créer le fichier **`application-staging.properties`** dans le dossier **`src/main/resources`** de notre API avec le contenu suivant :
+
+```properties
+spring.application.name=demo
+
+server.port=3000
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/cae_db
+spring.datasource.username=cae_user
+spring.datasource.password=cae
+spring.jpa.generate-ddl=true
+spring.sql.init.mode=always
+spring.jpa.defer-datasource-initialization=true
+```
+
+Nous souhaiterions mettre à jour ce fichier pour qu'il se connecte à la DB de staging. Pour ce faire, une première idée serait de remplacer les valeurs de **`spring.datasource.url`**, **`spring.datasource.username`** et **`spring.datasource.password`** par les informations de connexion à notre DB.
+
+Cependant, nous ne voulons pas stocker ces informations de connexion dans le code source de notre application. En effet, cela pourrait poser des problèmes de sécurité si notre code source est rendu public. C'est d'ailleurs une très mauvaise pratique de stocker des informations sensibles dans le code source.
+
+Pour résoudre ce problème, nous allons utiliser les **variables d'environnement**. Les variables d'environnement sont des variables qui sont définies dans l'environnement d'exécution de notre application. Elles peuvent être utilisées pour stocker des informations sensibles comme les informations de connexion à la DB.
+
+Pour ce faire, nous pourrions remplacer les valeurs de **`spring.datasource.url`**, **`spring.datasource.username`** et **`spring.datasource.password`** par des variables d'environnement directement au sein du fichier **`application-staging.properties`**.
+
+Veuillez créer le fichier **`application-staging.properties`** dans le dossier **`src/main/resources`** de votre API avec le contenu suivant :
+
+```properties
+spring.application.name=demo
+
+server.port=3000
+
+spring.datasource.url=${SPRING_DATASOURCE_URL}
+spring.datasource.username=${SPRING_DATASOURCE_USERNAME}
+spring.datasource.password=${SPRING_DATASOURCE_PASSWORD}
+spring.jpa.generate-ddl=true
+spring.sql.init.mode=always
+spring.jpa.defer-datasource-initialization=true
+```
+
+**`SPRING_DATASOURCE_URL`**, **`SPRING_DATASOURCE_USERNAME`** et **`SPRING_DATASOURCE_PASSWORD`** sont des variables d'environnement que nous allons définir dans notre environnement de staging.
+
+Avant de passer à l'environnement de staging complet sur le cloud, il serait intéressant de voir si localement on pourrait démarrer nos services en utilisant la DB de staging. On peut imaginer deux scénarios :
+- Scénario 1 : On utilise notre environnement de développement pour démarrer notre API et notre DB de staging.
+- Scénario 2 : On utilise Docker Compose pour démarrer notre API et notre DB de staging.
+
+Même si le scénario 1 est plus simple, le scénario 2 est plus proche de ce que nous allons faire en production. 
+
+Nous allons premièrement voir comment démarrer notre API localement via notre environnement de développement. Lorsque nous passerons au déploiement de l'API & du frontend, nous verrons comment démarrer notre API via Docker Compose.
+
+### Comment démarrer notre API localement via notre environnement de développement avec une DB de stagging ?
+
+Pour démarrer notre API localement via notre environnement de développement avec une DB de staging, nous allons devoir définir les variables d'environnement **`SPRING_DATASOURCE_URL`**, **`SPRING_DATASOURCE_USERNAME`** et **`SPRING_DATASOURCE_PASSWORD`**.
+
+Le plus simple est d'utiliser la librairie **`spring-dotenv`** pour définir ces variables d'environnement. **`spring-dotenv`** est une librairie qui permet de charger des variables d'environnement à partir d'un fichier **`.env`**.
+
+Au sein de votre API, veuillez suivre ces instructions pour installer **`spring-dotenv`** (ajout de la bonne dépendance dans Maven) : https://github.com/paulschwarz/spring-dotenv
+
+Le fichier **`.env`** est un fichier qui contient les variables d'environnement que nous souhaitons définir pour, actuellement, l'API uniquement. Nous allons créer un fichier **`.env`** à la racine de notre dossier **`api`** avec le contenu suivant (remplacez les valeurs par celles de votre DB de staging) :
+
+```properties
+SPRING_DATASOURCE_URL=jdbc:postgresql://hostnameOrIPToYourPostgresServer:YOUR_PORT/YOUR_DB_NAME
+SPRING_DATASOURCE_USERNAME=yourUsername   
+SPRING_DATASOURCE_PASSWORD=yourPassword
+``` 
+
+Attention à bien vous assurer que le fichier **`.env`** n'est pas versionné dans Git. Pour ce faire, vérifiez que **`.env`** est présent dans le fichier **`.gitignore`** de votre projet.
+
+Pour démarrer notre API en utilisant le profil **`staging`**, nous savons déjà comment le faire via un terminal : 
+
+```bash
+mvn spring-boot:run -Dspring-boot.run.profiles=staging
+```
+
+Pour rappel, un profil est une manière de définir des configurations spécifiques pour un environnement donné. Dans notre cas, le profil **`staging`** est utilisé pour définir les configurations spécifiques à l'environnement de staging.
+
+Par contre, comment démarrer notre API en utilisant le profil **`staging`** via IntelliJ ?
+
+Veuillez ouvrir IntelliJ au niveau du projet associé à votre API et suivre ces instructions pour démarrer votre API en utilisant le profil **`staging`** :
+
+1. Cliquez sur **`Edit Configurations...`** dans le menu de configuration d'IntelliJ.
+2. Sélectionnez la configuration **`Spring Boot`** de votre API (elle peut s'appeler **`DemoApplication`** par exemple).
+3. En haut à gauche, cliquez sur l'icône **`Copy Configuration`** pour créer une nouvelle configuration.
+4. Nommez cette nouvelle configuration **`Staging DB`** par exemple.
+5. Dans le champ **`Active profiles`**, ajoutez **`staging`**.
+6. Cliquez sur **`OK`** pour sauvegarder la configuration.
+
+Maintenant, vous pouvez démarrer votre API en utilisant le profil **`staging`** via IntelliJ en sélectionnant la configuration **`Staging DB`** et en cliquant sur le bouton **`Run`**.
+
+Veuillez vérifier que votre API se connecte bien à la DB de staging en démarrant votre API via IntelliJ. N'hésitez pas à exécuter des requêtes HTTP pour vérifier que tout fonctionne correctement.
+
+Nous allons maintenant voir comment démarrer notre API via Docker Compose en utilisant la DB de staging.
+
+# <InternalPageTitle> Comment créer un environnement local conforme à l'environnement de staging ? </InternalPageTitle>
+
+## Introduction
+
+Avant de déployer notre API & notre frontend, il est important de mettre en place tous les services nécessaires pour que notre application fonctionne correctement. Pour ce faire, nous allons utiliser Docker Compose.
+
+Nous allons donc créer un environnement local qui se rapproche de l'environnement de staging, en mettant temporairement de côté les tests e2e. Cet environnement local sera composé de :
+
+<PlantUML src="/diagrams/local-staging-deployment1.puml" alt="Environnement de staging local" />
+
+Pour ce faire, nous allons créer un fichier **`docker-compose.local.staging.yml`** à la racine de notre projet GitLab avec le contenu suivant :
+
+```yaml {} showLineNumbers
+services:
+  frontend:
+    container_name: frontend-prod
+    image: frontend-prod
+    build:
+      context: ./frontend
+    ports:
+      - 5172:5172
+    depends_on:
+      - api
+
+  api:
+    container_name: api-prod
+    image: api-prod
+    build: ./api
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+    entrypoint: ["java", "-jar", "app.jar", "--spring.profiles.active=staging"]
+
+  reverse-proxy:
+    container_name: reverse-proxy-prod
+    image: nginx:alpine
+    ports:
+      - 80:80
+    depends_on:
+      - frontend
+      - api
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+```
+
+C'est en fait notre configuration de test e2e, mais sans les tests e2e et sans la DB. 
+
+> Attention, nous avons aussi changé le profil actif de l'API en **`staging`** pour utiliser les variables d'environnement attendues dans le fichier **`application-staging.properties`**. 
+
+Comment est-ce que les variables d'environnements sont rendues disponibles dans le service **`api`** ?  
+
+
+Nous allons devoir définir les variables d'environnement **`SPRING_DATASOURCE_URL`**, **`SPRING_DATASOURCE_USERNAME`** et **`SPRING_DATASOURCE_PASSWORD`** dans le service **`api`**.
