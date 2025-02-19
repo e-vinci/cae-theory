@@ -10,11 +10,11 @@ date: 05/02/2025
     <PathViewerItem to="/environments"> Environnements </PathViewerItem>
     <PathViewerItem selected> Déploiement </PathViewerItem>
   </PathViewer>
-  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
-  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
-  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
-  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
-  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Pourquoi et où déployer ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment créer un compte Azure avec des crédits gratuits ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment déployer notre DB ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment créer un environnement local proche de l'environnement de staging ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment déployer une application sur Azure Web App Service ? </InternalPageMenuItem>
   <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
   <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
     <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
@@ -206,7 +206,7 @@ Veuillez vérifier que votre API se connecte bien à la DB de staging en démarr
 
 Nous allons maintenant voir comment démarrer notre API via Docker Compose en utilisant la DB de staging.
 
-# <InternalPageTitle> Comment créer un environnement local conforme à l'environnement de staging ? </InternalPageTitle>
+# <InternalPageTitle> Comment créer un environnement local proche de l'environnement de staging ? </InternalPageTitle>
 
 ## Introduction
 
@@ -218,7 +218,7 @@ Nous allons donc créer un environnement local qui se rapproche de l'environneme
 
 Pour ce faire, nous allons créer un fichier **`docker-compose.local.staging.yml`** à la racine de notre projet GitLab avec le contenu suivant :
 
-```yaml {} showLineNumbers
+```yaml {18-21} showLineNumbers
 services:
   frontend:
     container_name: frontend-prod
@@ -236,8 +236,10 @@ services:
     build: ./api
     ports:
       - 3000:3000
-    depends_on:
-      - db
+    environment:
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
     entrypoint: ["java", "-jar", "app.jar", "--spring.profiles.active=staging"]
 
   reverse-proxy:
@@ -258,5 +260,464 @@ C'est en fait notre configuration de test e2e, mais sans les tests e2e et sans l
 
 Comment est-ce que les variables d'environnements sont rendues disponibles dans le service **`api`** ?  
 
+Nous allons devoir définir les variables d'environnement **`SPRING_DATASOURCE_URL`**, **`SPRING_DATASOURCE_USERNAME`** et **`SPRING_DATASOURCE_PASSWORD`** afin qu'elles soient disponibles dans le service **`api`** (au sein du conteneur de l'API).
 
-Nous allons devoir définir les variables d'environnement **`SPRING_DATASOURCE_URL`**, **`SPRING_DATASOURCE_USERNAME`** et **`SPRING_DATASOURCE_PASSWORD`** dans le service **`api`**.
+Pour ce faire, nous pouvons utiliser le fichier **`.env`** que nous avons créé précédemment pour qu'il soit lu par Docker Compose. Le plus rapide et efficace est de lancer la commande suivante dans un terminal à la racine de votre projet GitLab :
+
+```bash
+docker compose -f docker-compose.staging.yml --env-file api/.env up --build 
+```
+
+En effet, la commande **`--env-file`** permet de spécifier un fichier **`.env`** qui sera lu par Docker Compose et dont les variables d'environnement seront rendues disponibles pour les services. Les variables d'environnement définies dans ne sont pas automatiquement injectées dans les conteneurs Docker par défaut. Vous devez explicitement les passer via la section **`environment:`** dans le fichier **`docker-compose.staging.yml`**.
+
+Ainsi **`- SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}`** signifie que la variable d'environnement **`SPRING_DATASOURCE_URL`** sera disponible dans le conteneur de l'API avec la valeur de la variable d'environnement **`SPRING_DATASOURCE_URL`** définie dans le fichier **`.env`**.
+
+Veuillez vérifier que tous vos services démarrent correctement en utilisant le fichier **`docker-compose.staging.yml`** : pour ce faire, il suffit d'ouvrir un navigateur et de naviguer sur **`http://localhost`** pour vérifier que tout est fonctionnel.
+
+Nous allons maintenant voir comment déployer notre application sur Azure Web App Service.
+
+# <InternalPageTitle> Comment est-il possible de déployer une application sur Azure Web App Service ? </InternalPageTitle>
+
+## Introduction
+
+Maintenant que nous avons notre environnement de staging local qui fonctionne correctement, nous allons voir comment déployer notre application sur Azure Web App Service.
+
+Azure Web App Service est un service cloud (PaaS) qui permet de déployer des applications web sans avoir à gérer l'infrastructure sous-jacente. Il est idéal pour déployer des applications web qui nécessitent une haute disponibilité et une scalabilité automatique.
+
+## Comment déployer une application sur Azure Web App Service ?
+
+Il existe plusieurs façons de déployer une application sur Azure Web App Service
+- **Publish code** : vous pouvez publier votre code source directement sur Azure. Dans ce cas, vous devez choisir un runtime (Java, Node.js, Python, etc.) et Azure s'occupera de l'exécution de votre application. Vous devez créer autant de Web App que de services à déployer. Vous pouvez ensuite utiliser différent moyens pour pousser le code vers Azure : GitHub, Azure Repos, Local Git (CI/CD) ou External Git ou FTP.
+- **Publish single container** : vous pouvez publier un conteneur Docker sur Azure. Dans ce cas, vous devez créer un conteneur Docker pour chaque service à déployer et les publier sur Azure.
+- **Publish docker compose** : vous pouvez publier un fichier **`docker-compose.yml`** sur Azure. Dans ce cas, vous devez créer un fichier **`docker-compose.yml`** qui définit les services à déployer et les publier sur Azure. Le gros avantage de cette méthode est que vous pouvez déployer plusieurs services en une seule fois.
+
+Pour ce cours, nous allons utiliser la méthode **Publish docker compose** pour déployer tous nos services en une seule fois dans une seule Web App.
+
+# <InternalPageTitle> Comment créer une application sur Azure Web App Service ? </InternalPageTitle>
+
+## Création d'une Azure Web App
+
+Vous devez avoir une **subscription** à Azure. Les instructions pour obtenir des crédits gratuits pour les étudiants sont disponibles plus haut dans cette page.
+
+Pour déployer une application sur Azure Web App Service, vous devez d'abord créer une **Web App**. 
+
+Il est possible de le faire via le portail Azure ou via la ligne de commande. Pour ce tutoriel, nous utiliserons le portail Azure.
+
+Veuillez vous connecter au portail Azure : https://portal.azure.com/
+
+Cliquez ensuite sur **`App Services`**. Si vous avez bien une **subscription**, alors vous aurez l'option **`Create`**. Cliquez dessus.
+
+Choisissez **`Web App`** et cliquez sur **`Create`**.
+
+Dans la section **`Basics`**, remplissez les informations suivantes :
+- **`Subscription`** : choisissez votre subscription, probablement **`Azure for Students`**.
+- **`Resource Group`** : créez un nouveau **`Resource Group`** ou utilisez un existant. Par exemple **`caeGroup`**.
+- **`Name`** : donnez un nom à votre Web App. Par exemple **`cae-groupxy-staging-app`**.
+- **`Publish`** : choisissez **`Container`**.
+- **`Operating System`** : choisissez **`Linux`**.
+- **`Region`** : choisissez une région disponible dans un plan gratuit. Par exemple **`Central US`**.
+- **`Linux Plan`** : Garder le plan par défaut.
+- **`Pricing plan`** : choisissez **`F1`** pour avoir un plan gratuit. 60 CPU minutes par jour sont inclues.
+- Cliquez sur **`Review + create`**.
+- Cliquez sur **`Create`**.
+- Cliquez sur **`Go to resource`**.
+- Notez l'URL de votre Web App, par exemple : https://cae-groupxy-staging-app-fza6c0ebghahfufh.centralus-01.azurewebsites.net/
+
+Avec votre browser, vous pouvez maintenant naviguer sur l'URL de votre Web App pour vérifier que tout fonctionne correctement. Vous devriez voir une page par défaut d'Azure : "Welcome to nginx!".
+
+# <InternalPageTitle> Comment donner accès à d'autres applications à une Azure Web App ? </InternalPageTitle>
+
+## Introduction 
+
+Maintenant que nous avons créé notre Web App, nous allons la configurer pour qu'elle puisse déployer tous nos services via Docker Compose à partir de GitLab.
+
+## Création d'un service principal
+
+### Introduction
+
+Un **service principal** est une identité de sécurité utilisée par les applications, les services et les outils d'automatisation pour accéder aux ressources Azure. 
+
+Un service principal permet :
+- **Une authentification sécurisée** : Le service principal permettra à GitLab CI/CD de s'authentifier de manière sécurisée auprès d'Azure pour déployer des ressources.
+- **Un accès contrôlé **: Vous pouvez définir des rôles et des autorisations spécifiques pour le service principal, limitant ainsi l'accès aux ressources nécessaires uniquement.
+- **Une automatisation** : Le service principal permet d'automatiser les déploiements et les opérations sur Azure sans intervention manuelle.
+
+### 🍬 Création d'un service principal en utilisant la ligne de commande Azure
+
+Pour les étudiants Vinci, cette procédure va probablement échouer car vous n'avez pas les droits nécessaires pour créer un service principal via la ligne de commande Azure. Passer donc à la section qui suit pour créer un service principal via le portail Azure.
+
+Veuillez suivre les instructions suivantes pour créer un service principal à l'aide de la ligne de commande Azure :
+- Connectez vous à votre portail Azure.
+- Ouvrez un cloud shell (icône en haut à droite).
+- Exécutez la commande suivante pour créer un service principal nommé **`staging-service-principal`** avec le rôle **`contributor`** sur le **`Resource Group`** de votre Web App :
+
+```bash
+az ad sp create-for-rbac --name "staging-service-principal" --role contributor --scopes /subscriptions/<subscription-id>/resourceGroups/<staging-resource-group>
+```
+
+> Attention à ne pas avoir d'espaces inutiles dans la commande ! Un bon exemple serait : **`az ad sp create-for-rbac --name "staging-service-principal" --role contributor --scopes /subscriptions/ef4cb19c-8c1e-45dd-b46a-c5a0ece77c90/resourceGroups/caeGroup`**.
+
+Vous devez remplacer **`<subscription-id>`** par l'**`ID`** de votre subscription et **`<staging-resource-group>`** par le nom de votre **`Resource Group`** de staging.  
+Vous trouvez ces informations dans le portail Azure, en sélectionnant votre Web App, dans son **`Overview`** :
+- **`Subscription`** : **`Subscription ID`** (**`ef4cb19c-8c1e-45dd-b46a-c5a0ece77c90`** par exemple).
+- **`Resource Group`** : **`Resource Group`** (**`caeGroup`** par exemple).
+
+
+az ad sp create-for-rbac --name "staging-service-principal" --role contributor --scopes /subscriptions/eef4ab19c-8c1e-4edd-b46a-c5a0ece77b90/resourceGroups/caeGroup
+
+Il est possible que vous ayez comme message : `Insufficient privileges to complete the operation.`. 
+
+Dans ce cas, il faut malheureusement utiliser le portail Azure pour créer le service principal. 
+
+### Création d'un service principal en utilisant le portail Azure
+
+Voici comment faire :
+- Via le portail Azure, 
+D'abord cherchez :  **`App registrations`**
+- Cliquez sur **`New registration`**
+- Donnez un **`Name`** : **`staging ci/cd`** par exemple.
+- Laissez le reste tel quel et cliquez sur **`Register`**.
+
+Veuillez noter ces informations :
+- **`Application (client) ID`** : **`c4b1b1b1-1b1b-1b1b-1b1b-1b1b1b1b1b1b`** par exemple. C'est votre **`AZURE_CLIENT_ID`**.
+- **`Directory (tenant) ID`** : **`d4b1b1b1-1b1b-1b1b-1b1b-1b1b1b1b1b1b`** par exemple. C'est votre **`AZURE_TENANT_ID`**.
+
+Ensuite, veuillez :
+- Cliquer sur **`Manage`**, puis sur **`Certificates & secrets`**.
+- Cliquer sur **`New client secret`**.
+- Donner un **`Description`** : **`gitlab ci/cd secret`** par exemple.
+- Choisir une **`Expires`** : **`730 days`** par exemple.
+- Cliquer sur **`Add`**.
+- Noter la **`Value`** de votre secret, comme par exemple : **`b4b1b1b1-1b1b-1b1b-1b1b-1b1b1b1b1b1b`**. C'est votre **`AZURE_CLIENT_SECRET`**.
+
+
+### Ajout du service principal à l'Azure Web App via le portail Azure
+
+Au niveau de votre Azure Web App (**`cae-groupxy-staging-app`** par exemple), veuillez :  
+- Cliquer sur **`Access control (IAM)`**.
+- Cliquer sur **`Add a role assignment`**.
+- Cliquer sur **`Members`**. **`User, group, or service principal`** est sélectionné par défaut.
+- Cliquer sur **`Select members`**.
+- Chercher le service principal (l'application que vous avez inscrite juste auparavant) que vous avez créé. Par exemple, **`staging ci/cd`**.
+- Cliquer sur **`Select`**.
+- Cliquer sur **`Role`**, puis sur **`Privileged administrator roles`**. Choisir **`Contributor`**.
+- Cliquer sur **`Review + assign`**.
+
+A la fin de cette étape, vous avez créé un service principal et vous l'avez ajouté à votre Web App avec le rôle **`Contributor`**. 
+
+Veuillez garder ces infos en lieu sûr : **`AZURE_CLIENT_SECRET`**, **`AZURE_TENANT_ID`**, **`AZURE_CLIENT_ID`**.
+Ces infos seront nécessaires pour la suite !
+
+Voici un exemple de ce que vous devriez avoir à la fin de cette étape :
+```properties
+AZURE_CLIENT_SECRET=am45Q~jpcc2G64r3GumcGdYRE99cwxddfsqWeD8DcW1
+AZURE_TENANT_ID=f7a15dq7-57cb-5855-8d36-0545f95aada17
+AZURE_CLIENT_ID=fs8f6ea8-8807-4764-a394-f0bessqf7e8cbe
+```
+
+## Configuration de la Web App pour les variables d'environnements attendues
+
+### Introduction
+
+Pour que notre Web App puisse se connecter correctement à notre DB de staging, nous devons définir les variables d'environnement **`SPRING_DATASOURCE_URL`**, **`SPRING_DATASOURCE_USERNAME`** et **`SPRING_DATASOURCE_PASSWORD`** au niveau de notre Web App.
+
+En local, les variables d'environnement sont définies dans le fichier **`.env`**. Sur Azure, les variables d'environnement sont définies au niveau de la Web App. Ces secrets sont stockés de manière sécurisée dans Azure.
+
+### Configuration des variables d'environnements
+
+Au niveau de votre Azure Web App (**`cae-groupxy-staging-app`** par exemple), veuillez :
+- Cliquer sur **`Settings`**.
+- Cliquer sur **`Environment variables`**.
+- Ajouter les variables d'environnement suivantes en cliquant sur **`Add`** :
+  - **`SPRING_DATASOURCE_URL`** (**`Name`**): l'URL de connexion à votre DB de staging (**`Value`**). Cliquez sur **`Apply`**.
+  - **`SPRING_DATASOURCE_USERNAME`** (**`Name`**): le nom d'utilisateur de votre DB de staging (**`Value`**). Cliquez sur **`Apply`**.
+  - **`SPRING_DATASOURCE_PASSWORD`** (**`Name`**): le mot de passe de votre DB de staging (**`Value`**). Cliquez sur **`Apply`**.
+  - N'oubliez pas de cliquer sur **`Apply`** pour sauvegarder l'ajout des 3 variables, puis **`Confirm`**.
+
+Dans une prochaine étape, nous allons voir comment déployer notre application sur Azure Web App Service à l'aide de GitLab CI/CD.
+
+Pour ce faire, nous devrons revenir vers la configuration des variables d'environnement de notre Web App pour y ajouter les variables qui permettront d'aller chercher les images Docker de nos services sur le GitLab Registry.
+
+
+# <InternalPageTitle> Comment faire un push des images de GitLab vers Azure App Service ? </InternalPageTitle>
+
+## Introduction
+
+Maintenant que nous avons créé notre Web App et configuré les variables d'environnement, nous allons voir comment déployer nos services sur Azure Web App Service à l'aide de GitLab CI/CD.
+
+Pour ce faire, nous allons d'abord pousser les images Docker de nos services vers le GitLab Registry. Ensuite, nous allons déployer ces images sur Azure Web App Service.
+
+Le GitLab Registry est un registre Docker privé qui permet de stocker des images Docker.
+
+Son rôle va être d'accueillir les images Docker de nos services. Ces images seront ensuite utilisées pour déployer nos services sur Azure Web App Service.
+
+## Création d'un token d'accès pour le GitLab Registry
+
+Afin que Azure puisse accéder aux images qui se trouveront dans le GitLab Registry, nous allons devoir créer un token d'accès.
+
+Pour ce faire, veuillez suivre les instructions suivantes :
+- Connectez-vous à votre projet GitLab.
+- Cliquez sur **`Settings`**.
+- Cliquez sur **`Repository`**.
+- Cliquez sur **`Deploy Tokens`**.
+- Cliquez sur **`Add token`**.
+- Donnez un **`Name`** : **`pull-image-token`** par exemple.
+- Cochez **`read_registry`**.
+- Cliquez sur **`Create deploy token`**.
+- Notez le **`username`** (deviendra **`PULL_IMAGE_TOKEN_USERNAME`**) et le **`password`** (deviendra **`PULL_IMAGE_TOKEN_PASSWORD`**). Vous en aurez besoin pour la suite comme variables d'environnement.
+
+
+Voici un exemple de ce que vous devriez avoir noté à la fin de cette étape :
+```properties
+PULL_IMAGE_TOKEN_USERNAME=gitlab+deploy-token-5667774
+PULL_IMAGE_TOKEN_PASSWORD=gldt-Sc5rz_QATFUZDcXVb2CQ
+```
+
+## Ajout des variables d'environnement pour l'accès au GitLab Registry depuis Azure
+
+Toujours dans votre projet GitLab, vous allez ajouter les variables d'environnement qui seront utilisées pour accéder au GitLab Registry depuis Azure.
+
+Pour ce faire, veuillez suivre les instructions suivantes :
+- Connectez-vous à votre projet GitLab.
+- Cliquez sur **`Settings`**.
+- Cliquez sur **`CI/CD`**.
+- Cliquez sur **`Variables`**.
+- Cliquez sur **`Add variable`**.
+- Ajoutez comme **`Key`** **`PULL_IMAGE_TOKEN_USERNAME`** et comme **`Value`** la valeur que vous avez notée précédemment.
+- Sélectionnez **`Masked`**.
+- Désélectionnez **`Protect variable`**.
+- Cliquez sur **`Add variable`**.
+- Ajoutez comme **`Key`** **`PULL_IMAGE_TOKEN_PASSWORD`** et comme **`Value`** la valeur que vous avez notée précédemment.
+- Sélectionnez **`Masked`**.
+- Désélectionnez **`Protect variable`**.
+
+## Ajout des variables d'environnement pour l'accès à Azure
+
+Toujours dans votre projet GitLab, vous allez ajouter les variables d'environnement qui seront utilisées pour accéder à Azure depuis GitLab CI/CD.
+
+Pour ce faire, veuillez suivre les instructions suivantes :
+- Connectez-vous à votre projet GitLab.
+- Cliquez sur **`Settings`**.
+- Cliquez sur **`CI/CD`**.
+- Cliquez sur **`Variables`**.
+- Cliquez sur **`Add variable`**.
+- Ajoutez comme **`Key`** **`AZURE_CLIENT_SECRET`** et comme **`Value`** la valeur que vous avez notée précédemment.
+- Sélectionnez **`Masked`**.
+- Désélectionnez **`Protect variable`**.
+- Cliquez sur **`Add variable`**.
+- Ajoutez comme **`Key`** **`AZURE_TENANT_ID`** et comme **`Value`** la valeur que vous avez notée précédemment.
+- Sélectionnez **`Masked`**.
+- Désélectionnez **`Protect variable`**.
+- Cliquez sur **`Add variable`**.
+- Ajoutez comme **`Key`** **`AZURE_CLIENT_ID`** et comme **`Value`** la valeur que vous avez notée précédemment.
+- Sélectionnez **`Masked`**.
+- Désélectionnez **`Protect variable`**.
+
+## Workflow de déploiement
+
+Voici le workflow de déploiement que nous allons suivre :
+1. Nous allons d'abord réaliser les tests de notre frontend et de notre API.
+2. Si les tests passent, nous allons construire les images Docker de nos services et pousser ces images vers le GitLab Registry.
+3. Nous allons déployer ces images sur Azure Web App Service. A partir de notre pipeline, nous allons nous connecter à Azure et déployer les images Docker sur notre Web App en demandant à Azure de faire un pull des images depuis le GitLab Registry.
+
+## Création d'une image personnalisée pour le reverse proxy
+
+Pour le reverse proxy, nous souhaitons aussi avoir une image prête à être déployée sur Azure Web App Service. Pour ce faire, nous allons créer un fichier **`Dockerfile`** au sein d'un nouveau dossier **`reverse-proxy`** avec le contenu suivant :
+
+```dockerfile
+FROM nginx:alpine
+COPY nginx.conf /etc/nginx/nginx.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+``` 
+
+Veuillez aussi copier le fichier **`nginx.conf`** contenu à la racine de votre projet GitLab dans le dossier **`reverse-proxy`**.
+
+Nous devons mettre à jour le Docker Compose pour construire l'image de notre reverse proxy. Pour ce faire, veuillez mettre à jour le fichier **`docker-compose.staging.yml`** :
+
+```yaml {26-27} showLineNumbers
+services:
+  frontend:
+    container_name: frontend-prod
+    image: frontend-prod
+    build:
+      context: ./frontend
+    ports:
+      - 5172:5172
+    depends_on:
+      - api
+
+  api:
+    container_name: api-prod
+    image: api-prod
+    build: ./api
+    ports:
+      - 3000:3000
+    environment:
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+    entrypoint: ["java", "-jar", "app.jar", "--spring.profiles.active=staging"]
+
+  reverse-proxy:
+    container_name: reverse-proxy-prod
+    image: reverse-proxy-prod
+    build: ./reverse-proxy
+    ports:
+      - 80:80
+```
+
+Pour le service **`reverse-proxy`**, nous avons ajouté la ligne **`build: ./reverse-proxy`** pour construire l'image de notre reverse proxy.
+
+
+## Mise à jour du fichier .gitlab-ci.yml
+
+### Introduction
+
+Nous allons maintenant mettre à jour le fichier **`.gitlab-ci.yml`** pour déployer nos services sur Azure Web App Service :
+
+```yaml
+stages:
+  - test
+  - build
+  - staging
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  VERSION: $CI_PIPELINE_IID
+  REGISTRY: $CI_REGISTRY 
+  REGISTRY_IMAGE_BASE_PATH: $REGISTRY/$CI_PROJECT_PATH
+  AZURE_WEBAPP_NAME: cae-groupxy-staging-app
+  AZURE_WEBAPP_RESOURCE_GROUP: caeGroup
+  
+
+api test:
+  stage: test
+  image: maven:3.9.9-amazoncorretto-21
+  cache:
+    key:
+      files:
+        - api/pom.xml
+    paths:
+      - $CI_PROJECT_DIR/.m2/repository
+  script:
+    - cd api
+    - mvn clean test
+  artifacts:
+    paths:
+      - api/target/reports/
+      - api/target/site/
+      - api/target/surefire-reports/
+
+frontend test:
+  stage: test
+  image: node:20-alpine
+  cache:
+    key:
+      files:
+        - frontend/package-lock.json
+    paths:
+      - frontend/node_modules
+  script:
+    - cd frontend
+    - npm ci
+    - npm run lint
+    - npm run coverage
+  artifacts:
+    paths:
+      - frontend/coverage/
+
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:20-dind
+  script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+    - docker-compose -f docker-compose.staging.yml build
+    - for service in frontend-prod api-prod reverse-proxy-prod; do
+        docker tag $service $REGISTRY_IMAGE_BASE_PATH/$service:latest;
+        docker tag $service $REGISTRY_IMAGE_BASE_PATH/$service:$VERSION;
+        docker push $REGISTRY_IMAGE_BASE_PATH/$service:latest;
+        docker push $REGISTRY_IMAGE_BASE_PATH/$service:$VERSION;
+      done
+
+deploy:
+  stage: staging
+  image: mcr.microsoft.com/azure-cli
+  script:
+    - az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+    - az webapp config container set --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP --multicontainer-config-type compose --multicontainer-config-file docker-compose.deploy.yml --container-registry-user $PULL_IMAGE_TOKEN_USERNAME --container-registry-password $PULL_IMAGE_TOKEN_PASSWORD
+    - az webapp start --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP
+```
+
+Voici les changements apportés au fichier **`.gitlab-ci.yml`** :
+- Nous avons ajouté une nouvelle variable **`AZURE_WEBAPP_NAME`** qui contient le nom de notre Web App Azure.
+- Nous avons ajouté une nouvelle variable **`AZURE_WEBAPP_RESOURCE_GROUP`** qui contient le nom du **`Resource Group`** de notre Web App Azure.
+- Nous avons ajouté un nouveau job **`deploy`** qui va déployer nos services sur Azure Web App Service.
+- Dans le job **`deploy`**, nous nous connectons à Azure en utilisant les variables d'environnement **`AZURE_CLIENT_ID`**, **`AZURE_CLIENT_SECRET`** et **`AZURE_TENANT_ID`**.
+- Nous déployons nos services sur Azure Web App Service en utilisant le fichier **`docker-compose.deploy.yml`** et les variables d'environnement **`PULL_IMAGE_TOKEN_USERNAME`** et **`PULL_IMAGE_TOKEN_PASSWORD`**.
+- TBC...
+
+Nous allons maintenant voir comment créer le fichier **`docker-compose.deploy.yml`** qui sera utilisé par Azure pour faire un pull des images Docker depuis le GitLab Registry.
+
+## Création du fichier docker-compose.deploy.yml
+
+Nous allons créer un fichier **`docker-compose.deploy.yml`** à la racine de notre projet GitLab avec le contenu suivant :
+
+```yaml
+services:
+  frontend:
+    image: registry.gitlab.com/e-vinci/cae-projects/2025-cae-projects/cae-group-xy/frontend-prod:latest
+    container_name: frontend-prod
+    ports:
+      - 5172:5172
+    depends_on:
+      - api
+
+  api:
+    image: registry.gitlab.com/e-vinci/cae-projects/2025-cae-projects/cae-group-xy/api-prod:latest
+    container_name: api-prod
+    ports:
+      - 3000:3000
+    environment:
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+    entrypoint: ["java", "-jar", "app.jar", "--spring.profiles.active=staging"]
+
+  reverse-proxy:
+    image: registry.gitlab.com/e-vinci/cae-projects/2025-cae-projects/cae-group-xy/reverse-proxy-prod:latest
+    container_name: reverse-proxy-prod
+    ports:
+      - 80:80
+```
+
+Ce fichier **`docker-compose.deploy.yml`** est similaire au fichier **`docker-compose.staging.yml`**. La seule différence est que nous utilisons les images Docker que nous avons poussées vers le GitLab Registry.
+
+Une fois toutes ces étapes réalisées, vous pouvez lancer le pipeline GitLab CI/CD pour déployer vos services sur Azure Web App Service. Pour ce faire, il suffit de pousser votre code sur votre repository GitLab.
+
+Si tout se passe bien, vous devriez voir vos services déployés sur Azure Web App Service. Vous pouvez vérifier que tout fonctionne correctement en naviguant sur l'URL de votre Web App Azure, par exemple : https://cae-groupxy-staging-app-fza6c0ebghahfufh.centralus-01.azurewebsites.net/.
+
+ Les 60 minutes de CPU par jour sur Azure Web App Service (plan gratuit F1) se réfèrent à l'utilisation totale du processeur par votre application, y compris le traitement des requêtes HTTP et toute autre activité nécessitant des ressources CPU. Ce n'est pas limité au temps de build. Si votre application consomme beaucoup de CPU, vous pourriez dépasser les 60 minutes de CPU par jour.
+
+ Si vous devez présenter votre projet, vous pouvez arrêter votre Web App Azure pour ne pas consommer de CPU minutes. Pour ce faire, veuillez suivre les instructions suivantes :
+- Connectez-vous à votre portail Azure.
+- Cliquez sur **`App Services`**.
+- Sélectionnez votre Web App.
+- Cliquez sur **`Stop`**.
+
+Pour voir votre consommation de CPU, veuillez suivre les instructions suivantes :
+- Connectez-vous à votre portail Azure.
+- Cliquez sur **`App Services`**.
+- Sélectionnez votre Web App.
+- Cliquez sur **`Monitoring`**.
+- Cliquez sur **`Metrics`**.
+- Sélectionnez **`CPU Time`** au niveau de **`Metric`**.
+
+
+TODO : 
+- donner plus d'explications sur le fichier .gitlab-ci.yml concernant les commandes azure, les variables d'environnements, etc.
+- expliquer le temps disponible de processing pour une Azure Web App gratuite : 60 CPU minutes par jour.
+- expliquer comment arrêter une Azure Web App pour ne pas consommer de CPU minutes.
+- faire un deploy que quand on merge sur la branche main.
+- réaliser les tests e2e après que tout soit déployé sur Azure Web App Service.
