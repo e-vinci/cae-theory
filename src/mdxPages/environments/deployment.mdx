@@ -10,20 +10,1166 @@ date: 05/02/2025
     <PathViewerItem to="/environments"> Environnements </PathViewerItem>
     <PathViewerItem selected> Déploiement </PathViewerItem>
   </PathViewer>
-  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
-  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
-  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
-  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
-  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
-  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
-  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
-    <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
-    <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
-  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
-  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
-  <InternalPageMenuItem> TBC ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Pourquoi et où déployer ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment créer un compte Azure avec des crédits gratuits ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment déployer notre DB ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment créer un environnement local proche de l'environnement de staging ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment est-il possible de déployer une application sur Azure Web App Service ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment créer une application sur Azure Web App Service ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment donner accès à d'autres applications à une Azure Web App ? </InternalPageMenuItem>
+    <InternalPageMenuItem> Comment faire un push des images de GitLab vers Azure App Service ? </InternalPageMenuItem>
+    <InternalPageMenuItem> Comment déployer seulement en cas de fusion de modification sur le main ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment réaliser des tests e2e sur l'app en production ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment attendre que l'API soit bien démarrée avant de lancer les tests e2e ? </InternalPageMenuItem>
 </InternalPageMenu>
 
-# <InternalPageTitle> Comment créer votre compte GitLab ? </InternalPageTitle>
+# <InternalPageTitle> Pourquoi et où déployer ? </InternalPageTitle>
 
-**👉 CONSIGNE** : 
+## Introduction
+
+Le déploiement d'une application web est une étape cruciale dans le cycle de vie d'une application web. Il s'agit de rendre l'application accessible à ses utilisateurs finaux.
+
+Dans ce cours, dans la partie sur la [gestion des environnements](general), nous avons déjà vu que nous allions utiliser :
+- **GitLab CI/CD** pour automatiser le déploiement de notre application (SaaS).
+- **Azure App Service** pour héberger notre application (PaaS).
+
+En effet, lorsqu'on fait du DevOps, on va généralement utiliser des services cloud pour déployer nos applications. Cela permet de ne pas avoir à gérer l'infrastructure sous-jacente, et de se concentrer sur le développement de l'application.
+
+## Staging environnement
+
+Le staging environnement est un environnement de test qui est une réplique de l'environnement de production. Il permet de tester l'application dans des conditions proches de la production avant de la déployer pour tous les utilisateurs finaux.
+
+Le staging environnement est généralement utilisé pour :
+- Tester les nouvelles fonctionnalités avant de les déployer en production.
+- Vérifier que les mises à jour de l'application ne causent pas de régressions.
+- Effectuer des tests de performance et de charge.
+
+Pour ce cours, nous allons d'abord déployer notre application sur le staging environnement. Nous verrons plus tard comment déployer l'application en production après la réussite de tests dans l'environnement de staging.
+
+Tout ce que nous allons apprendre sur le déploiement de l'application sur le staging environnement sera applicable pour le déploiement en production.
+
+Voici à quoi nous souhaitons que le staging environnement ressemble pour cette première étape de déploiement :
+
+<PlantUML src="/diagrams/staging-deployment1.puml" alt="Environnement de staging (partie 1 )" />
+
+Voici quelques points importants à noter sur le diagramme ci-dessus :
+- Le frontend et l'API sont déployés sur un **Azure App Service**.
+- Pour les étudiants Vinci, le hosting de la DB est offert par la Haute École de Vinci. Pour les autres, vous pouvez utiliser un service cloud comme **Azure Databse for PostgreSQL**.
+
+Pour le déploiement, nous allons procéder en plusieurs étapes :
+1. Déploiement de la base de données vers le staging environnement. Lancement de notre API en nous connectant à la DB de staging.
+2. Création d'une environnement local très proche de l'environnement de staging contenant le reverse proxy, le frontend et l'API au sein d'un Docker Compose, l'API se connectant à la DB de staging.
+3. Déploiement du reverse proxy, du frontend et de l'API sur le staging environnement.
+3. Réalisation des tests e2e sur le staging environnement à partir de GitLab CI/CD.
+
+Avant d'aller plus loin, nous allons d'abord voir comment créer un compte sur Azure afin d'avoir des crédits gratuits pour déployer notre application.
+
+# <InternalPageTitle> Comment créer un compte Azure avec des crédits gratuits ? </InternalPageTitle>
+
+Afin d'héberger notre application sur Azure, nous allons devoir créer un compte Azure. Heureusement, Microsoft offre des crédits gratuits :
+- pour les étudiants : https://azure.microsoft.com/en-us/free/students/
+- pour les non-étudiants : https://azure.microsoft.com/en-us/free/ (attention, les crédits gratuits ne sont valables que pour 30 jours, et vous devrez ajouter une carte de crédit).
+- pour les startups : https://www.microsoft.com/en-us/startups
+
+Pour les étudiants Vinci, veuillez donc suivre les instructions sur le lien suivant : https://azure.microsoft.com/en-us/free/students/  
+Vous devrez : 
+- vous logguer avec votre compte Vinci
+- introduire vos données et le Nom de l'école
+- cliquer sur **`Verify academic status`** et suivre les instructions
+
+
+# <InternalPageTitle> Comment déployer notre DB ? </InternalPageTitle>
+
+## Introduction
+
+Actuellement, notre application utilise une base de données locale dans un conteneur Docker. 
+
+Pour les étudiants Vinci, vous avez ou allez recevoir un email avec les informations de connexion à la base de données de la Haute École de Vinci.  
+
+Pour les autres :
+- vous pouvez utiliser un service cloud comme **Azure Database for PostgreSQL** : https://azure.microsoft.com/en-us/products/postgresql/ 
+- veuillez créer une base de données PostgreSQL et noter les informations de connexion :
+  - **`url`** de connexion si vous l'avez, sinon vous pouvez la construire avec les informations suivantes : 
+    - **`Host`**
+    - **`Database`**
+    - **`Port`**
+    - L'URL ressemblera à cela : **`jdbc:postgresql://<Host>:<Port>/<Database>`**
+   - **`Username`**
+  - **`Password`**
+
+
+## Connexion à votre DB visible sur internet
+
+### Comment gérer l'environnement de développement et de staging ?
+
+Pour ce tutoriel (nommé `staging`), nous souhaitons pouvoir créer un environnement locale qui se connecte à la DB de staging à l'aide de Docker Compose. Pour ce tutoriel, veuillez créer une nouvelle "feature branch" sur votre projet GitLab (par exemple, vous pouvez la nommer **`chore/staging`**).
+
+En fait, nous souhaitons :
+- Quand nous démarrons notre API à l'aide d'IntelliJ, via notre environnement de développement, qu'elle se connecte à la DB dans le container Docker local (non visible sur internet).
+- Quand nous démarrons notre API à l'aide de Docker Compose, via notre environnement de staging, qu'elle se connecte à la DB de staging qui est visible sur internet.
+
+Comment rendre cela possible ?  
+Nous souhaitons que l'API se connecte à la DB en utilisant une URL de connexion qui est différente selon l'environnement. Pour ce faire, nous allons utiliser deux fichiers de configuration différents :
+- **`application.properties`** pour l'environnement de développement.
+- **`application-staging.properties`** pour l'environnement de staging.
+
+### Comment gérer la configuration de l'environnement de staging ?
+
+Nous pourrions créer le fichier **`application-staging.properties`** dans le dossier **`src/main/resources`** de notre API avec le contenu suivant :
+
+```properties
+spring.application.name=demo
+
+server.port=3000
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/cae_db
+spring.datasource.username=cae_user
+spring.datasource.password=cae
+spring.jpa.generate-ddl=true
+spring.sql.init.mode=always
+spring.jpa.defer-datasource-initialization=true
+```
+
+Nous souhaiterions mettre à jour ce fichier pour qu'il se connecte à la DB de staging. Pour ce faire, une première idée serait de remplacer les valeurs de **`spring.datasource.url`**, **`spring.datasource.username`** et **`spring.datasource.password`** par les informations de connexion à notre DB.
+
+Cependant, nous ne voulons pas stocker ces informations de connexion dans le code source de notre application. En effet, cela pourrait poser des problèmes de sécurité si notre code source est rendu public. C'est d'ailleurs une très mauvaise pratique de stocker des informations sensibles dans le code source.
+
+Pour résoudre ce problème, nous allons utiliser les **variables d'environnement**. Les variables d'environnement sont des variables qui sont définies dans l'environnement d'exécution de notre application. Elles peuvent être utilisées pour stocker des informations sensibles comme les informations de connexion à la DB.
+
+Pour ce faire, nous pourrions remplacer les valeurs de **`spring.datasource.url`**, **`spring.datasource.username`** et **`spring.datasource.password`** par des variables d'environnement directement au sein du fichier **`application-staging.properties`**.
+
+Veuillez créer le fichier **`application-staging.properties`** dans le dossier **`src/main/resources`** de votre API avec le contenu suivant :
+
+```properties
+spring.application.name=demo
+
+server.port=3000
+
+spring.datasource.url=${SPRING_DATASOURCE_URL}
+spring.datasource.username=${SPRING_DATASOURCE_USERNAME}
+spring.datasource.password=${SPRING_DATASOURCE_PASSWORD}
+spring.jpa.generate-ddl=true
+spring.sql.init.mode=always
+spring.jpa.defer-datasource-initialization=true
+```
+
+**`SPRING_DATASOURCE_URL`**, **`SPRING_DATASOURCE_USERNAME`** et **`SPRING_DATASOURCE_PASSWORD`** sont des variables d'environnement que nous allons définir dans notre environnement de staging.
+
+Avant de passer à l'environnement de staging complet sur le cloud, il serait intéressant de voir si localement on pourrait démarrer nos services en utilisant la DB de staging. On peut imaginer deux scénarios :
+- Scénario 1 : On utilise notre environnement de développement pour démarrer notre API et notre DB de staging.
+- Scénario 2 : On utilise Docker Compose pour démarrer notre API  (notre DB de staging est démarrée indépendamment de l'API et est visible sur internet).
+
+Même si le scénario 1 est plus simple, le scénario 2 est plus proche de ce que nous allons faire en production. 
+
+Nous allons premièrement voir comment démarrer notre API localement via notre environnement de développement. Lorsque nous passerons au déploiement de l'API & du frontend, nous verrons comment démarrer notre API via Docker Compose.
+
+### Comment démarrer notre API localement via notre environnement de développement avec une DB de stagging ?
+
+Pour démarrer notre API localement via notre environnement de développement avec une DB de staging, nous allons devoir définir les variables d'environnement **`SPRING_DATASOURCE_URL`**, **`SPRING_DATASOURCE_USERNAME`** et **`SPRING_DATASOURCE_PASSWORD`**.
+
+Le plus simple est d'utiliser la librairie **`spring-dotenv`** pour définir ces variables d'environnement. **`spring-dotenv`** est une librairie qui permet de charger des variables d'environnement à partir d'un fichier **`.env`**.
+
+Au sein de votre API, veuillez suivre ces instructions pour installer **`spring-dotenv`** (ajout de la bonne dépendance dans Maven) : https://github.com/paulschwarz/spring-dotenv
+
+Le fichier **`.env`** est un fichier qui contient les variables d'environnement que nous souhaitons définir pour, actuellement, l'API uniquement. Nous allons créer un fichier **`.env`** à la racine de notre dossier **`api`** avec le contenu suivant (remplacez les valeurs par celles de votre DB de staging) :
+
+```properties
+SPRING_DATASOURCE_URL=jdbc:postgresql://hostnameOrIPToYourPostgresServer:YOUR_PORT/YOUR_DB_NAME
+SPRING_DATASOURCE_USERNAME=yourUsername   
+SPRING_DATASOURCE_PASSWORD=yourPassword
+``` 
+
+Attention à bien vous assurer que le fichier **`.env`** n'est pas versionné dans Git. Pour ce faire, vérifiez que **`.env`** est présent dans le fichier **`.gitignore`** de votre projet.
+
+Pour démarrer notre API en utilisant le profil **`staging`**, nous savons déjà comment le faire via un terminal : 
+
+```bash
+mvn spring-boot:run -Dspring-boot.run.profiles=staging
+```
+
+Pour rappel, un profil dans Spring Boot est une manière de définir des configurations spécifiques pour un environnement donné. Dans notre cas, le profil **`staging`** est utilisé pour définir les configurations spécifiques à l'environnement de staging.
+
+Par contre, comment démarrer notre API en utilisant le profil **`staging`** via IntelliJ ?
+
+Veuillez ouvrir IntelliJ au niveau du projet associé à votre API et suivre ces instructions pour démarrer votre API en utilisant le profil **`staging`** :
+
+1. Cliquez sur **`Edit Configurations...`** dans le menu de configuration d'IntelliJ.
+2. Sélectionnez la configuration **`Spring Boot`** de votre API (elle peut s'appeler **`DemoApplication`** par exemple).
+3. En haut à gauche, cliquez sur l'icône **`Copy Configuration`** pour créer une nouvelle configuration.
+4. Nommez cette nouvelle configuration **`Staging DB`** par exemple.
+5. Dans le champ **`Active profiles`**, ajoutez **`staging`**.
+6. Cliquez sur **`OK`** pour sauvegarder la configuration.
+
+Maintenant, vous pouvez démarrer votre API en utilisant le profil **`staging`** via IntelliJ en sélectionnant la configuration **`Staging DB`** et en cliquant sur le bouton **`Run`**.
+
+Veuillez vérifier que votre API se connecte bien à la DB de staging en démarrant votre API via IntelliJ. N'hésitez pas à exécuter des requêtes HTTP pour vérifier que tout fonctionne correctement.
+
+Nous allons maintenant voir comment démarrer notre API via Docker Compose en utilisant la DB de staging.
+
+# <InternalPageTitle> Comment créer un environnement local proche de l'environnement de staging ? </InternalPageTitle>
+
+## Introduction
+
+Avant de déployer notre API & notre frontend, il est important de mettre en place tous les services nécessaires pour que notre application fonctionne correctement. Pour ce faire, nous allons utiliser Docker Compose.
+
+Nous allons donc créer un environnement local qui se rapproche de l'environnement de staging, en mettant temporairement de côté les tests e2e pour avancer pas à pas. Cet environnement local sera composé de :
+
+<PlantUML src="/diagrams/local-staging-deployment1.puml" alt="Environnement de staging local" />
+
+Pour ce faire, nous allons créer un fichier **`docker-compose.local.staging.yml`** à la racine de notre projet GitLab avec le contenu suivant :
+
+```yaml {18-21} showLineNumbers
+services:
+  frontend:
+    container_name: frontend-prod
+    image: frontend-prod
+    build:
+      context: ./frontend
+    ports:
+      - 5172:5172
+    depends_on:
+      - api
+
+  api:
+    container_name: api-prod
+    image: api-prod
+    build: ./api
+    ports:
+      - 3000:3000
+    environment:
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+    entrypoint: ["java", "-jar", "app.jar", "--spring.profiles.active=staging"]
+
+  reverse-proxy:
+    container_name: reverse-proxy-prod
+    image: nginx:alpine
+    ports:
+      - 80:80
+    depends_on:
+      - frontend
+      - api
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+```
+
+C'est en fait notre précédente configuration de tests e2e, mais sans les tests e2e et sans la DB. 
+
+> Attention, nous avons aussi changé le profil actif de l'API en **`staging`** pour utiliser les variables d'environnement attendues dans le fichier **`application-staging.properties`**. 
+
+Comment est-ce que les variables d'environnements sont rendues disponibles dans le service **`api`** ?  
+
+Nous allons devoir définir les variables d'environnement **`SPRING_DATASOURCE_URL`**, **`SPRING_DATASOURCE_USERNAME`** et **`SPRING_DATASOURCE_PASSWORD`** afin qu'elles soient disponibles dans le service **`api`** (au sein du conteneur de l'API).
+
+Pour ce faire, nous pouvons utiliser le fichier **`.env`** que nous avons créé précédemment pour qu'il soit lu par Docker Compose. Le plus rapide et efficace est de lancer la commande suivante dans un terminal à la racine de votre projet GitLab :
+
+```bash
+docker compose -f docker-compose.staging.yml --env-file api/.env up --build 
+```
+
+En effet, la commande **`--env-file api/.env`** permet de spécifier un fichier **`.env`** (qui se trouve dans le répertoire **`api`**) qui sera lu par Docker Compose et dont les variables d'environnement seront rendues disponibles pour les services. Les variables d'environnement définies dans ce fichier ne sont pas automatiquement injectées dans les conteneurs Docker par défaut. Vous devez explicitement les passer via la section **`environment:`** dans le fichier **`docker-compose.staging.yml`**.
+
+Ainsi **`- SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}`** signifie que la variable d'environnement **`SPRING_DATASOURCE_URL`** sera disponible dans le conteneur de l'API avec la valeur de la variable d'environnement **`SPRING_DATASOURCE_URL`** définie dans le fichier **`.env`**.
+
+Veuillez vérifier que tous vos services démarrent correctement en utilisant le fichier **`docker-compose.staging.yml`** : pour ce faire, il suffit d'ouvrir un navigateur et de naviguer sur http://localhost pour vérifier que tout est fonctionnel.
+
+Nous allons maintenant voir comment déployer notre application sur Azure Web App Service.
+
+# <InternalPageTitle> Comment est-il possible de déployer une application sur Azure Web App Service ? </InternalPageTitle>
+
+## Introduction
+
+Maintenant que nous avons notre environnement de staging local qui fonctionne correctement, nous allons voir comment déployer notre application sur Azure Web App Service.
+
+Azure Web App Service est un service cloud (PaaS) qui permet de déployer des applications web sans avoir à gérer l'infrastructure sous-jacente. Il est idéal pour déployer des applications web qui nécessitent une haute disponibilité et une scalabilité automatique.
+
+## Comment déployer une application sur Azure Web App Service ?
+
+Il existe plusieurs façons de déployer une application sur Azure Web App Service
+- **Publish code** : vous pouvez publier votre code source directement sur Azure. Dans ce cas, vous devez choisir un runtime (Java, Node.js, Python, etc.) et Azure s'occupera de l'exécution de votre application. Vous devez créer autant de Web App que de services à déployer. Vous pouvez ensuite utiliser différent moyens pour pousser le code vers Azure : GitHub, Azure Repos, Local Git (CI/CD), External Git ou FTP.
+- **Publish single container** : vous pouvez publier un conteneur Docker sur Azure. Dans ce cas, vous devez créer un conteneur Docker pour chaque service à déployer et les publier sur Azure.
+- **Publish docker compose** : vous pouvez publier un fichier **`docker-compose.yml`** sur Azure. Dans ce cas, vous devez créer un fichier **`docker-compose.yml`** qui définit les services à déployer et les publier sur Azure. Le gros avantage de cette méthode est que vous pouvez déployer plusieurs services en une seule fois.
+
+Pour ce cours, nous allons utiliser la méthode **Publish docker compose** pour déployer tous nos services en une seule fois dans une seule Web App.
+
+# <InternalPageTitle> Comment créer une application sur Azure Web App Service ? </InternalPageTitle>
+
+## Création d'une Azure Web App
+
+Vous devez avoir une **subscription** à Azure. Les instructions pour obtenir des crédits gratuits sont disponibles plus haut dans cette page.
+
+Pour déployer une application sur Azure Web App Service, vous devez d'abord créer une **Web App**. 
+
+Il est possible de le faire via le portail Azure ou via la ligne de commande. Pour ce tutoriel, nous utiliserons le portail Azure.
+
+Veuillez vous connecter au portail Azure : https://portal.azure.com/
+
+Cliquez ensuite sur **`App Services`**. Si vous avez bien une **subscription**, alors vous aurez l'option **`Create`**. Cliquez dessus.
+
+Choisissez **`Web App`** et cliquez sur **`Create`**.
+
+Dans la section **`Basics`**, remplissez les informations suivantes :
+- **`Subscription`** : choisissez votre subscription, probablement **`Azure for Students`**.
+- **`Resource Group`** : créez un nouveau **`Resource Group`** ou utilisez un existant. Par exemple **`caeGroup`**.
+- **`Name`** : donnez un nom à votre Web App. Par exemple **`cae-groupxy-staging-app`**.
+- **`Publish`** : choisissez **`Container`**.
+- **`Operating System`** : choisissez **`Linux`**.
+- **`Region`** : choisissez une région disponible dans un plan gratuit. Par exemple **`Central US`**. Attention, si vous choisissez **`France Central`** par exemple, vous n'aurez pas de plan gratuit.
+- **`Linux Plan`** : Garder le plan par défaut.
+- **`Pricing plan`** : choisissez **`F1`** pour avoir un plan gratuit. 60 CPU minutes par jour sont inclues.
+- Cliquez sur **`Review + create`**.
+- Cliquez sur **`Create`**.
+- Cliquez sur **`Go to resource`**.
+- Notez l'URL de votre Web App, par exemple : https://cae-groupxy-staging-app-fza6c0ebghahfufh.centralus-01.azurewebsites.net/
+
+Avec votre browser, vous pouvez maintenant naviguer sur l'URL de votre Web App pour vérifier que tout fonctionne correctement. Vous devriez voir une page par défaut d'Azure : "Welcome to nginx!".
+
+# <InternalPageTitle> Comment donner accès à d'autres applications à une Azure Web App ? </InternalPageTitle>
+
+## Introduction 
+
+Maintenant que nous avons créé notre Web App, nous allons la configurer pour qu'elle puisse déployer tous nos services via Docker Compose à partir de GitLab.
+
+## Création d'un service principal
+
+### Introduction
+
+Un **service principal** est une identité de sécurité utilisée par les applications, les services et les outils d'automatisation pour accéder aux ressources Azure. 
+
+Un service principal permet :
+- **Une authentification sécurisée** : Le service principal permettra à GitLab CI/CD de s'authentifier de manière sécurisée auprès d'Azure pour déployer des ressources.
+- **Un accès contrôlé**: Vous pouvez définir des rôles et des autorisations spécifiques pour le service principal, limitant ainsi l'accès aux ressources nécessaires uniquement.
+- **Une automatisation** : Le service principal permet d'automatiser les déploiements et les opérations sur Azure sans intervention manuelle.
+
+### 🍬 Création d'un service principal en utilisant la ligne de commande Azure
+
+Pour les étudiants Vinci, cette procédure va probablement échouer car vous n'avez pas les droits nécessaires pour créer un service principal via la ligne de commande Azure. Passer donc à la section qui suit pour créer un service principal via le portail Azure.
+
+Veuillez suivre les instructions suivantes pour créer un service principal à l'aide de la ligne de commande Azure :
+- Connectez vous à votre portail Azure.
+- Ouvrez un cloud shell (icône en haut à droite).
+- Exécutez la commande suivante pour créer un service principal nommé **`staging-service-principal`** avec le rôle **`contributor`** sur le **`Resource Group`** de votre Web App :
+
+```bash
+az ad sp create-for-rbac --name "staging-service-principal" --role contributor --scopes /subscriptions/<subscription-id>/resourceGroups/<staging-resource-group>
+```
+
+> Attention à ne pas avoir d'espaces inutiles dans la commande ! Un bon exemple serait : **`az ad sp create-for-rbac --name "staging-service-principal" --role contributor --scopes /subscriptions/ef4cb19c-8c1e-45dd-b46a-c5a0ece77c90/resourceGroups/caeGroup`**.
+
+Vous devez remplacer **`<subscription-id>`** par l'**`ID`** de votre subscription et **`<staging-resource-group>`** par le nom de votre **`Resource Group`** de staging.  
+Vous trouvez ces informations dans le portail Azure, en sélectionnant votre Web App, dans son **`Overview`** :
+- **`Subscription`** : **`Subscription ID`** (**`ef4cb19c-8c1e-45dd-b46a-c5a0ece77c90`** par exemple).
+- **`Resource Group`** : **`Resource Group`** (**`caeGroup`** par exemple).
+
+
+Il est possible que vous ayez comme message : `Insufficient privileges to complete the operation.`
+
+Dans ce cas, il faut malheureusement utiliser le portail Azure pour créer le service principal. 
+
+### Création d'un service principal en utilisant le portail Azure
+
+Voici comment faire :
+- Via le portail Azure, 
+D'abord cherchez :  **`App registrations`**
+- Cliquez sur **`New registration`**
+- Donnez un **`Name`** : **`staging ci/cd`** par exemple.
+- Laissez le reste tel quel et cliquez sur **`Register`**.
+
+Veuillez noter ces informations :
+- **`Application (client) ID`** : **`c4b1b1b1-1b1b-1b1b-1b1b-1b1b1b1b1b1b`** par exemple. C'est votre **`AZURE_CLIENT_ID`**.
+- **`Directory (tenant) ID`** : **`d4b1b1b1-1b1b-1b1b-1b1b-1b1b1b1b1b1b`** par exemple. C'est votre **`AZURE_TENANT_ID`**.
+
+Ensuite, veuillez :
+- Cliquer sur **`Manage`**, puis sur **`Certificates & secrets`**.
+- Cliquer sur **`New client secret`**.
+- Donner un **`Description`** : **`gitlab ci/cd secret`** par exemple.
+- Choisir une **`Expires`** : **`730 days`** par exemple.
+- Cliquer sur **`Add`**.
+- Noter la **`Value`** de votre secret, comme par exemple : **`b4b1b1b1-1b1b-1b1b-1b1b-1b1b1b1b1b1b`**. C'est votre **`AZURE_CLIENT_SECRET`**.
+
+
+### Ajout du service principal à l'Azure Web App via le portail Azure
+
+Au niveau de votre Azure Web App (**`cae-groupxy-staging-app`** par exemple) via le portail Azure, veuillez :  
+- Cliquer sur **`Access control (IAM)`**.
+- Cliquer sur **`Add a role assignment`**.
+- Cliquer sur **`Members`**. **`User, group, or service principal`** est sélectionné par défaut.
+- Cliquer sur **`Select members`**.
+- Chercher le service principal (l'application que vous avez inscrite juste auparavant) que vous avez créé. Par exemple, **`staging ci/cd`**.
+- Cliquer sur **`Select`**.
+- Cliquer sur **`Role`**, puis sur **`Privileged administrator roles`**. Choisir **`Contributor`**.
+- Cliquer sur **`Review + assign`**.
+
+A la fin de cette étape, vous avez créé un service principal et vous l'avez ajouté à votre Web App avec le rôle **`Contributor`**. 
+
+Veuillez garder ces infos en lieu sûr : **`AZURE_CLIENT_SECRET`**, **`AZURE_TENANT_ID`**, **`AZURE_CLIENT_ID`**.
+Ces infos seront nécessaires pour la suite !
+
+Voici un exemple de ce que vous devriez avoir à la fin de cette étape :
+```properties
+AZURE_CLIENT_SECRET=am45Q~jpcc2G64r3GumcGdYRE99cwxddfsqWeD8DcW1
+AZURE_TENANT_ID=f7a15dq7-57cb-5855-8d36-0545f95aada17
+AZURE_CLIENT_ID=fs8f6ea8-8807-4764-a394-f0bessqf7e8cbe
+```
+
+## Configuration de la Web App pour les variables d'environnements attendues
+
+### Introduction
+
+Pour que notre Web App puisse se connecter correctement à notre DB de staging, nous devons définir les variables d'environnement **`SPRING_DATASOURCE_URL`**, **`SPRING_DATASOURCE_USERNAME`** et **`SPRING_DATASOURCE_PASSWORD`** au niveau de notre Web App.
+
+En local, les variables d'environnement sont définies dans le fichier **`.env`**. Sur Azure, les variables d'environnement sont définies au niveau de la Web App. Ces secrets sont stockés de manière sécurisée dans Azure.
+
+### Configuration des variables d'environnements
+
+Au niveau de votre Azure Web App (**`cae-groupxy-staging-app`** par exemple) via le portail Azure, veuillez :
+- Cliquer sur **`Settings`**.
+- Cliquer sur **`Environment variables`**.
+- Ajouter les variables d'environnement suivantes en cliquant sur **`Add`** :
+  - **`SPRING_DATASOURCE_URL`** (**`Name`**): l'URL de connexion à votre DB de staging (**`Value`**). Cliquez sur **`Apply`**.
+  - **`SPRING_DATASOURCE_USERNAME`** (**`Name`**): le nom d'utilisateur de votre DB de staging (**`Value`**). Cliquez sur **`Apply`**.
+  - **`SPRING_DATASOURCE_PASSWORD`** (**`Name`**): le mot de passe de votre DB de staging (**`Value`**). Cliquez sur **`Apply`**.
+  - N'oubliez pas de cliquer sur **`Apply`** pour sauvegarder l'ajout des 3 variables, puis **`Confirm`**.
+
+Dans une prochaine étape, nous allons voir comment déployer notre application sur Azure Web App Service à l'aide de GitLab CI/CD.
+
+# <InternalPageTitle> Comment faire un push des images de GitLab vers Azure App Service ? </InternalPageTitle>
+
+## Introduction
+
+Maintenant que nous avons créé notre Web App et configuré les variables d'environnement, nous allons voir comment déployer nos services sur Azure Web App Service à l'aide de GitLab CI/CD.
+
+Pour ce faire, nous allons d'abord pousser les images Docker de nos services vers le GitLab Registry. Ensuite, nous allons déployer ces images sur Azure Web App Service.
+
+Le GitLab Registry est un registre Docker privé qui permet de stocker des images Docker.
+
+Son rôle va être d'accueillir les images Docker de nos services. Ces images seront ensuite utilisées pour déployer nos services sur Azure Web App Service.
+
+## Création d'un token d'accès pour le GitLab Registry
+
+Afin que Azure puisse accéder aux images qui se trouveront dans le GitLab Registry, nous allons devoir créer un token d'accès.
+
+Pour ce faire, veuillez suivre les instructions suivantes :
+- Connectez-vous à votre projet GitLab.
+- Cliquez sur **`Settings`**.
+- Cliquez sur **`Repository`**.
+- Cliquez sur **`Deploy Tokens`**.
+- Cliquez sur **`Add token`**.
+- Donnez un **`Name`** : **`pull-image-token`** par exemple.
+- Cochez **`read_registry`**.
+- Cliquez sur **`Create deploy token`**.
+- Notez le **`username`** (deviendra **`PULL_IMAGE_TOKEN_USERNAME`**) et le **`password`** (deviendra **`PULL_IMAGE_TOKEN_PASSWORD`**). Vous en aurez besoin pour la suite comme variables d'environnement.
+
+
+Voici un exemple de ce que vous devriez avoir noté à la fin de cette étape :
+```properties
+PULL_IMAGE_TOKEN_USERNAME=gitlab+deploy-token-5667774
+PULL_IMAGE_TOKEN_PASSWORD=gldt-Sc5rz_QATFUZDcXVb2CQ
+```
+
+## Ajout des variables d'environnement pour l'accès au GitLab Registry depuis Azure
+
+Toujours dans votre projet GitLab, vous allez ajouter les variables d'environnement qui seront utilisées pour accéder au GitLab Registry depuis Azure.
+
+Pour ce faire, veuillez suivre les instructions suivantes :
+- Connectez-vous à votre projet GitLab.
+- Cliquez sur **`Settings`**.
+- Cliquez sur **`CI/CD`**.
+- Cliquez sur **`Variables`**.
+- Cliquez sur **`Add variable`**.
+- Ajoutez comme **`Key`** **`PULL_IMAGE_TOKEN_USERNAME`** et comme **`Value`** la valeur que vous avez notée précédemment.
+- Sélectionnez **`Masked`**.
+- Désélectionnez **`Protect variable`**.
+- Cliquez sur **`Add variable`**.
+- Ajoutez comme **`Key`** **`PULL_IMAGE_TOKEN_PASSWORD`** et comme **`Value`** la valeur que vous avez notée précédemment.
+- Sélectionnez **`Masked`**.
+- Désélectionnez **`Protect variable`**.
+- Cliquez sur **`Add variable`**.
+
+## Ajout des variables d'environnement pour l'accès à Azure
+
+Toujours dans votre projet GitLab, vous allez ajouter les variables d'environnement qui seront utilisées pour accéder à Azure depuis GitLab CI/CD.
+
+Pour ce faire, veuillez suivre les instructions suivantes :
+- Connectez-vous à votre projet GitLab.
+- Cliquez sur **`Settings`**.
+- Cliquez sur **`CI/CD`**.
+- Cliquez sur **`Variables`**.
+- Cliquez sur **`Add variable`**.
+- Ajoutez comme **`Key`** **`AZURE_CLIENT_SECRET`** et comme **`Value`** la valeur que vous avez notée précédemment.
+- Sélectionnez **`Masked`**.
+- Désélectionnez **`Protect variable`**.
+- Cliquez sur **`Add variable`**.
+- Ajoutez comme **`Key`** **`AZURE_TENANT_ID`** et comme **`Value`** la valeur que vous avez notée précédemment.
+- Sélectionnez **`Masked`**.
+- Désélectionnez **`Protect variable`**.
+- Cliquez sur **`Add variable`**.
+- Ajoutez comme **`Key`** **`AZURE_CLIENT_ID`** et comme **`Value`** la valeur que vous avez notée précédemment.
+- Sélectionnez **`Masked`**.
+- Désélectionnez **`Protect variable`**.
+- Cliquez sur **`Add variable`**.
+
+## Workflow de déploiement
+
+Voici le workflow de déploiement que nous allons suivre :
+1. Nous allons d'abord réaliser les tests de notre frontend et de notre API.
+2. Si les tests passent, nous allons construire les images Docker de nos services et pousser ces images vers le GitLab Registry.
+3. Nous allons déployer ces images sur Azure Web App Service. A partir de notre pipeline, nous allons nous connecter à Azure et déployer les images Docker sur notre Web App en demandant à Azure de faire un pull des images depuis le GitLab Registry.
+
+En image, voila ce que cela donne :
+
+<PlantUML src="/diagrams/gitlab-registry.puml" alt="Workflow de déploiement" />
+
+## Création d'une image personnalisée pour le reverse proxy
+
+Pour le reverse proxy, nous souhaitons aussi avoir une image prête à être déployée sur Azure Web App Service. Pour ce faire, nous allons créer un fichier **`Dockerfile`** au sein d'un nouveau dossier **`reverse-proxy`** avec le contenu suivant :
+
+```dockerfile
+FROM nginx:alpine
+COPY nginx.conf /etc/nginx/nginx.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+``` 
+
+Veuillez aussi copier le fichier **`nginx.conf`** contenu à la racine de votre projet GitLab dans le dossier **`reverse-proxy`**.
+
+Nous devons mettre à jour le Docker Compose pour construire l'image de notre reverse proxy. Pour ce faire, veuillez mettre à jour le fichier **`docker-compose.staging.yml`** :
+
+```yaml {26-27} showLineNumbers
+services:
+  frontend:
+    container_name: frontend-prod
+    image: frontend-prod
+    build:
+      context: ./frontend
+    ports:
+      - 5172:5172
+    depends_on:
+      - api
+
+  api:
+    container_name: api-prod
+    image: api-prod
+    build: ./api
+    ports:
+      - 3000:3000
+    environment:
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+    entrypoint: ["java", "-jar", "app.jar", "--spring.profiles.active=staging"]
+
+  reverse-proxy:
+    container_name: reverse-proxy-prod
+    image: reverse-proxy-prod
+    build: ./reverse-proxy
+    ports:
+      - 80:80
+```
+
+Pour le service **`reverse-proxy`**, nous avons ajouté la ligne **`build: ./reverse-proxy`** pour construire l'image de notre reverse proxy.
+
+
+## Mise à jour du fichier .gitlab-ci.yml
+
+### Introduction
+
+Nous allons maintenant mettre à jour le fichier **`.gitlab-ci.yml`** pour déployer nos services sur Azure Web App Service :
+
+```yaml {4,7-11,55-63,65-71} showLineNumbers
+stages:
+  - test
+  - build
+  - staging
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  VERSION: $CI_PIPELINE_IID
+  REGISTRY: $CI_REGISTRY 
+  REGISTRY_IMAGE_BASE_PATH: $REGISTRY/$CI_PROJECT_PATH
+  AZURE_WEBAPP_NAME: cae-groupxy-staging-app # Remplacer par le nom de votre Web App Azure
+  AZURE_WEBAPP_RESOURCE_GROUP: caeGroup # Remplacer par le nom de votre Resource Group Azure
+  
+
+api test:
+  stage: test
+  image: maven:3.9.9-amazoncorretto-21
+  cache:
+    key:
+      files:
+        - api/pom.xml
+    paths:
+      - $CI_PROJECT_DIR/.m2/repository
+  script:
+    - cd api
+    - mvn clean test
+  artifacts:
+    paths:
+      - api/target/reports/
+      - api/target/site/
+      - api/target/surefire-reports/
+
+frontend test:
+  stage: test
+  image: node:20-alpine
+  cache:
+    key:
+      files:
+        - frontend/package-lock.json
+    paths:
+      - frontend/node_modules
+  script:
+    - cd frontend
+    - npm ci
+    - npm run lint
+    - npm run coverage
+  artifacts:
+    paths:
+      - frontend/coverage/
+
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:20-dind
+  script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+    - docker-compose -f docker-compose.staging.yml build
+    - for service in frontend-prod api-prod reverse-proxy-prod; do
+        docker tag $service $REGISTRY_IMAGE_BASE_PATH/$service:latest;
+        docker tag $service $REGISTRY_IMAGE_BASE_PATH/$service:$VERSION;
+        docker push $REGISTRY_IMAGE_BASE_PATH/$service:latest;
+        docker push $REGISTRY_IMAGE_BASE_PATH/$service:$VERSION;
+      done
+
+deploy:
+  stage: staging
+  image: mcr.microsoft.com/azure-cli
+  script:
+    - az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+    - az webapp config container set --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP --multicontainer-config-type compose --multicontainer-config-file docker-compose.deploy.yml --container-registry-user $PULL_IMAGE_TOKEN_USERNAME --container-registry-password $PULL_IMAGE_TOKEN_PASSWORD
+    - az webapp start --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP
+```
+
+Voici les changements apportés au fichier **`.gitlab-ci.yml`** :
+- Nous avons ajouté une nouvelle variable **`VERSION`** qui contient l'identifiant du pipeline. Cette variable sera utilisée pour tagger les images Docker avec un numéro de version. **`$CI_PIPELINE_IID`** est une variable GitLab qui contient l'identifiant du pipeline.
+- Nous avons ajouté une nouvelle variable **`REGISTRY`** qui contient l'URL du GitLab Registry. **`$CI_REGISTRY`** est une variable GitLab qui contient l'URL du GitLab Registry.
+- Nous avons ajouté une nouvelle variable **`AZURE_WEBAPP_NAME`** qui doit être adaptée pour contenir le nom de notre Web App Azure.
+- Nous avons ajouté une nouvelle variable **`AZURE_WEBAPP_RESOURCE_GROUP`** qui doit être adapté pour contenir le nom du **`Resource Group`** de notre Web App Azure.
+- **`echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin`** : nous nous connectons au GitLab Registry en utilisant les variables d'environnement **`CI_REGISTRY_USER`** et **`CI_REGISTRY_PASSWORD`**. Ces variables sont automatiquement définies par GitLab.
+- **`docker-compose -f docker-compose.staging.yml build`** : nous construisons les images Docker de nos services en utilisant le fichier **`docker-compose.staging.yml`**. Nous n'indiquons plus de fichier **`.env`** car les variables d'environnement sont définies au niveau de notre Web App Azure.
+- **`for service in frontend-prod api-prod reverse-proxy-prod; do`** : boucle sur les services **`frontend-prod`**, **`api-prod`** et **`reverse-proxy-prod`** afin de tagger et pousser les images Docker vers le GitLab Registry.
+- **`docker tag $service $REGISTRY_IMAGE_BASE_PATH/$service:latest;`** : nous taggons l'image Docker avec le tag **`latest`**.
+- **`docker tag $service $REGISTRY_IMAGE_BASE_PATH/$service:$VERSION;`** : nous taggons l'image Docker avec le tag **`$VERSION`**.
+- **`docker push $REGISTRY_IMAGE_BASE_PATH/$service:latest;`** : nous poussons l'image Docker vers le GitLab Registry avec le tag **`latest`**.
+- **`docker push $REGISTRY_IMAGE_BASE_PATH/$service:$VERSION;`** : nous poussons l'image Docker vers le GitLab Registry avec le tag **`$VERSION`**.
+- Nous avons ajouté un nouveau job **`deploy`** qui va déployer nos services sur Azure Web App Service.
+- **`az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID`** : nous nous connectons à Azure en utilisant les variables d'environnement **`AZURE_CLIENT_ID`**, **`AZURE_CLIENT_SECRET`** et **`AZURE_TENANT_ID`**.
+- **`az webapp config container set --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP --multicontainer-config-type compose --multicontainer-config-file docker-compose.deploy.yml --container-registry-user $PULL_IMAGE_TOKEN_USERNAME --container-registry-password $PULL_IMAGE_TOKEN_PASSWORD`** : nous déployons nos services sur Azure Web App Service en utilisant le fichier **`docker-compose.deploy.yml`** et les variables d'environnement **`PULL_IMAGE_TOKEN_USERNAME`** et **`PULL_IMAGE_TOKEN_PASSWORD`**.
+- **`az webapp start --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP`** : nous démarrons notre Web App Azure.
+
+Nous allons maintenant voir comment créer le fichier **`docker-compose.deploy.yml`** qui sera utilisé par Azure pour faire un pull des images Docker depuis le GitLab Registry.
+
+## Création du fichier docker-compose.deploy.yml
+
+Nous allons créer un fichier **`docker-compose.deploy.yml`** à la racine de notre projet GitLab avec le contenu suivant :
+
+```yaml
+services:
+  frontend:
+    image: registry.gitlab.com/e-vinci/cae-projects/2025-cae-projects/cae-group-xy/frontend-prod:latest # Remplacer par l'image Docker de votre frontend
+    container_name: frontend-prod
+    ports:
+      - 5172:5172
+    depends_on:
+      - api
+
+  api:
+    image: registry.gitlab.com/e-vinci/cae-projects/2025-cae-projects/cae-group-xy/api-prod:latest # Remplacer par l'image Docker de votre API
+    container_name: api-prod
+    ports:
+      - 3000:3000
+    environment:
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+    entrypoint: ["java", "-jar", "app.jar", "--spring.profiles.active=staging"]
+
+  reverse-proxy:
+    image: registry.gitlab.com/e-vinci/cae-projects/2025-cae-projects/cae-group-xy/reverse-proxy-prod:latest # Remplacer par l'image Docker de votre reverse proxy
+    container_name: reverse-proxy-prod
+    ports:
+      - 80:80
+```
+
+Ce fichier **`docker-compose.deploy.yml`** est similaire au fichier **`docker-compose.staging.yml`**. La seule différence est que nous utilisons les images Docker que nous avons poussées vers le GitLab Registry.
+
+Pour connaître le chemin de vos images Docker dans le GitLab Registry, veuillez suivre les instructions suivantes :
+- Connectez-vous à votre projet GitLab.
+- Cliquez sur **`Deploy`**.
+- Cliquez sur **`Container Registry`**.
+- Vous verrez les images Docker de vos services. Cliquez sur une image pour voir les tags disponibles.
+- En cliquant sur un tag, vous verrez le chemin complet de l'image Docker. Par exemple : **`Published to the e-vinci/cae-projects/2025-cae-projects/cae-group-xy/reverse-proxy-prod image repository on 19 February 2025 at 19:10:39 CET`**.
+
+Une fois toutes ces étapes réalisées, vous pouvez lancer le pipeline GitLab CI/CD pour déployer vos services sur Azure Web App Service. Pour ce faire, il suffit de pousser votre code sur votre repository GitLab.
+
+Si tout se passe bien, vous devriez voir vos services déployés sur Azure Web App Service. Vous pouvez vérifier que tout fonctionne correctement en naviguant sur l'URL de votre Web App Azure, par exemple : https://cae-groupxy-staging-app-fza6c0ebghahfufh.centralus-01.azurewebsites.net/.
+
+## Dois-je arrêter ma Web App Azure pour ne pas consommer de minutes CPU ?
+
+Les 60 minutes de CPU par jour sur Azure Web App Service (plan gratuit F1) se réfèrent à l'utilisation totale du processeur par votre application, y compris le traitement des requêtes HTTP et toute autre activité nécessitant des ressources CPU. Ce n'est pas limité au temps de build. Si votre application consomme beaucoup de CPU, vous pourriez dépasser les 60 minutes de CPU par jour.
+
+Vous pouvez arrêter votre Web App Azure pour ne pas consommer de CPU minutes. Pour ce faire, veuillez suivre les instructions suivantes :
+- Connectez-vous à votre portail Azure.
+- Cliquez sur **`App Services`**.
+- Sélectionnez votre Web App.
+- Cliquez sur **`Stop`**.
+
+Pour la redémarrer, il suffit de cliquer sur **`Start`**.
+
+Pour voir votre consommation de CPU, vous pouvez suivre les instructions suivantes :
+- Connectez-vous à votre portail Azure.
+- Cliquez sur **`App Services`**.
+- Sélectionnez votre Web App.
+- Cliquez sur **`Monitoring`**.
+- Cliquez sur **`Metrics`**.
+- Sélectionnez **`CPU Time`** au niveau de **`Metric`**.
+
+
+# <InternalPageTitle> Comment déployer seulement en cas de fusion de modification sur le main ? </InternalPageTitle>
+
+## Introduction
+
+Nous allons voir comment déployer nos services sur Azure Web App Service uniquement en cas de fusion de modifications sur la branche **`main`**.
+
+En fait, c'est quelque chose que nous avons déjà vu. Nous allons simplement ajouter une condition à notre job **`deploy`** pour qu'il ne s'exécute que si nous fusionnons des modifications sur la branche **`main`**.
+
+## Mise à jour du fichier .gitlab-ci.yml
+
+Veuillez mettre à jour le fichier **`.gitlab-ci.yml`** pour déployer nos services sur Azure Web App Service uniquement en cas de fusion de modifications sur la branche **`main`** :
+
+```yaml {68-69} showLineNumbers
+stages:
+  - test
+  - build
+  - staging
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  VERSION: $CI_PIPELINE_IID
+  REGISTRY: $CI_REGISTRY 
+  REGISTRY_IMAGE_BASE_PATH: $REGISTRY/$CI_PROJECT_PATH
+  AZURE_WEBAPP_NAME: cae-groupxy-staging-app
+  AZURE_WEBAPP_RESOURCE_GROUP: caeGroup
+  
+
+api test:
+  stage: test
+  image: maven:3.9.9-amazoncorretto-21
+  cache:
+    key:
+      files:
+        - api/pom.xml
+    paths:
+      - $CI_PROJECT_DIR/.m2/repository
+  script:
+    - cd api
+    - mvn clean test
+  artifacts:
+    paths:
+      - api/target/reports/
+      - api/target/site/
+      - api/target/surefire-reports/
+
+frontend test:
+  stage: test
+  image: node:20-alpine
+  cache:
+    key:
+      files:
+        - frontend/package-lock.json
+    paths:
+      - frontend/node_modules
+  script:
+    - cd frontend
+    - npm ci
+    - npm run lint
+    - npm run coverage
+  artifacts:
+    paths:
+      - frontend/coverage/
+
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:20-dind
+  script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+    - docker-compose -f docker-compose.staging.yml build
+    - for service in frontend-prod api-prod reverse-proxy-prod; do
+        docker tag $service $REGISTRY_IMAGE_BASE_PATH/$service:latest;
+        docker tag $service $REGISTRY_IMAGE_BASE_PATH/$service:$VERSION;
+        docker push $REGISTRY_IMAGE_BASE_PATH/$service:latest;
+        docker push $REGISTRY_IMAGE_BASE_PATH/$service:$VERSION;
+      done
+
+deploy:
+  stage: staging
+  image: mcr.microsoft.com/azure-cli
+  rules:       
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+  script:
+    - az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+    - az webapp config container set --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP --multicontainer-config-type compose --multicontainer-config-file docker-compose.deploy.yml --container-registry-user $PULL_IMAGE_TOKEN_USERNAME --container-registry-password $PULL_IMAGE_TOKEN_PASSWORD
+    - az webapp start --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP
+```
+
+**`if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH`** : cette condition permet de vérifier si le nom de la branche de la fusion de modifications est égal au nom de la branche par défaut. Si c'est le cas, le job **`deploy`** s'exécute. Sinon, il ne s'exécute pas.
+
+Veuillez faire un push de vos modifications sur votre "feature branch". Vous devriez voir que le job **`deploy`** ne s'exécute pas. 
+
+Si vous fusionnez vos modifications sur la branche **`main`**, le job **`deploy`** s'exécutera. Nous n'allons pas tout de suite le faire car nous allons voir comment réaliser des tests e2e sur notre application en production.
+
+# <InternalPageTitle> Comment réaliser des tests e2e sur l'app en production ? </InternalPageTitle>
+
+## Introduction
+
+Dans l'environnement de tests, nous avons réalisés les tests e2e directement au sein d'un réseau Docker.
+
+Dans l'environnement de staging, nous souhaitons réaliser les tests e2e sur les services déployés sur Azure Web App Service.
+
+Voici le workflow que nous allons suivre :
+
+<PlantUML src="/diagrams/gitlab-registry2.puml" alt="Workflow de déploiement" />
+
+
+## Mise à jour de la configuration des tests e2e
+
+Dans la configuration de Playwright, nous devons mettre à jour l'URL de notre application pour qu'elle pointe vers notre Web App Azure. 
+Pour le faire correctement, nous allons ajouter une nouvelle variable d'environnement **`BASE_URL`** au niveau de notre Web App Azure afin de pouvoir facilement réaliser les tests e2e quel que soit l'environnement.
+
+Veuillez mettre à jour le fichier **`playwright.config.ts`** au niveau de votre projet **`e2e`** :
+
+```ts
+baseURL:
+      process.env.NODE_ENV === undefined ||
+      process.env.NODE_ENV === "development"
+        ? "http://localhost:5173"
+        : process.env.BASE_URL === undefined
+        ? "http://reverse-proxy:80"
+        : process.env.BASE_URL,
+```
+
+## Mise à jour du fichier .gitlab-ci.yml
+
+Veuillez mettre à jour le fichier **`.gitlab-ci.yml`** pour réaliser les tests e2e sur notre application en production :
+
+```yaml {5,14-15,79-92} showLineNumbers
+stages:
+  - test
+  - build
+  - staging
+  - e2e
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  VERSION: $CI_PIPELINE_IID
+  REGISTRY: $CI_REGISTRY 
+  REGISTRY_IMAGE_BASE_PATH: $REGISTRY/$CI_PROJECT_PATH
+  AZURE_WEBAPP_NAME: cae-groupxy-staging-app
+  AZURE_WEBAPP_RESOURCE_GROUP: caeGroup
+  BASE_URL: https://cae-groupxy-staging-app-fza6c0ebghahfufh.centralus-01.azurewebsites.net/
+  NODE_ENV: staging
+  
+
+api test:
+  stage: test
+  image: maven:3.9.9-amazoncorretto-21
+  cache:
+    key:
+      files:
+        - api/pom.xml
+    paths:
+      - $CI_PROJECT_DIR/.m2/repository
+  script:
+    - cd api
+    - mvn clean test
+  artifacts:
+    paths:
+      - api/target/reports/
+      - api/target/site/
+      - api/target/surefire-reports/
+
+frontend test:
+  stage: test
+  image: node:20-alpine
+  cache:
+    key:
+      files:
+        - frontend/package-lock.json
+    paths:
+      - frontend/node_modules
+  script:
+    - cd frontend
+    - npm ci
+    - npm run lint
+    - npm run coverage
+  artifacts:
+    paths:
+      - frontend/coverage/
+
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:20-dind
+  script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+    - docker-compose -f docker-compose.staging.yml build
+    - for service in frontend-prod api-prod reverse-proxy-prod; do
+        docker tag $service $REGISTRY_IMAGE_BASE_PATH/$service:latest;
+        docker tag $service $REGISTRY_IMAGE_BASE_PATH/$service:$VERSION;
+        docker push $REGISTRY_IMAGE_BASE_PATH/$service:latest;
+        docker push $REGISTRY_IMAGE_BASE_PATH/$service:$VERSION;
+      done
+
+deploy:
+  stage: staging
+  image: mcr.microsoft.com/azure-cli
+  rules:       
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+  script:
+    - az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+    - az webapp config container set --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP --multicontainer-config-type compose --multicontainer-config-file docker-compose.deploy.yml --container-registry-user $PULL_IMAGE_TOKEN_USERNAME --container-registry-password $PULL_IMAGE_TOKEN_PASSWORD
+    - az webapp start --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP
+
+e2e tests:
+  stage: e2e
+  image: mcr.microsoft.com/playwright:v1.50.1-jammy
+  rules:       
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+  script:
+    - cd ./e2e
+    - npm ci
+    - npx playwright test 
+    - if [ $? -ne 0 ]; then echo "E2E tests failed"; exit 1; fi
+  artifacts:
+    paths:
+      - e2e/playwright-report/
+      - e2e/test-results/
+```
+
+Nous avons ajouté un nouveau job **`e2e tests`** qui va réaliser les tests e2e sur notre application en production. Ce job s'exécute uniquement si nous fusionnons des modifications sur la branche **`main`**.
+
+Nous avons ajouté une nouvelle variable d'environnement **`BASE_URL`** qui contient l'URL de notre Web App Azure.
+
+Nous avons aussi ajouté une nouvelle variable d'environnement **`NODE_ENV`** qui contient l'environnement de notre application. Cette variable est utilisée pour déterminer l'URL de notre application dans le fichier **`playwright.config.ts`** du projet **`e2e`**.
+
+Veuillez pousser vos modifications sur votre repository GitLab. Si les stages **`test`** et **`build`**  passent, la MR peut être mergée. Si la MR est mergée sur la branche **`main`**, les jobs **`staging`** et **`e2e tests`** s'exécuteront après avoir réexécuté les stages **`test`** et **`build`**.
+
+Il est fort probable que nos tests e2e ne passent pas du premier coup. Mais pourquoi ?
+
+## Pourquoi les tests e2e ne passent pas du premier coup ?
+
+Les tests e2e peuvent ne pas passer du premier coup pour plusieurs raisons :
+- L'application est lente à charger et les tests sont exécutés avant que l'application ne soit complètement chargée.
+- La base de données contient déjà les données des tests précédents.
+
+
+Faut il réinitialiser la DB à chaque démarrage de l'environnement de staging ?  
+Il est recommandé de réinitialiser la base de données à chaque démarrage de l'environnement de staging. Cela permet de s'assurer que les données de tests sont toujours les mêmes et que les tests e2e sont exécutés dans des conditions similaires.
+
+> Attention qu'il est intéressant de réinitialiser la DB à chaque démarrage de l'environnement de staging pour s'assurer que les données de tests sont toujours les mêmes et que les tests e2e sont exécutés dans des conditions similaires. Par contre, pour l'environnement de production, il est recommandé de ne pas réinitialiser la DB à chaque démarrage pour ne pas perdre les données des utilisateurs.
+
+## Comment réinitialiser la DB à chaque démarrage de l'environnement de staging ?
+
+Nous allons faire en sorte de réinitialiser la DB à chaque démarrage de l'environnement de staging.
+
+Pour continuer dans ce tutoriel, vous devez créer une nouvelle feature branch, car pour lancer les tests e2e, il faudra qu'il y ait une fusion de modifications sur la branche **`main`**.
+
+Nous allons faire en sorte que Spring Boot utilise le profil **`staging`** pour réinitialiser la DB à chaque démarrage de notre Web App Azure, en utilisant le fichier **`application-staging.properties`**.  
+Pour rappel, un profil sous Spring Boot est un ensemble de configurations qui permettent de définir le comportement de l'application en fonction de l'environnement dans lequel elle est exécutée.
+
+Veuillez vous assurer que le fichier **`application-staging.properties`** est bien créé au niveau de votre projet **`api`** :
+
+```properties
+spring.application.name=demo
+
+server.port=3000
+
+spring.datasource.url=${SPRING_DATASOURCE_URL}
+spring.datasource.username=${SPRING_DATASOURCE_USERNAME}
+spring.datasource.password=${SPRING_DATASOURCE_PASSWORD}
+spring.jpa.generate-ddl=true
+spring.sql.init.mode=always
+spring.jpa.defer-datasource-initialization=true
+```
+
+Pour rappel :
+- **`spring.sql.init.mode=always`** : cette propriété permet de réinitialiser la DB à chaque démarrage de l'application.
+- **`spring.jpa.defer-datasource-initialization=true`** : cette propriété permet de retarder l'initialisation de la source de données. D'abord les entités sont créées, puis la source de données est initialisée via le script **`data.sql`**.
+
+Nous allons maintenant voir comment configurer notre Web App Azure pour qu'elle utilise le profil **`staging`**. 
+
+Pour ce faire, il suffit d'ajouter une variable d'environnement au niveau de notre Web App Azure. Cette variable d'environnement est tout ce qu'il y a à faire pour que Spring Boot utilise le fichier **`application-staging.properties`**. 
+
+Au niveau de votre Azure Web App (**`cae-groupxy-staging-app`** par exemple) via le portail Azure, veuillez :
+- Cliquer sur **`Settings`**.
+- Cliquer sur **`Environment variables`**.
+- Ajouter la variable d'environnement suivante en cliquant sur **`Add`** :
+  - **`SPRING_PROFILES_ACTIVE`** (**`Name`**): **`staging`** (**`Value`**). Cliquez sur **`Apply`**.
+  - N'oubliez pas de cliquer sur **`Apply`** pour sauvegarder l'ajout de la variable, puis **`Confirm`**.
+
+# <InternalPageTitle> Comment attendre que l'API soit bien démarrée avant de lancer les tests e2e ? </InternalPageTitle>
+
+## Introduction
+
+Dans l'environnement de staging, nous avons réalisé les tests e2e sur les services déployés sur Azure Web App Service. 
+
+Nous avons vu que les tests e2e peuvent ne pas passer du premier coup, notamment parce que l'application est lente à charger et les tests sont exécutés avant que l'application ne soit complètement chargée.
+
+Pour assurer que l'API est prête avant de lancer les tests e2e, nous allons ajouter une étape qui attend que l'API soit bien démarrée avant de lancer les tests e2e. Pour ce faire, nous allons faire des requêtes HTTP sur l'API jusqu'à ce qu'elle soit prête. On pourrait appeler ça un **`health check`**.  
+
+Parfois, au niveau des API REST, il est possible de créer un endpoint **`/health`** qui permet de vérifier si l'API est bien démarrée. Ce endpoint peut retourner un code HTTP 200 si l'API est bien démarrée, après avoir vérifié que la base de données est bien connectée par exemple.
+
+Dans notre tutoriel, nous allons simplement utiliser l'opération de lecture de toutes les pizzas comme **`health check`**. Si l'opération de lecture de toutes les pizzas retourne un code HTTP 200, alors l'API est bien démarrée.
+
+Voici le workflow que nous allons suivre :
+
+<PlantUML src="/diagrams/gitlab-registry3.puml" alt="Workflow de déploiement" />
+
+## Mise à jour du fichier .gitlab-ci.yml
+
+Veuillez mettre à jour le fichier **`.gitlab-ci.yml`** pour attendre que l'API soit bien démarrée avant de lancer les tests e2e :
+
+```yaml {77-86} showLineNumbers
+stages:
+  - test
+  - build
+  - staging
+  - e2e
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  VERSION: $CI_PIPELINE_IID
+  REGISTRY: $CI_REGISTRY
+  REGISTRY_IMAGE_BASE_PATH: $REGISTRY/$CI_PROJECT_PATH
+  AZURE_WEBAPP_NAME: cae-groupxy-staging-app
+  AZURE_WEBAPP_RESOURCE_GROUP: caeGroup
+  BASE_URL: https://cae-groupxy-staging-app-fza6c0ebghahfufh.centralus-01.azurewebsites.net/
+  NODE_ENV: staging
+
+api test:
+  stage: test
+  image: maven:3.9.9-amazoncorretto-21
+  cache:
+    key:
+      files:
+        - api/pom.xml
+    paths:
+      - $CI_PROJECT_DIR/.m2/repository
+  script:
+    - cd api
+    - mvn clean test
+  artifacts:
+    paths:
+      - api/target/reports/
+      - api/target/site/
+      - api/target/surefire-reports/
+
+frontend test:
+  stage: test
+  image: node:20-alpine
+  cache:
+    key:
+      files:
+        - frontend/package-lock.json
+    paths:
+      - frontend/node_modules
+  script:
+    - cd frontend
+    - npm ci
+    - npm run lint
+    - npm run coverage
+  artifacts:
+    paths:
+      - frontend/coverage/
+
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:20-dind
+  script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+    - docker-compose -f docker-compose.staging.yml build
+    - for service in frontend-prod api-prod reverse-proxy-prod; do
+      docker tag $service $REGISTRY_IMAGE_BASE_PATH/$service:latest;
+      docker tag $service $REGISTRY_IMAGE_BASE_PATH/$service:$VERSION;
+      docker push $REGISTRY_IMAGE_BASE_PATH/$service:latest;
+      docker push $REGISTRY_IMAGE_BASE_PATH/$service:$VERSION;
+      done
+
+deploy:
+  stage: staging
+  image: mcr.microsoft.com/azure-cli
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+  script:
+    - az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+    - az webapp config container set --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP --multicontainer-config-type compose --multicontainer-config-file docker-compose.deploy.yml --container-registry-user $PULL_IMAGE_TOKEN_USERNAME --container-registry-password $PULL_IMAGE_TOKEN_PASSWORD
+    - az webapp start --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP
+    - |
+      for i in {1..30}; do
+        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $BASE_URL/api/pizzas);
+        if [ "$HTTP_STATUS" -eq 200 ]; then
+          echo "Azure Web App is functional."
+          break
+        fi
+        echo "Azure Web App is not ready yet. Waiting for 10 seconds..."
+        sleep 10
+      done
+
+e2e tests:
+  stage: e2e
+  image: mcr.microsoft.com/playwright:v1.50.1-jammy
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+  script:
+    - cd ./e2e
+    - npm ci
+    - npx playwright test
+    - if [ $? -ne 0 ]; then echo "E2E tests failed"; exit 1; fi
+  artifacts:
+    paths:
+      - e2e/playwright-report/
+      - e2e/test-results/
+```
+
+Dans la boucle **`for`** :
+- Nous faisons une requête HTTP sur l'opération de lecture de toutes les pizzas.
+- Si le code HTTP est égal à 200, alors l'API est bien démarrée.
+- Sinon, nous attendons 10 secondes et nous réessayons jusqu'à 30 fois.
+- NB : **`curl -s -o /dev/null -w "%{http_code}" $BASE_URL/api/pizzas`** permet de faire une requête HTTP sur l'opération de lecture de toutes les pizzas et de récupérer le code HTTP. **`-s`** permet de ne pas afficher les détails de la requête, **`-o /dev/null`** permet de rediriger la sortie de la requête vers **`/dev/null`** (**`/dev/null`** agit comme un "trou noir", tout ce qui y est écrit est directement supprimé) et **`-w "%{http_code}"`** permet de récupérer le code HTTP.
+
+Veuillez pousser vos modifications sur votre repository GitLab. Si les stages **`test`** et **`build`**  passent, la MR peut être mergée. Si la MR est mergée sur la branche **`main`**, les jobs **`staging`** et
+**`e2e tests`** s'exécuteront après avoir réexécuté les stages **`test`** et **`build`**.
+
+Normalement, tout devrait fonctionner correctement. Vous devriez voir que les tests e2e passent. Et votre pipeline GitLab CI/CD est maintenant complet. Votre application devrait être déployée sur Azure Web App Service avec succès 🚀 !
+
+Si nécessaire, vous pouvez trouver le code associé au déploiement de l'environnement staging ici : [staging](https://github.com/e-vinci/cae-theory-demos/tree/main/staging).
+
+## Conclusion sur le déploiement de l'environnement staging
+
+Dans ce tutoriel, nous avons vu :
+- comment déployer notre application sur Azure Web App Service en utilisant GitLab CI/CD. 
+- comment réaliser des tests e2e sur notre application disponible sur le cloud. 
+- comment attendre que l'API soit bien démarrée avant de lancer les tests e2e. 
+- comment réinitialiser la DB à chaque démarrage de l'environnement de staging. 
+- comment déployer seulement en cas de fusion de modifications sur la branche **`main`**.
+
+La faiblesse de notre application actuelle est que la seule application qui est visible sur le cloud par les utilisateurs est déployée avant même d'avoir réalisé les tests e2e. Cela peut poser des problèmes si les tests e2e ne passent pas. Il est recommandé de réaliser les tests e2e avant de déployer l'application sur le cloud pour les utilisateurs finaux. 
+
+Il va donc prochainement falloir créer un nouvel environnement de production pour déployer notre application seulement après avoir réalisé et réussi les tests e2e. Nous verrons cela plus tard 😉.
+
+D'abord, nous allons nous attaquer à la gestion d'un autre type d'images, les photos des pizzas. Nous allons voir comment stocker les photos des pizzas.

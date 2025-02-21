@@ -1,5 +1,4 @@
 import { getMDXComponent } from "next-contentlayer2/hooks";
-
 import PathViewer from "@/components/PathViewer/PathViewer";
 import PathViewerItem from "@/components/PathViewer/PathViewerItem";
 import InternalPageMenu from "@/components/InternalPageMenu/InternalPageMenu";
@@ -18,7 +17,6 @@ const shortcodes = {
   InternalPageMenuItem,
   InternalPageTitle,
   LinkFile,
-  // pre: CodeBlock
 };
 
 interface MdxContentProps {

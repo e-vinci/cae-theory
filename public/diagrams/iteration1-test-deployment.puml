@@ -1,0 +1,58 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Deployment.puml
+
+!include <C4/C4_Deployment>
+!include <tupadr3/common>
+!include <tupadr3/font-awesome/server>
+!include <tupadr3/font-awesome/database>
+!include <tupadr3/font-awesome/users>
+!include <tupadr3/font-awesome/laptop>
+!include <tupadr3/devicons/react>
+!include <tupadr3/devicons/postgresql>
+!include <tupadr3/devicons/java>
+!include <tupadr3/devicons/docker>
+!include <tupadr3/devicons/chrome>
+!include <tupadr3/devicons/java>
+!include <tupadr3/font-awesome/gitlab>
+
+'LAYOUT_TOP_DOWN()
+'LAYOUT_LEFT_RIGHT()
+'LAYOUT_LANDSCAPE()
+
+title Test Environment on GitLab CI/CD (iteration 1) : C4 Deployment Diagram
+
+Node(docker_host, "Gitlab CI/CD Docker Host", "Gitlab CI/CD", "Runs the pipeline", $sprite=gitlab) {
+
+
+    Node(e2eContainer, "E2E container", "mcr.microsoft.com/\nplaywright:v1.50.1-jammy", "Test the front & api", $sprite=docker) {
+        Container(e2e, "Playwright", "JS/Browsers", "Tests the frontend & api", $sprite=img:https://ray.run/playwright-brand-assets/playwright-logo.svg{scale=0.3})
+        Container(frontend, "Frontend app", "Vite + React + TS + JS", "The main UI that the customer interacts with", $sprite=react)
+        Node(docker_compose, "Docker Compose Network", "Configuration", "Configure and manage containers",  $sprite=docker) {
+            Node(dbContainer, "Postgres container", "postgres:latest", "Runs the db", $sprite=docker) {
+                ContainerDb(db, "Database", "PostgreSQL", "Holds pizzeria's information", $sprite=postgresql)
+            }
+        }
+        Container(api, "API", "Spring Boot", "Handles all business logic", $sprite=img:https://upload.wikimedia.org/wikipedia/commons/7/79/Spring_Boot.svg{scale=0.5})
+
+    }
+
+
+    Node(testFront, "Node container", "node:20", "Tests the front", $sprite=docker) {
+        Container(node, "Frontend code", "Node", "Tests the front", $sprite=img:https://nodejs.org/static/logos/nodejsLight.svg{scale=0.5})
+    }
+
+    Node(testApi, "Maven container", "maven:3.9.9-amazoncorretto-21", "Tests the api", $sprite=docker) {
+        Container(maven, "API code", "Maven", "Tests the api", $sprite=java)
+    }
+
+}
+
+
+
+Rel_U(api, db, "Reads/Writes", "JDBC")
+Rel(e2e, frontend, "Requests Files", "HTTP")
+Rel(e2e, frontend, "Makes API calls", "HTTP")
+Rel_R(frontend, api, "Forwards requests to", "http")
+
+
+@enduml

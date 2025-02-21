@@ -1,0 +1,25 @@
+@startuml
+actor Développeurs
+participant "GitLab CI/CD" as GitLab
+participant "GitLab Registry" as Registry
+participant "Azure Web App Service" as Azure
+
+Développeurs -> GitLab: Pousser le code vers le dépôt
+GitLab -> GitLab: Déclencher le pipeline CI/CD
+
+GitLab -> GitLab: Exécuter les tests du frontend
+GitLab -> GitLab: Exécuter les tests de l'API
+alt Les tests passent
+    GitLab -> GitLab: Construire et pousser les images Docker
+    GitLab -> Registry: Pousser les images Docker
+else Les tests échouent
+    GitLab -> Développeurs: Notifier l'échec
+    return
+end
+
+GitLab -> Azure: Se connecter à Azure
+GitLab -> Azure: Déployer les images Docker depuis le Registry
+Azure -> Azure: Démarrer la Web App
+
+Développeurs -> Azure: Vérifier le déploiement
+@enduml
