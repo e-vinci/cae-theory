@@ -57,8 +57,9 @@ Voici quelques points importants à noter sur le diagramme ci-dessus :
 - Pour les étudiants Vinci, le hosting de la DB est offert par la Haute École de Vinci. Pour les autres, vous pouvez utiliser un service cloud comme **Azure Databse for PostgreSQL**.
 
 Pour le déploiement, nous allons procéder en plusieurs étapes :
-1. Déploiement de la base de données vers le staging environnement.
-2. Déploiement du reverse proxy, du frontend et de l'API sur le staging environnement.
+1. Déploiement de la base de données vers le staging environnement. Lancement de notre API en nous connectant à la DB de staging.
+2. Création d'une environnement local très proche de l'environnement de staging contenant le reverse proxy, le frontend et l'API au sein d'un Docker Compose, l'API se connectant à la DB de staging.
+3. Déploiement du reverse proxy, du frontend et de l'API sur le staging environnement.
 3. Réalisation des tests e2e sur le staging environnement à partir de GitLab CI/CD.
 
 Avant d'aller plus loin, nous allons d'abord voir comment créer un compte sur Azure afin d'avoir des crédits gratuits pour déployer notre application.
@@ -104,8 +105,8 @@ Pour les autres :
 Pour ce tutoriel (nommé `staging`), nous souhaitons pouvoir créer un environnement locale qui se connecte à la DB de staging à l'aide de Docker Compose. Pour ce tutoriel, veuillez créer une nouvelle "feature branch" sur votre projet GitLab (par exemple, vous pouvez la nommer **`chore/staging`**).
 
 En fait, nous souhaitons :
-- Quand nous démarrons notre API à l'aide d'IntelliJ, via notre environnement de développement, qu'elle se connecte à la DB dans le container Docker local.
-- Quand nous démarrons notre API à l'aide de Docker Compose, via notre environnement de staging, qu'elle se connecte à la DB de staging.
+- Quand nous démarrons notre API à l'aide d'IntelliJ, via notre environnement de développement, qu'elle se connecte à la DB dans le container Docker local (non visible sur internet).
+- Quand nous démarrons notre API à l'aide de Docker Compose, via notre environnement de staging, qu'elle se connecte à la DB de staging qui est visible sur internet.
 
 Comment rendre cela possible ?  
 Nous souhaitons que l'API se connecte à la DB en utilisant une URL de connexion qui est différente selon l'environnement. Pour ce faire, nous allons utiliser deux fichiers de configuration différents :
@@ -156,7 +157,7 @@ spring.jpa.defer-datasource-initialization=true
 
 Avant de passer à l'environnement de staging complet sur le cloud, il serait intéressant de voir si localement on pourrait démarrer nos services en utilisant la DB de staging. On peut imaginer deux scénarios :
 - Scénario 1 : On utilise notre environnement de développement pour démarrer notre API et notre DB de staging.
-- Scénario 2 : On utilise Docker Compose pour démarrer notre API et notre DB de staging.
+- Scénario 2 : On utilise Docker Compose pour démarrer notre API  (notre DB de staging est démarrée indépendamment de l'API et est visible sur internet).
 
 Même si le scénario 1 est plus simple, le scénario 2 est plus proche de ce que nous allons faire en production. 
 
@@ -186,7 +187,7 @@ Pour démarrer notre API en utilisant le profil **`staging`**, nous savons déj�
 mvn spring-boot:run -Dspring-boot.run.profiles=staging
 ```
 
-Pour rappel, un profil est une manière de définir des configurations spécifiques pour un environnement donné. Dans notre cas, le profil **`staging`** est utilisé pour définir les configurations spécifiques à l'environnement de staging.
+Pour rappel, un profil dans Spring Boot est une manière de définir des configurations spécifiques pour un environnement donné. Dans notre cas, le profil **`staging`** est utilisé pour définir les configurations spécifiques à l'environnement de staging.
 
 Par contre, comment démarrer notre API en utilisant le profil **`staging`** via IntelliJ ?
 
@@ -211,7 +212,7 @@ Nous allons maintenant voir comment démarrer notre API via Docker Compose en ut
 
 Avant de déployer notre API & notre frontend, il est important de mettre en place tous les services nécessaires pour que notre application fonctionne correctement. Pour ce faire, nous allons utiliser Docker Compose.
 
-Nous allons donc créer un environnement local qui se rapproche de l'environnement de staging, en mettant temporairement de côté les tests e2e. Cet environnement local sera composé de :
+Nous allons donc créer un environnement local qui se rapproche de l'environnement de staging, en mettant temporairement de côté les tests e2e pour avancer pas à pas. Cet environnement local sera composé de :
 
 <PlantUML src="/diagrams/local-staging-deployment1.puml" alt="Environnement de staging local" />
 
@@ -253,7 +254,7 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf
 ```
 
-C'est en fait notre configuration de test e2e, mais sans les tests e2e et sans la DB. 
+C'est en fait notre précédente configuration de tests e2e, mais sans les tests e2e et sans la DB. 
 
 > Attention, nous avons aussi changé le profil actif de l'API en **`staging`** pour utiliser les variables d'environnement attendues dans le fichier **`application-staging.properties`**. 
 
@@ -267,11 +268,11 @@ Pour ce faire, nous pouvons utiliser le fichier **`.env`** que nous avons créé
 docker compose -f docker-compose.staging.yml --env-file api/.env up --build 
 ```
 
-En effet, la commande **`--env-file`** permet de spécifier un fichier **`.env`** qui sera lu par Docker Compose et dont les variables d'environnement seront rendues disponibles pour les services. Les variables d'environnement définies dans ne sont pas automatiquement injectées dans les conteneurs Docker par défaut. Vous devez explicitement les passer via la section **`environment:`** dans le fichier **`docker-compose.staging.yml`**.
+En effet, la commande **`--env-file api/.env`** permet de spécifier un fichier **`.env`** (qui se trouve dans le répertoire **`api`**) qui sera lu par Docker Compose et dont les variables d'environnement seront rendues disponibles pour les services. Les variables d'environnement définies dans ce fichier ne sont pas automatiquement injectées dans les conteneurs Docker par défaut. Vous devez explicitement les passer via la section **`environment:`** dans le fichier **`docker-compose.staging.yml`**.
 
 Ainsi **`- SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}`** signifie que la variable d'environnement **`SPRING_DATASOURCE_URL`** sera disponible dans le conteneur de l'API avec la valeur de la variable d'environnement **`SPRING_DATASOURCE_URL`** définie dans le fichier **`.env`**.
 
-Veuillez vérifier que tous vos services démarrent correctement en utilisant le fichier **`docker-compose.staging.yml`** : pour ce faire, il suffit d'ouvrir un navigateur et de naviguer sur **`http://localhost`** pour vérifier que tout est fonctionnel.
+Veuillez vérifier que tous vos services démarrent correctement en utilisant le fichier **`docker-compose.staging.yml`** : pour ce faire, il suffit d'ouvrir un navigateur et de naviguer sur http://localhost pour vérifier que tout est fonctionnel.
 
 Nous allons maintenant voir comment déployer notre application sur Azure Web App Service.
 
@@ -286,7 +287,7 @@ Azure Web App Service est un service cloud (PaaS) qui permet de déployer des ap
 ## Comment déployer une application sur Azure Web App Service ?
 
 Il existe plusieurs façons de déployer une application sur Azure Web App Service
-- **Publish code** : vous pouvez publier votre code source directement sur Azure. Dans ce cas, vous devez choisir un runtime (Java, Node.js, Python, etc.) et Azure s'occupera de l'exécution de votre application. Vous devez créer autant de Web App que de services à déployer. Vous pouvez ensuite utiliser différent moyens pour pousser le code vers Azure : GitHub, Azure Repos, Local Git (CI/CD) ou External Git ou FTP.
+- **Publish code** : vous pouvez publier votre code source directement sur Azure. Dans ce cas, vous devez choisir un runtime (Java, Node.js, Python, etc.) et Azure s'occupera de l'exécution de votre application. Vous devez créer autant de Web App que de services à déployer. Vous pouvez ensuite utiliser différent moyens pour pousser le code vers Azure : GitHub, Azure Repos, Local Git (CI/CD), External Git ou FTP.
 - **Publish single container** : vous pouvez publier un conteneur Docker sur Azure. Dans ce cas, vous devez créer un conteneur Docker pour chaque service à déployer et les publier sur Azure.
 - **Publish docker compose** : vous pouvez publier un fichier **`docker-compose.yml`** sur Azure. Dans ce cas, vous devez créer un fichier **`docker-compose.yml`** qui définit les services à déployer et les publier sur Azure. Le gros avantage de cette méthode est que vous pouvez déployer plusieurs services en une seule fois.
 
@@ -296,7 +297,7 @@ Pour ce cours, nous allons utiliser la méthode **Publish docker compose** pour 
 
 ## Création d'une Azure Web App
 
-Vous devez avoir une **subscription** à Azure. Les instructions pour obtenir des crédits gratuits pour les étudiants sont disponibles plus haut dans cette page.
+Vous devez avoir une **subscription** à Azure. Les instructions pour obtenir des crédits gratuits sont disponibles plus haut dans cette page.
 
 Pour déployer une application sur Azure Web App Service, vous devez d'abord créer une **Web App**. 
 
@@ -314,7 +315,7 @@ Dans la section **`Basics`**, remplissez les informations suivantes :
 - **`Name`** : donnez un nom à votre Web App. Par exemple **`cae-groupxy-staging-app`**.
 - **`Publish`** : choisissez **`Container`**.
 - **`Operating System`** : choisissez **`Linux`**.
-- **`Region`** : choisissez une région disponible dans un plan gratuit. Par exemple **`Central US`**.
+- **`Region`** : choisissez une région disponible dans un plan gratuit. Par exemple **`Central US`**. Attention, si vous choisissez **`France Central`** par exemple, vous n'aurez pas de plan gratuit.
 - **`Linux Plan`** : Garder le plan par défaut.
 - **`Pricing plan`** : choisissez **`F1`** pour avoir un plan gratuit. 60 CPU minutes par jour sont inclues.
 - Cliquez sur **`Review + create`**.
@@ -338,7 +339,7 @@ Un **service principal** est une identité de sécurité utilisée par les appli
 
 Un service principal permet :
 - **Une authentification sécurisée** : Le service principal permettra à GitLab CI/CD de s'authentifier de manière sécurisée auprès d'Azure pour déployer des ressources.
-- **Un accès contrôlé **: Vous pouvez définir des rôles et des autorisations spécifiques pour le service principal, limitant ainsi l'accès aux ressources nécessaires uniquement.
+- **Un accès contrôlé**: Vous pouvez définir des rôles et des autorisations spécifiques pour le service principal, limitant ainsi l'accès aux ressources nécessaires uniquement.
 - **Une automatisation** : Le service principal permet d'automatiser les déploiements et les opérations sur Azure sans intervention manuelle.
 
 ### 🍬 Création d'un service principal en utilisant la ligne de commande Azure
@@ -362,9 +363,7 @@ Vous trouvez ces informations dans le portail Azure, en sélectionnant votre Web
 - **`Resource Group`** : **`Resource Group`** (**`caeGroup`** par exemple).
 
 
-az ad sp create-for-rbac --name "staging-service-principal" --role contributor --scopes /subscriptions/eef4ab19c-8c1e-4edd-b46a-c5a0ece77b90/resourceGroups/caeGroup
-
-Il est possible que vous ayez comme message : `Insufficient privileges to complete the operation.`. 
+Il est possible que vous ayez comme message : `Insufficient privileges to complete the operation.`
 
 Dans ce cas, il faut malheureusement utiliser le portail Azure pour créer le service principal. 
 
@@ -392,7 +391,7 @@ Ensuite, veuillez :
 
 ### Ajout du service principal à l'Azure Web App via le portail Azure
 
-Au niveau de votre Azure Web App (**`cae-groupxy-staging-app`** par exemple), veuillez :  
+Au niveau de votre Azure Web App (**`cae-groupxy-staging-app`** par exemple) via le portail Azure, veuillez :  
 - Cliquer sur **`Access control (IAM)`**.
 - Cliquer sur **`Add a role assignment`**.
 - Cliquer sur **`Members`**. **`User, group, or service principal`** est sélectionné par défaut.
@@ -424,7 +423,7 @@ En local, les variables d'environnement sont définies dans le fichier **`.env`*
 
 ### Configuration des variables d'environnements
 
-Au niveau de votre Azure Web App (**`cae-groupxy-staging-app`** par exemple), veuillez :
+Au niveau de votre Azure Web App (**`cae-groupxy-staging-app`** par exemple) via le portail Azure, veuillez :
 - Cliquer sur **`Settings`**.
 - Cliquer sur **`Environment variables`**.
 - Ajouter les variables d'environnement suivantes en cliquant sur **`Add`** :
@@ -486,6 +485,7 @@ Pour ce faire, veuillez suivre les instructions suivantes :
 - Ajoutez comme **`Key`** **`PULL_IMAGE_TOKEN_PASSWORD`** et comme **`Value`** la valeur que vous avez notée précédemment.
 - Sélectionnez **`Masked`**.
 - Désélectionnez **`Protect variable`**.
+- Cliquez sur **`Add variable`**.
 
 ## Ajout des variables d'environnement pour l'accès à Azure
 
@@ -508,6 +508,7 @@ Pour ce faire, veuillez suivre les instructions suivantes :
 - Ajoutez comme **`Key`** **`AZURE_CLIENT_ID`** et comme **`Value`** la valeur que vous avez notée précédemment.
 - Sélectionnez **`Masked`**.
 - Désélectionnez **`Protect variable`**.
+- Cliquez sur **`Add variable`**.
 
 ## Workflow de déploiement
 
@@ -515,6 +516,10 @@ Voici le workflow de déploiement que nous allons suivre :
 1. Nous allons d'abord réaliser les tests de notre frontend et de notre API.
 2. Si les tests passent, nous allons construire les images Docker de nos services et pousser ces images vers le GitLab Registry.
 3. Nous allons déployer ces images sur Azure Web App Service. A partir de notre pipeline, nous allons nous connecter à Azure et déployer les images Docker sur notre Web App en demandant à Azure de faire un pull des images depuis le GitLab Registry.
+
+En image, voila ce que cela donne :
+
+<PlantUML src="/diagrams/gitlab-registry.puml" alt="Workflow de déploiement" />
 
 ## Création d'une image personnalisée pour le reverse proxy
 
@@ -833,6 +838,11 @@ Dans l'environnement de tests, nous avons réalisés les tests e2e directement a
 
 Dans l'environnement de staging, nous souhaitons réaliser les tests e2e sur les services déployés sur Azure Web App Service.
 
+Voici le workflow que nous allons suivre :
+
+<PlantUML src="/diagrams/gitlab-registry2.puml" alt="Workflow de déploiement" />
+
+
 ## Mise à jour de la configuration des tests e2e
 
 Dans la configuration de Playwright, nous devons mettre à jour l'URL de notre application pour qu'elle pointe vers notre Web App Azure. 
@@ -980,7 +990,7 @@ Pour continuer dans ce tutoriel, vous devez créer une nouvelle feature branch, 
 Nous allons faire en sorte que Spring Boot utilise le profil **`staging`** pour réinitialiser la DB à chaque démarrage de notre Web App Azure, en utilisant le fichier **`application-staging.properties`**.  
 Pour rappel, un profil sous Spring Boot est un ensemble de configurations qui permettent de définir le comportement de l'application en fonction de l'environnement dans lequel elle est exécutée.
 
-S'il n'est pas encore créé, veuillez vous assurer que le fichier **`application-staging.properties`** est créé au niveau de votre projet **`api`** :
+Veuillez vous assurer que le fichier **`application-staging.properties`** est bien créé au niveau de votre projet **`api`** :
 
 ```properties
 spring.application.name=demo
@@ -1003,7 +1013,7 @@ Nous allons maintenant voir comment configurer notre Web App Azure pour qu'elle 
 
 Pour ce faire, il suffit d'ajouter une variable d'environnement au niveau de notre Web App Azure. Cette variable d'environnement est tout ce qu'il y a à faire pour que Spring Boot utilise le fichier **`application-staging.properties`**. 
 
-Au niveau de votre Azure Web App (**`cae-groupxy-staging-app`** par exemple), veuillez :
+Au niveau de votre Azure Web App (**`cae-groupxy-staging-app`** par exemple) via le portail Azure, veuillez :
 - Cliquer sur **`Settings`**.
 - Cliquer sur **`Environment variables`**.
 - Ajouter la variable d'environnement suivante en cliquant sur **`Add`** :
@@ -1023,6 +1033,10 @@ Pour assurer que l'API est prête avant de lancer les tests e2e, nous allons ajo
 Parfois, au niveau des API REST, il est possible de créer un endpoint **`/health`** qui permet de vérifier si l'API est bien démarrée. Ce endpoint peut retourner un code HTTP 200 si l'API est bien démarrée, après avoir vérifié que la base de données est bien connectée par exemple.
 
 Dans notre tutoriel, nous allons simplement utiliser l'opération de lecture de toutes les pizzas comme **`health check`**. Si l'opération de lecture de toutes les pizzas retourne un code HTTP 200, alors l'API est bien démarrée.
+
+Voici le workflow que nous allons suivre :
+
+<PlantUML src="/diagrams/gitlab-registry3.puml" alt="Workflow de déploiement" />
 
 ## Mise à jour du fichier .gitlab-ci.yml
 
@@ -1141,16 +1155,21 @@ Dans la boucle **`for`** :
 Veuillez pousser vos modifications sur votre repository GitLab. Si les stages **`test`** et **`build`**  passent, la MR peut être mergée. Si la MR est mergée sur la branche **`main`**, les jobs **`staging`** et
 **`e2e tests`** s'exécuteront après avoir réexécuté les stages **`test`** et **`build`**.
 
-Normalement, tout devrait fonctionner correctement. Vous devriez voir que les tests e2e passent. Et votre pipeline GitLab CI/CD est maintenant complet. Et votre application est déployée sur Azure Web App Service avec succès 🚀 !
+Normalement, tout devrait fonctionner correctement. Vous devriez voir que les tests e2e passent. Et votre pipeline GitLab CI/CD est maintenant complet. Votre application devrait être déployée sur Azure Web App Service avec succès 🚀 !
 
 Si nécessaire, vous pouvez trouver le code associé au déploiement de l'environnement staging ici : [staging](https://github.com/e-vinci/cae-theory-demos/tree/main/staging).
 
 ## Conclusion sur le déploiement de l'environnement staging
 
-Dans ce tutoriel, nous avons vu comment déployer notre application sur Azure Web App Service en utilisant GitLab CI/CD. Nous avons vu comment réaliser des tests e2e sur notre application disponible sur le cloud. Nous avons vu comment attendre que l'API soit bien démarrée avant de lancer les tests e2e. Nous avons vu comment réinitialiser la DB à chaque démarrage de l'environnement de staging. Nous avons vu comment déployer seulement en cas de fusion de modifications sur la branche **`main`**.
+Dans ce tutoriel, nous avons vu :
+- comment déployer notre application sur Azure Web App Service en utilisant GitLab CI/CD. 
+- comment réaliser des tests e2e sur notre application disponible sur le cloud. 
+- comment attendre que l'API soit bien démarrée avant de lancer les tests e2e. 
+- comment réinitialiser la DB à chaque démarrage de l'environnement de staging. 
+- comment déployer seulement en cas de fusion de modifications sur la branche **`main`**.
 
 La faiblesse de notre application actuelle est que la seule application qui est visible sur le cloud par les utilisateurs est déployée avant même d'avoir réalisé les tests e2e. Cela peut poser des problèmes si les tests e2e ne passent pas. Il est recommandé de réaliser les tests e2e avant de déployer l'application sur le cloud pour les utilisateurs finaux. 
 
-Il va donc prochainement falloir créer un nouvel environnement de production pour déployer notre application après avoir réalisé les tests e2e. Nous verrons cela plus tard 😉.
+Il va donc prochainement falloir créer un nouvel environnement de production pour déployer notre application seulement après avoir réalisé et réussi les tests e2e. Nous verrons cela plus tard 😉.
 
 D'abord, nous allons nous attaquer à la gestion d'un autre type d'images, les photos des pizzas. Nous allons voir comment stocker les photos des pizzas.

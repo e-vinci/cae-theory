@@ -43,7 +43,7 @@ Node(docker_host, "Gitlab CI/CD Docker Host", "Gitlab CI/CD", "Runs the pipeline
 
     }
 
-    Node(testFront, "Node container", "node:20", "Tests the front", $sprite=docker) {
+    Node(testFront, "Node container", "node:20-alpine", "Tests the front", $sprite=docker) {
         Container(node, "Frontend code", "Node", "Tests the front", $sprite=img:https://nodejs.org/static/logos/nodejsLight.svg{scale=0.5})
     }
 

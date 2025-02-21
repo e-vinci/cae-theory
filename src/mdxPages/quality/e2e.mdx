@@ -892,6 +892,10 @@ Dans ce tutoriel, nous avons vu comment écrire des tests e2e avec Playwright po
 
 Nous voyons que la mise en place de la pipeline de CI pour les tests e2e est un peu plus complexe que pour les tests unitaires et les tests d'intégration. Cela est dû au fait que les tests e2e nécessitent un environnement complet de l'application pour s'exécuter. Il est donc important de bien configurer l'environnement de test pour garantir que les tests e2e s'exécutent correctement.
 
+Voici à quoi correspond l'environnement de test pour notre pipeline acutel de CI :
+
+<PlantUML src="/diagrams/iteration1-test-deployment.puml" alt="Environnement de ci actuel" />
+
 La configuration actuelle contient quelques faiblesses :
 - Les tests e2e s'exécutent dans un seul navigateur. Il est important de tester l'application dans plusieurs navigateurs pour garantir la compatibilité.
 - Nous utilisons une pause de 30 secondes pour attendre que l'API et le frontend soient prêts. Cette pause n'est pas idéale et peut entraîner des problèmes si les services prennent plus de temps à démarrer.
