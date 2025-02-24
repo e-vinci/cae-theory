@@ -1,0 +1,38 @@
+@startuml
+actor Développeurs
+actor Utilisateurs
+participant "Azure Portal" as AzurePortal
+participant "Frontend" as Frontend
+participant "API" as API
+participant "DB" as DB
+participant "Azure Storage" as AzureStorage
+
+skinparam maxMessageSize 200
+
+
+group Enregistrement du token
+    Développeurs -> AzurePortal: Créer un SAS URL pour Create + Write + Delete permissions
+    AzurePortal -> Développeurs: Fournir le SAS URL
+    Développeurs -> API: Enregistrer le SAS URL comme variable d'environnement
+end
+
+group Upload d'une image
+    Utilisateurs -> Frontend: Upload d'une image et d'autres infos associées à une ressource
+    Frontend -> API: Requête pour upload d'une image et d'autres infos associées à une ressource
+    API -> AzureStorage: Utiliser BlobClientBuilder pour faire l'upload de l'image à l'aide du SAS token
+    AzureStorage -> API: Retourner l'URL de l'image uploadée
+    API -> DB : Enregistrer l'URL de l'image et les infos associées à une ressource
+end
+
+group Lecture d'une image lors de l'accès à une page
+    Utilisateurs -> Frontend: Accéder à une page contenant les infos de ressources
+    Frontend -> API: Requête pour obtenir les infos de ressources (incluant l'URL de l'image)
+    API -> DB: Requête pour obtenir les infos de ressources
+    DB -> API: Retourner les infos de ressources (incluant l'URL de l'image)
+    API -> Frontend : Retourner les infos de ressources (incluant l'URL de l'image)
+    Frontend -> AzureStorage: Requête pour obtenir l'image (via une balise **<img/>**)
+    AzureStorage -> Frontend: Retourner l'image
+    Utilisateurs -> Frontend: Voir la page affichant les ressources et l'image
+end
+
+@enduml

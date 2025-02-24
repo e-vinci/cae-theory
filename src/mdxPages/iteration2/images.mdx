@@ -1,0 +1,280 @@
+---
+title: Images
+description: Gestion des images
+date: 24/02/2025
+---
+
+<InternalPageMenu>
+  <PathViewer>
+    <PathViewerItem to="/"> CAE </PathViewerItem>
+    <PathViewerItem to="/iteration2"> Itération 2 </PathViewerItem>
+    <PathViewerItem selected> Gestion des images </PathViewerItem>
+  </PathViewer>
+  <InternalPageMenuItem> Comment gérer des assets ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment fonctionne un service de stockage d'objets ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment créer un service de stockage sur Azure ? </InternalPageMenuItem>
+  <InternalPageMenuItem> TBC </InternalPageMenuItem>
+  <InternalPageMenuItem> TBC </InternalPageMenuItem>
+  <InternalPageMenuItem> TBC </InternalPageMenuItem>
+  <InternalPageMenuItem> TBC </InternalPageMenuItem>
+    <InternalPageMenuItem> TBC </InternalPageMenuItem>
+    <InternalPageMenuItem> TBC </InternalPageMenuItem>
+  <InternalPageMenuItem> TBC </InternalPageMenuItem>
+  <InternalPageMenuItem> TBC </InternalPageMenuItem>
+</InternalPageMenu>
+
+# <InternalPageTitle> Comment gérer des assets ? </InternalPageTitle>
+
+## Introduction
+
+Les assets sont des ressources statiques (images, vidéos, fichiers de styles, etc.) qui sont utilisées dans une application. 
+
+Il existe différents moyens de mettre à disposition ces ressources pour une application web. Voici les moyens les plus courants :
+- **Importer les assets dans le code source du frontend** : Les assets sont importés dans le code source de l'application. Cela peut être fait en utilisant des imports dans le code source (ex: `import image from './image.png'`) ou en fournissant un chemin relatif vers l'asset qui se trouve dans le répertoire **`public`** (ex: `<img src="/image.png" />`).
+- **Héberger les assets via un serveur de fichiers statiques associé à l'API** : Les assets sont stockés dans un serveur de fichiers statiques mis à disposition par l'API. L'API fournit alors des URLs pour accéder aux assets.
+- **Offrir des opérations de l'API dédiées à la gestion des assets** : L'API expose des opérations dédiées à la gestion des assets (ex: create, read, delete). Ces opérations permettent de stocker et de récupérer les assets de manière sécurisée. L'API peut stocker les assets :
+  - dans un système de fichiers ;
+  - dans une base de données.
+- **Utiliser un service tiers de gestion des assets** : Un service tiers spécialisé dans la gestion des assets est utilisé pour stocker et gérer les assets. Un exemple de service tiers est **placid**.
+- **Héberger les assets dans un service de stockage d'objets** : Les assets sont stockés dans un service de stockage d'objets (ex: AWS S3, Google Cloud Storage). L'API fournit alors des URLs pour accéder aux assets.
+
+Nous allons explorer ces différentes approches dans les sections suivantes.
+
+## Importer les assets dans le code source du frontend
+
+L'import des assets dans le code source du frontend est une approche simple et courante pour gérer les images dans une application web. 
+
+Cela fonctionne lorsque nous avons un nombre limité d'images et que ces images ne changent pas fréquemment.
+
+Bien entendu, cette approche ne fonctionne que pour des images prédéfinies, utiles lorsque l'on souhaite afficher des images de logo, des icônes, des images de produits par défaut, etc.
+
+Si l'on souhaite permettre aux utilisateurs de télécharger des images, cette approche n'est pas adaptée.
+
+Cette approche pourra être utilisée dans le projet CAE pour les images de logo, les icônes, etc. Pour les fichiers dynamiques, nous utiliserons une autre approche.
+
+## Héberger les assets via un serveur de fichiers statiques associé à l'API
+
+L'hébergement des assets via un serveur de fichiers statiques associé à l'API est une approche courante pour stocker des assets dans une application web.
+
+Dans cette approche, les assets sont stockées dans un répertoire dédié du serveur de fichiers statiques. L'API expose alors des URLs pour accéder aux assets.
+
+Cette approche est principalement utile pour des assets qui sont statiques. Si l'on souhaite stocker des assets dynamiquement (ex: téléchargement d'images par les utilisateurs), il va falloir créer des opérations dédiées (cas suivant) dans l'API pour gérer ces assets.
+
+Les inconvénients de cette approche sont les suivants :
+- Les assets sont stockées sur le même serveur que l'API, ce qui peut entraîner une surcharge du serveur si le nombre d'assets est important.
+- Les URLs des assets sont directement accessibles, ce qui peut poser des problèmes de sécurité (ex: accès non autorisé aux images).
+- Si l'on doit d'office **Offrir des opérations de l'API dédiées à la gestion des assets** (voir le cas suivant), alors autant jouer la carte de la sécurité et ne pas utiliser d'URLs directes pour les assets.
+
+Nous n'allons donc pas utiliser cette approche dans notre projet CAE.
+
+
+## Offrir des opérations de l'API dédiées à la gestion des assets
+
+Offrir des opérations de l'API dédiées à la gestion des assets est une approche plus sécurisée pour stocker et gérer les assets dans une application web.
+
+Dans cette approche, l'API expose des opérations dédiées pour stocker, récupérer et supprimer des assets. Les assets peuvent être stockées dans un système de fichiers ou dans une base de données.
+
+Cette approche est particulièrement utile lorsque l'on souhaite stocker des assets dynamiquement (ex: téléchargement d'images par les utilisateurs).
+
+Généralement, on va stocker les assets dans un répertoire dédié du serveur de l'API. L'API va alors gérer les opérations de stockage, de récupération et de suppression des assets. 
+L'avantage de cette approche est que l'on peut contrôler l'accès aux assets et garantir leur sécurité.
+
+On utilise moins souvent une base de données pour stocker les assets, pour ces raisons :
+- Les bases de données ne sont pas optimisées pour stocker des fichiers binaires (ex: images), les opérations de lecture et d'écriture peuvent être plus lentes.
+- Le stockage en DB coûte cher !
+- Un asset enregistré dans une base de données prend plus de place qu'un fichier stocké sur le disque (passage en base64 et overhead pour la gestion des enregistrements, des index et des métadonnées). Quel pourcentage ? Cela dépend de la taille des fichiers et de la base de données utilisée, mais on peut estimer cela à environ 30-40%.
+- Les bases de données peuvent devenir rapidement surchargées si l'on stocke des fichiers binaires.
+
+Les inconvénients de cette approche, d'offrir des opérations de l'API à la gestion des assets, sont les suivants :
+- La complexité de la gestion des opérations de stockage, de récupération et de suppression des assets. Il faut gérer les autorisations, les contrôles d'accès, les quotas de stockage, etc.
+- La surcharge du serveur de l'API si le nombre d'assets est important.
+
+Nous n'allons donc pas utiliser cette approche dans notre projet CAE.
+
+## Utiliser un service tiers de gestion des assets
+
+Utiliser un service tiers de gestion des assets est une approche intéressante pour stocker et gérer les assets dans une application web.
+
+Un service tiers spécialisé dans la gestion des assets offre généralement des fonctionnalités avancées pour stocker, récupérer et supprimer des assets. Ces services sont souvent optimisés pour gérer des fichiers binaires (ex: images, vidéos, fichiers audio...).
+
+Un exemple de service tiers de gestion des assets est **placid**. Placid permet de stocker des images et de les manipuler (redimensionner, recadrer, compresser, etc.) via une API.
+
+Les avantages de cette approche sont les suivants :
+- Les services tiers de gestion des assets offrent des fonctionnalités avancées pour manipuler les assets (ex: redimensionner, recadrer, compresser).
+- Les services tiers de gestion des assets sont souvent optimisés pour gérer des fichiers binaires.
+- Les services tiers de gestion des assets offrent généralement des fonctionnalités de sécurité avancées (ex: contrôle d'accès, chiffrement).
+
+Les inconvénients de cette approche sont les suivants :
+- Les services tiers de gestion des assets peuvent être coûteux.
+- Les services tiers de gestion des assets peuvent être moins flexibles que des solutions auto-hébergées.
+- Il faut souvent utiliser un clé d'API pour accéder aux services tiers de gestion des assets, ce qui peut poser des problèmes de sécurité. Il faut alors bien protéger cette clé d'API et donc créer ses propres opérations de l'API pour gérer les accès à ces services tiers. On retombe alors sur le cas précédent (**Offrir des opérations de l'API dédiées à la gestion des assets** !).
+
+Nous n'allons donc pas utiliser cette approche dans notre projet CAE.
+
+## Héberger les assets dans un service de stockage d'objets
+
+Héberger les assets dans un service de stockage d'objets est une approche courante pour stocker des assets dans une application web.
+
+Les services de stockage d'objets (ex: Azure Stockage, AWS S3, Google Cloud Storage) sont optimisés pour stocker des fichiers binaires (ex: images, vidéos, fichiers audio...). Ils offrent des fonctionnalités avancées pour stocker, récupérer et supprimer des assets. Généralement, leur tarification est basée sur l'utilisation (ex: quantité de données stockées, quantité de données transférées) et sont donc très compétitifs.
+
+De plus, les services de stockage d'objets offrent des fonctionnalités de sécurité avancées (ex: contrôle d'accès, chiffrement).
+
+Voici les gros avantages de cette approche :
+- On peut déléguer la gestion des assets à un service tiers spécialisé, ce qui permet de se concentrer sur le développement de l'application.
+- Les services de stockage d'objets sont optimisés pour stocker des fichiers binaires et offrent des fonctionnalités avancées pour manipuler les assets.
+- Les services de stockage d'objets offrent des fonctionnalités de sécurité avancées (ex: contrôle d'accès, chiffrement) qui ne demande pas de gros efforts au niveau de ses propres opérations de l'API. Il y a toujours des efforts à faire lors de l'upload de fichiers, mais ils sont moindres. Nous allons les voir dans la section suivante.
+- Pour la lecture de fichiers, il est possible que le frontend accède directement aux URLs des assets, sans passer par l'API, tout en assurant la sécurité des fichiers. Cela peut être un avantage en termes de performance.
+- Les services de stockage d'objets sont généralement très compétitifs en termes de tarification.
+
+Nous allons donc utiliser cette approche dans notre projet CAE.
+
+# <InternalPageTitle> Comment fonctionne un service de stockage d'objets ? </InternalPageTitle>
+
+## Introduction
+
+Un service de stockage d'objets est un service cloud qui permet de stocker des fichiers binaires (ex: images, vidéos, fichiers audio...) de manière sécurisée et scalable.
+
+Les services de stockage d'objets sont optimisés pour stocker de gros volumes de données non structurées. Ils offrent des fonctionnalités avancées pour stocker, récupérer et supprimer des objets.
+
+Les services de stockage d'objets sont généralement basés sur une architecture de stockage distribué. Les données sont répliquées sur plusieurs serveurs pour garantir la disponibilité et la durabilité des données.
+
+## Comment assurer la sécurité des fichiers stockés ?
+
+Pour assurer la sécurité des fichiers stockés dans un service de stockage d'objets, voici quelques bonnes pratiques à suivre :
+- **Chiffrement des données au repos** ("Encryption at Rest"): Les données stockées dans le service de stockage d'objets doivent être chiffrées pour garantir leur confidentialité. Les services de stockage d'objets offrent généralement des fonctionnalités de chiffrement des données au repos. Par exemple, Azure Storage chiffre automatiquement les données au repos (chiffrement appliqué à tous les objets stockés dans Azure Blob Storage, Azure Files, Azure Queue Storage et Azure Table Storage) à l'aide de clés de chiffrement gérées par le service.
+- **Contrôle d'accès basé sur les rôles** : Les accès aux fichiers stockés dans le service de stockage d'objets doivent être contrôlés en fonction des rôles des utilisateurs. Dans Azure Storage, on peut utiliser les **SAS (Shared Access Signatures)** pour définir des autorisations granulaires sur les objets stockés.
+- **Journalisation des accès** : Les accès aux fichiers stockés dans le service de stockage d'objets doivent être journalisés pour permettre la traçabilité des accès. Les services de stockage d'objets offrent généralement des fonctionnalités de journalisation des accès.
+- **Gestion des clés d'API** : Les clés d'API utilisées pour accéder au service de stockage d'objets doivent être gérées de manière sécurisée. Azure Storage permet de gérer les clés d'API à l'aide de l'Azure Key Vault.
+
+## Comment gérer les opérations CRUD sur les fichiers ?
+
+Pour gérer les opérations CRUD (Create, Read, Update, Delete) sur les fichiers stockés dans un service de stockage d'objets, voici quelques bonnes pratiques à suivre :
+- **Utilisation d'une API RESTful** : Les opérations CRUD sur les fichiers stockés dans le service de stockage d'objets doivent être exposées via une API RESTful. Les services de stockage d'objets offrent généralement des SDK pour faciliter l'intégration avec l'API. Par exemple, Azure Storage propose des SDK pour différentes langages de programmation (C#, Java, Python, Node.js, etc.).
+Il existe un **`BlobClientBuilder`** pour manipuler les blobs dans Azure Storage.
+- **Gestion des métadonnées** : Les fichiers stockés dans le service de stockage d'objets peuvent être associés à des métadonnées pour faciliter leur gestion. Les métadonnées peuvent être utilisées pour stocker des informations supplémentaires sur les fichiers (ex: type de contenu, taille, date de création, etc.).
+- **Gestion des autorisations** : Les accès aux fichiers stockés dans le service de stockage d'objets doivent être contrôlés en fonction des autorisations des utilisateurs. Dans Azure Storage, on peut utiliser les **SAS (Shared Access Signatures)** pour définir des autorisations granulaires sur les objets stockés. Une SAS est un jeton qui peut être ajouté à une URL pour accorder un accès temporaire et limité à une ressource dans Azure Storage. La SAS spécifie les permissions (lecture, écriture, suppression, etc.), la durée de validité et d'autres restrictions d'accès.
+- **Gestion des versions** : Les fichiers stockés dans le service de stockage d'objets peuvent être versionnés pour permettre la gestion des versions des fichiers. Les services de stockage d'objets offrent généralement des fonctionnalités de gestion des versions.
+Azure Storage propose la gestion des versions pour les blobs.
+
+## Est-il possible de ne pas sécuriser l'accès aux fichiers ?
+
+Il est possible de ne pas sécuriser l'accès aux fichiers stockés dans un service de stockage d'objets, mais cela pose des risques en termes de sécurité. Les fichiers stockés dans le service de stockage d'objets peuvent contenir des informations sensibles (ex: données personnelles, propriété intellectuelle, etc.) qui doivent être protégées.
+
+Si ça n'est pas le cas, alors il est possible de ne pas sécuriser l'accès aux fichiers stockés dans le service de stockage d'objets. Cela peut être utile pour des fichiers publics (ex: images, vidéos, fichiers audio accessibles au public).
+
+Attention que même si l'on n'utilise pas des autorisations pour la lecture des fichiers, il est possible de trouver un compromis au niveau sécurité de cette façon :
+- **Création de noms de fichiers complexes** : Les noms de fichiers stockés dans le service de stockage d'objets peuvent être rendus complexes pour limiter l'accès non autorisé. Par exemple, on peut utiliser des UUID (Universal Unique Identifier) comme noms de fichiers.
+- **Rendre l'accès public en lecture seule et individuelle aux fichiers** (et pas au niveau du conteneur) : Ainsi il n'est pas possible de lister les fichiers, mais on peut accéder à un fichier seulement si on connaît son URL.
+
+Avec ce compromis, on peut limiter l'accès non autorisé aux fichiers stockés dans le service de stockage d'objets tout en permettant un accès public aux fichiers.
+
+Nous allons utiliser ce compromis pour le projet CAE.
+
+Attention que pour la création et l'effacement de fichier, il est toujours nécessaire de sécuriser l'accès ! Sinon, n'importe qui pourrait créer ou effacer des fichiers dans le service de stockage d'objets 😱 ! 
+
+Ainsi, nous utiliserons un SAS token pour les opération de création et d'effacement de fichiers.
+
+## Comment autoriser l'accès aux fichiers stockés dans le service de stockage avec Azure Stockage ?
+
+Pour autoriser l'accès aux fichiers stockés dans le service de stockage avec Azure Stockage, on peut utiliser les **SAS (Shared Access Signatures)**.
+
+Une SAS est un jeton qui peut être ajouté à une URL pour accorder un accès temporaire et limité à une ressource dans Azure Storage. La SAS spécifie les permissions (lecture, écriture, suppression, etc.), la durée de validité et d'autres restrictions d'accès. 
+
+Une URL SAS est une URL qui inclut une SAS, permettant aux utilisateur ou une application d'accéder à une ressource spécifique dans Azure Storage sans avoir besoin des clés d'accès principales du compte de stockage.
+
+Voici le workflow que nous utiliserons pour autoriser l'accès aux fichiers stockés dans le service de stockage avec Azure Stockage :
+
+<PlantUML src="/diagrams/azure-storage.puml" alt="Gestion d'images pour le projet avec Azure Stockage" />
+
+Dans un premier temps, les développeurs vont devoir générer une token (SAS) pour les fichiers stockés dans le service de stockage. Cette SAS va spécifier les permissions (lecture, écriture, suppression, etc.), la durée de validité et d'autres restrictions d'accès.
+
+Puis, lorsque l'application est exécutée, le frontend permettra via un formulaire de créer des ressources incluant une image. Lors de la création de la ressource, le frontend va envoyer une requête à l'API avec l'image à stocker. 
+En utilisant le token (SAS), l'API va pouvoir stocker l'image dans le service de stockage d'objets.
+
+Finalement, lorsque les utilisateurs consulteront une page affichant les ressources, le frontend va envoyer une requête à l'API pour récupérer les ressources à afficher. L'API va alors récupérer les ressources stockées dans la DB, incluant l'URL vers l'image stockée dans le service de stockage d'objets. Le frontend va alors afficher les ressources, incluant les images stockées dans le service de stockage d'objets. 
+NB : si l'on avait souhaité sécuriser au maximum les images, on aurait pu passer par l'API pour qu'elle sauvegarde une SAS URL pour chaque image stockée dans le service de stockage d'objets. Cela aurait permis de contrôler l'accès lors de la lecture des images. Mais pour notre projet, nous avons choisi d'avoir un compromis au niveau sécurité.
+
+# <InternalPageTitle> Comment créer un service de stockage sur Azure ? </InternalPageTitle>
+
+## Introduction
+
+Comme vous le savez déjà, Azure Storage est un service cloud de stockage d'objets qui permet de stocker des fichiers binaires (ex: images, vidéos, fichiers audio...) de manière sécurisée et scalable. 
+
+Nous allons à présent voir comment appliquer le workflow que nous avons vu précédemment pour sauvegarder des images dans Azure Storage au sein d'une application existante permettant de créer et afficher des pizzas.
+
+Le point de départ pour ce tutoriel est le site de gestion de la pizzeria comme vu au dernier tutoriel nommé [staging](https://github.com/e-vinci/cae-theory-demos/tree/main/staging). Veuillez donc en faire une copie au sein d'un projet GitLab.
+
+## Création d'un compte de stockage Azure (Storage account)
+
+Pour créer un compte de stockage Azure, vous devez disposer d'un abonnement Azure depuis moins de 12 mois. Si vous êtes étudiant, vous pouvez bénéficier d'un abonnement gratuit Azure for Students.
+
+Veuillez suivre les étapes suivantes pour créer un compte de stockage Azure :
+- Connectez-vous à votre [portail Azure](https://portal.azure.com/).
+- Dans la recherche, tapez **`Free services`**, puis cliquez sur **`Free services`**.
+- Sélectionnez ensuite **`Azure Blob Storage`** (`5 GB locally redundant storage (LRS) hot block with 20,000 read and 10,000 write operations`), puis cliquez sur **`Create`**.
+- Sélectionnez votre **`Subscription`** et **`Resource group`**. Pour les étudiants Vinci, cela devrait être **`Azure for Students`**. Si vous n'avez pas de **`Resource group`**, vous pouvez en créer un en cliquant sur **`Create new`** (**`imageGroup`** par exemple).
+- Entrez un **`Storage account name`** unique. Par exemple : **`imagestorage007`**.
+- Sélectionnez la **`Region`** qui est acceptable dans un plan gratuit. Par exemple : **`West Europe`**.
+- Cliquez sur **`Review + create`**, puis sur **`Create`**.
+- Attendez que le déploiement soit terminé. Cela peut prendre quelques minutes. Puis cliquez sur **`Go to resource`**.
+
+## Création de deux blobs containers
+
+### Introduction 
+
+Un blob container est un conteneur de stockage d'objets dans Azure Storage. Il est utilisé pour stocker des objets binaires (ex: images, vidéos, fichiers audio...).
+
+Nous souhaitions créer deux blob containers pour stocker les images des pizzas :
+- un container pour l'environnement de développement (**`dev`**)
+- un container pour l'environnement de staging (**`staging`**)
+
+### Configuration du storage account
+
+Dans un premier temps, il faut s'assurer qu'on aie le droit d'accéder de manière anonyme aux blobs. 
+
+Voici comment faire :
+- Dans le portail Azure, cliquez sur **`Storage accounts`** dans le menu de gauche.
+- Cliquez sur le **`Storage account`** que vous avez créé précédemment (**`imagestorage007`** par exemple).
+- Cliquez dans **`Settings`** sur **`Configuration`**.
+- **`Allow Blob anonymous access`** doit être à **`Enabled`**.
+
+### Création du blob container pour l'environnement de développement
+
+Pour créer un blob container pour l'environnement de développement, veuillez suivre les étapes suivantes :
+- Dans le portail Azure, cliquez sur **`Storage accounts`** dans le menu de gauche.
+- Cliquez sur le **`Storage account`** que vous avez créé précédemment (**`imagestorage007`** par exemple).
+- Dans le menu de gauche, sous **`Data storage`**, cliquez sur **`Containers`**.
+- Cliquez sur **`+ Container`**.
+- Entrez un nom pour le container. Par exemple : **`dev`**.
+- Pour **`Anonymous access level`**, sélectionnez **`Blob (anonymous read access for blobs only)`**. Grâce à cela, les blobs peuvent être lus par n'importe qui, mais sans avoir le droit de lister les blobs.
+- Laissez les autres paramètres par défaut.
+- Cliquez sur **`Create`**.
+
+### Création du blob container pour l'environnement de staging
+
+Pour créer un blob container pour l'environnement de staging, veuillez suivre les étapes suivantes :
+- Dans le portail Azure, cliquez sur **`Storage accounts`** dans le menu de gauche.
+- Cliquez sur le **`Storage account`** que vous avez créé précédemment (**`imagestorage007`** par exemple).
+- Dans le menu de gauche, sous **`Data storage`**, cliquez sur **`Containers`**.
+- Cliquez sur **`+ Container`**.
+- Entrez un nom pour le container. Par exemple : **`staging`**.
+- Laissez les autres paramètres par défaut.
+- Cliquez sur **`Create`**.
+
+### Sécurisation des accès via un SAS token
+
+Pour sécuriser les accès aux blobs, nous allons utiliser un SAS token.
+Nous allons générer un SAS token pour tous les blobs de notre storage account. Ce SAS token doit permettre la création et la suppression de blobs.
+
+Voici comment faire :
+- Dans le portail Azure, cliquez sur **`Storage accounts`** dans le menu de gauche.
+- Cliquez sur le **`Storage account`** que vous avez créé précédemment (**`imagestorage007`** par exemple).
+- Dans le menu de gauche, sous **`Security + networking`**, cliquez sur **`Shared access signature`**.
+- Dans **`Allowed resources types`**, sélectionnez **`Object`**. Un **`Object`** fait référence à une unité de données stockée dans Azure Storage, comme un blob.
+- Dans **`Allowed permissions`**, même si c'est juste  **`Create`** et **`Delete`** que nous avons besoin, nous allons laisser toutes les permissions sélectionnées.
+- Pour le **`Start time`**, laissez la date actuelle.
+- Pour le **`End time`**, sélectionnez une date loin dans le futur. Par exemple, 10 ans plus tard.
+- Cliquez sur **`Generate SAS and connection string`**.
+- Veuillez conserver :
+  - le **`SAS token`** généré, comme par exemple **`sv=2024-11-02&ss=bfqt&srt=o&sp=rwdlacaerpiytfx&se=2035-02-24T23:52:15Z&st=2025-02-24T15:52:15Z&spr=https&sig=OoOvYhdQZFxO79sqdfqsHXHgDw1cCvq%2FeSciIift10CTT54%3D`**.
+  - le **`Blob endpoint`** généré, comme par exemple : **`https://imagestorage007.blob.core.windows.net/`**.
