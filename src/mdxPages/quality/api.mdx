@@ -97,7 +97,10 @@ Pour mettre en place le Checkstyle dans IntelliJ, suivez les étapes suivantes :
 - Sélectionnez dans `Configuration File` : `Google Checks`.
 - Cliquez sur `OK` pour valider la configuration.
 
-Pour que le formatage automatique d'IntelliJ applique les règles de style de Google, allez dans les paramètres d'IntelliJ : `IntelliJ IDEA` > `Settings` > `Editor` > `Code Style` et sélectionnez `GoogleStyle` dans le menu déroulant `Scheme`.
+Pour que le formatage automatique d'IntelliJ applique les règles de style de Google, allez dans les paramètres d'IntelliJ : `IntelliJ IDEA` > `Settings` > `Editor` > `Code Style` et sélectionnez `GoogleStyle` dans le menu déroulant `Scheme`.  
+Que faire si `GoogleStyle` n'apparaît pas dans le menu déroulant `Scheme` ? 
+- Veuillez télécharger le fichier https://github.com/google/styleguide/blob/gh-pages/intellij-java-google-style.xml (cliquez sur l'icône `Download raw file` sur github).
+- Dans `IntelliJ IDEA` > `Settings` > `Editor` > `Code Style`, cliquez sur la roue crantée, puis `Import Scheme`, puis `IntelliJ IDEA code style XML` et sélectionnez le fichier `intellij-java-google-style.xml` que vous venez de télécharger. `GoogleStyle` devrait maintenant apparaître dans le menu déroulant `Scheme`.
 
 Certains soucis de style seront maintenant signalés dans votre code Java. Vous pouvez les corriger :
 - En utilisant le formatage automatique d'IntelliJ (`Ctrl + Alt + L` ou `Code`, `Reformat Code`).
