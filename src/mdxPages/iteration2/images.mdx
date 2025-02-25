@@ -278,3 +278,61 @@ Voici comment faire :
 - Veuillez conserver :
   - le **`SAS token`** généré, comme par exemple **`sv=2024-11-02&ss=bfqt&srt=o&sp=rwdlacaerpiytfx&se=2035-02-24T23:52:15Z&st=2025-02-24T15:52:15Z&spr=https&sig=OoOvYhdQZFxO79sqdfqsHXHgDw1cCvq%2FeSciIift10CTT54%3D`**.
   - le **`Blob endpoint`** généré, comme par exemple : **`https://imagestorage007.blob.core.windows.net/`**.
+
+
+# <InternalPageTitle> Comment utiliser le service de stockage via l'API ? </InternalPageTitle>
+
+## Introduction
+
+Maintenant que nous avons créé un service de stockage d'objets sur Azure, nous allons voir comment l'utiliser via l'API pour stocker et récupérer des images.
+
+Dans notre tutoriel, nous allons modifier le service de gestion des pizzas pour qu'il utilise le service de stockage d'objets pour stocker les images des pizzas :
+- lors de la création d'une pizza : l'image de la pizza sera stockée dans le service de stockage d'objets ;
+- lors de la récupération des pizzas : l'URL de l'image de la pizza sera récupérée depuis la DB.
+- lors de la suppression d'une pizza : l'image de la pizza sera supprimée du service de stockage d'objets.
+
+## Configuration de l'API pour utiliser le service de stockage
+
+### Introduction
+
+L'API a besoin de connaître les informations suivantes pour utiliser le service de stockage d'objets :
+- le **`Blob endpoint`** : l'URL de base du service de stockage d'objets (ex: **`https://imagestorage007.blob.core.windows.net/`**).
+- le **`SAS token`** : le token d'accès partagé pour accéder au service de stockage d'objets (ex: **`sv=2024-11-02&ss=bfqt&srt=o&sp=rwdlacaerpiytfx&se=2035-02-24T23:52:15Z&st=2025-02-24T15:52:15Z&spr=https&sig=OoOvYhdQZFxO79sqdfqsHXHgDw1cCvq%2FeSciIift10CTT54%3D`**).
+- le **`Container name`** : le nom du blob container dans lequel les images seront stockées (ex: **`dev`**).
+
+### Configuration de l'API pour l'environnement de développement
+
+Pour configurer l'API pour l'environnement de développement, actuellement, nous utilisons **`application.properties`** pour stocker les configurations. Nous allons ajouter les configurations suivantes :
+```properties
+azure.blob.service-endpoint=https://imagestorage007.blob.core.windows.net/
+azure.blob.container-name=dev
+azure.blob.sas-token=${AZURE_BLOB_SAS_TOKEN}
+
+spring.servlet.multipart.enabled=true
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=10MB
+```
+
+Voici quelques explications sur ces configurations :
+- **`azure.blob.service-endpoint`** : l'URL de base du service de stockage d'objets (ex: **`https://imagestorage007.blob.core.windows.net/`**). 
+- **`azure.blob.container-name`** : le nom du blob container dans lequel les images seront stockées (ex: **`dev`**).
+- **`azure.blob.sas-token`** : le token d'accès partagé pour accéder au service de stockage d'objets (ex: **`${AZURE_BLOB_SAS_TOKEN}`**). Nous allons stocker ce token dans une variable d'environnement car c'est un secret qui ne doit pas se trouver dans le code source.
+- **`spring.servlet.multipart.enabled`** : active le support de l'upload de fichiers. **`multipart`** signifie que le contenu de la requête est un formulaire multipart, c'est à dire qu'il contient des données de plusieurs types (texte / json, fichier, etc.).
+- **`spring.servlet.multipart.max-file-size`** : la taille maximale autorisée pour un fichier.
+- **`spring.servlet.multipart.max-request-size`** : la taille maximale autorisée pour une requête.  
+
+Au sein du fichier **`/api/.env`**, nous allons ajouter la propriété **`AZURE_BLOB_SAS_TOKEN`** avec la valeur du SAS token que vous avez noté précédemment. Voici un exemple :
+```properties
+AZURE_BLOB_SAS_TOKEN=sv=2024-11-02&ss=bfqt&srt=o&sp=rwdlacaerpiytfx&se=2035-02-24T23:52:15Z&st=2025-02-24T15:52:15Z&spr=https&sig=OoOvYhdQZFxO79sqhhqsHXHgDw1cbvq%2FeSciIift10XRT74%3D
+```
+
+Pour rappel, lorsque nous utiliserons IntelliJ pour lancer l'API, comme nous avons installé la dépendance **`spring-dotenv`**, les variables d'environnement stockées dans le fichier **`/api/.env`** seront automatiquement chargées.
+
+### 
+
+
+
+
+
+
+
