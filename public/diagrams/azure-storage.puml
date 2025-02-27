@@ -11,9 +11,9 @@ skinparam maxMessageSize 200
 
 
 group Enregistrement du token
-    Développeurs -> AzurePortal: Créer un SAS URL pour Create + Write + Delete permissions
-    AzurePortal -> Développeurs: Fournir le SAS URL
-    Développeurs -> API: Enregistrer le SAS URL comme variable d'environnement
+    Développeurs -> AzurePortal: Créer un SAS token pour Create + Write + Delete permissions
+    AzurePortal -> Développeurs: Fournir le SAS token & le endpoint de l'Azure Storage
+    Développeurs -> API: Enregistrer le SAS token comme variable d'environnement
 end
 
 group Upload d'une image

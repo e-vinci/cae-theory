@@ -17,10 +17,6 @@ date: 24/02/2025
   <InternalPageMenuItem> Comment tester une opération de l'API qui attend une image ? </InternalPageMenuItem>
   <InternalPageMenuItem> Comment faire un upload d'images via le frontend ? </InternalPageMenuItem>
   <InternalPageMenuItem> Comment utiliser le service de stockage dans l'environnement de staging ? </InternalPageMenuItem>
-    <InternalPageMenuItem> TBC </InternalPageMenuItem>
-    <InternalPageMenuItem> TBC </InternalPageMenuItem>
-  <InternalPageMenuItem> TBC </InternalPageMenuItem>
-  <InternalPageMenuItem> TBC </InternalPageMenuItem>
 </InternalPageMenu>
 
 # <InternalPageTitle> Comment gérer des assets ? </InternalPageTitle>
@@ -48,7 +44,7 @@ Cela fonctionne lorsque nous avons un nombre limité d'images et que ces images 
 
 Bien entendu, cette approche ne fonctionne que pour des images prédéfinies, utiles lorsque l'on souhaite afficher des images de logo, des icônes, des images de produits par défaut, etc.
 
-Si l'on souhaite permettre aux utilisateurs de télécharger des images, cette approche n'est pas adaptée.
+Si l'on souhaite permettre aux utilisateurs d'ajouter des images, cette approche n'est pas adaptée.
 
 Cette approche pourra être utilisée dans le projet CAE pour les images de logo, les icônes, etc. Pour les fichiers dynamiques, nous utiliserons une autre approche.
 
@@ -58,14 +54,14 @@ L'hébergement des assets via un serveur de fichiers statiques associé à l'API
 
 Dans cette approche, les assets sont stockées dans un répertoire dédié du serveur de fichiers statiques. L'API expose alors des URLs pour accéder aux assets.
 
-Cette approche est principalement utile pour des assets qui sont statiques. Si l'on souhaite stocker des assets dynamiquement (ex: téléchargement d'images par les utilisateurs), il va falloir créer des opérations dédiées (cas suivant) dans l'API pour gérer ces assets.
+Cette approche est principalement utile pour des assets qui sont statiques. Si l'on souhaite stocker des assets dynamiquement (ex: upload d'images par les utilisateurs), il va falloir créer des opérations dédiées (cas suivant) dans l'API pour gérer ces assets.
 
 Les inconvénients de cette approche sont les suivants :
 - Les assets sont stockées sur le même serveur que l'API, ce qui peut entraîner une surcharge du serveur si le nombre d'assets est important.
 - Les URLs des assets sont directement accessibles, ce qui peut poser des problèmes de sécurité (ex: accès non autorisé aux images).
 - Si l'on doit d'office **Offrir des opérations de l'API dédiées à la gestion des assets** (voir le cas suivant), alors autant jouer la carte de la sécurité et ne pas utiliser d'URLs directes pour les assets.
 
-Nous n'allons donc pas utiliser cette approche dans notre projet CAE.
+Nous n'allons donc pas utiliser cette approche dans notre projet CAE. Néanmoins, si vous êtes intéressé par cette approche, vous pourrez tenter de le faire par vous même pour l'environnement de développement.
 
 
 ## Offrir des opérations de l'API dédiées à la gestion des assets
@@ -74,7 +70,7 @@ Offrir des opérations de l'API dédiées à la gestion des assets est une appro
 
 Dans cette approche, l'API expose des opérations dédiées pour stocker, récupérer et supprimer des assets. Les assets peuvent être stockées dans un système de fichiers ou dans une base de données.
 
-Cette approche est particulièrement utile lorsque l'on souhaite stocker des assets dynamiquement (ex: téléchargement d'images par les utilisateurs).
+Cette approche est particulièrement utile lorsque l'on souhaite stocker des assets dynamiquement (ex: upload d'images par les utilisateurs).
 
 Généralement, on va stocker les assets dans un répertoire dédié du serveur de l'API. L'API va alors gérer les opérations de stockage, de récupération et de suppression des assets. 
 L'avantage de cette approche est que l'on peut contrôler l'accès aux assets et garantir leur sécurité.
@@ -85,7 +81,7 @@ On utilise moins souvent une base de données pour stocker les assets, pour ces 
 - Un asset enregistré dans une base de données prend plus de place qu'un fichier stocké sur le disque (passage en base64 et overhead pour la gestion des enregistrements, des index et des métadonnées). Quel pourcentage ? Cela dépend de la taille des fichiers et de la base de données utilisée, mais on peut estimer cela à environ 30-40%.
 - Les bases de données peuvent devenir rapidement surchargées si l'on stocke des fichiers binaires.
 
-Les inconvénients de cette approche, d'offrir des opérations de l'API à la gestion des assets, sont les suivants :
+Les inconvénients de cette approche, d'offrir des opérations de l'API pour la gestion des assets, sont les suivants :
 - La complexité de la gestion des opérations de stockage, de récupération et de suppression des assets. Il faut gérer les autorisations, les contrôles d'accès, les quotas de stockage, etc.
 - La surcharge du serveur de l'API si le nombre d'assets est important.
 
@@ -136,7 +132,7 @@ Un service de stockage d'objets est un service cloud qui permet de stocker des f
 
 Les services de stockage d'objets sont optimisés pour stocker de gros volumes de données non structurées. Ils offrent des fonctionnalités avancées pour stocker, récupérer et supprimer des objets.
 
-Les services de stockage d'objets sont généralement basés sur une architecture de stockage distribué. Les données sont répliquées sur plusieurs serveurs pour garantir la disponibilité et la durabilité des données.
+Les services de stockage d'objets sont généralement basés sur une architecture de stockage distribuée. Les données sont répliquées sur plusieurs serveurs pour garantir la disponibilité et la durabilité des données.
 
 ## Comment assurer la sécurité des fichiers stockés ?
 
@@ -180,8 +176,6 @@ Pour autoriser l'accès aux fichiers stockés dans le service de stockage avec A
 
 Une SAS est un jeton qui peut être ajouté à une URL pour accorder un accès temporaire et limité à une ressource dans Azure Storage. La SAS spécifie les permissions (lecture, écriture, suppression, etc.), la durée de validité et d'autres restrictions d'accès. 
 
-Une URL SAS est une URL qui inclut une SAS, permettant aux utilisateur ou une application d'accéder à une ressource spécifique dans Azure Storage sans avoir besoin des clés d'accès principales du compte de stockage.
-
 Voici le workflow que nous utiliserons pour autoriser l'accès aux fichiers stockés dans le service de stockage avec Azure Stockage :
 
 <PlantUML src="/diagrams/azure-storage.puml" alt="Gestion d'images pour le projet avec Azure Stockage" />
@@ -198,7 +192,7 @@ NB : si l'on avait souhaité sécuriser au maximum les images, on aurait pu pass
 
 ## Introduction
 
-Comme vous le savez déjà, Azure Storage est un service cloud de stockage d'objets qui permet de stocker des fichiers binaires (ex: images, vidéos, fichiers audio...) de manière sécurisée et scalable. 
+Comme vous le savez déjà, Azure Storage est un service cloud de stockage d'objets qui permet de stocker des fichiers binaires (ex: images, vidéos, fichiers audio...). 
 
 Nous allons à présent voir comment appliquer le workflow que nous avons vu précédemment pour sauvegarder des images dans Azure Storage au sein d'une application existante permettant de créer et afficher des pizzas.
 
@@ -230,7 +224,7 @@ Nous souhaitions créer deux blob containers pour stocker les images des pizzas 
 
 ### Configuration du storage account
 
-Dans un premier temps, il faut s'assurer qu'on aie le droit d'accéder de manière anonyme aux blobs. 
+Dans un premier temps, il faut s'assurer qu'on aie le droit d'accéder de manière anonyme aux blobs. Cela permettra aux utilisateurs de l'application d'accéder aux images sans avoir besoin de s'authentifier. 
 
 Voici comment faire :
 - Dans le portail Azure, cliquez sur **`Storage accounts`** dans le menu de gauche.
@@ -376,7 +370,7 @@ Voici les modifications à faire :
 
 Voici les explications sur ces modifications :
 - **`@RequestPart("newPizza")`** : permet de récupérer l'objet **`NewPizza`** envoyé dans le corps de la requête. Le type MIME de la requête doit être **`multipart/form-data`**. Ce type de requête est utilisé pour envoyer des données de plusieurs types (texte / json, fichier, etc.).
-- **`@RequestPart("image")`** : permet de récupérer le fichier image envoyé dans le corps de la requête. Le type MIME de la requête doit être **`multipart/form-data`**.
+- **`@RequestPart("image")`** : permet de récupérer le fichier nommé **`image`** envoyé dans le corps de la requête.
 - **`MultipartFile`** : est une classe fournie par Spring pour représenter un fichier envoyé dans une requête multipart. Elle contient des méthodes pour accéder aux données du fichier (ex: nom, type MIME, contenu).
 - **`pizzaService.createPizza(newPizza, image)`** : appelle la méthode **`createPizza`** du service de gestion des pizzas en passant l'objet **`NewPizza`** et le fichier image en paramètres. Nous allons prochainement modifier cette méthode.
 
@@ -416,7 +410,7 @@ Nous allons ajouter un champ **`imageLocation`** à l'entité **`Pizza`** pour s
 
 ### Modification du service de gestion des pizzas
 
-Voici les modifications à faire dans le service de gestion des pizzas (dans le fichier **`services/PizzaService.java`**) pour mettre à jour la méthode **`createPizza`** :
+Voici les modifications à faire dans le service de gestion des pizzas (dans le fichier **`services/PizzaService.java`**) pour mettre à jour la méthode **`createPizza`** (n'oubliez pas d'importer les classes nécessaires) :
 
 ```java {5-7,11-13,15-17,27-30,35-66} showLineNumbers
 @Service
@@ -491,7 +485,7 @@ public class PizzaService {
 Voici les explications sur ces modifications :
 - **`@Value("${azure.blob.service-endpoint}") String blobServiceEndpoint`** : injecte la valeur de la propriété **`azure.blob.service-endpoint`** dans le champ **`blobServiceEndpoint`**. Cette propriété provient du fichier **`application.properties`**, le fichier de configuration de l'API en mode développement.
 - **`@Value("${azure.blob.sas-token}") String sasToken`** : injecte la valeur de la propriété **`azure.blob.sas-token`** dans le champ **`sasToken`**. Cette propriété provient du fichier **`application.properties`**, le fichier de configuration de l'API en mode développement.
-- **`@Value("${azure.blob.container-name}") String containerName`** : injecte la valeur de la propriété **`azure.blob.container-name`** dans le champ **`containerName`**. Cette propriété provient du fichier **`application.properties`**, le fichier de configuration de l'API en mode développement.
+- **`@Value("${azure.blob.container-name}") String containerName`** : injecte la valeur de la propriété **`azure.blob.container-name`** dans le champ **`containerName`**. Cette propriété provient aussi du fichier **`application.properties`**.
 - **`uploadImageToBlob`** : est une méthode privée qui permet de stocker une image dans le service de stockage d'objets. Elle prend en paramètre un objet **`MultipartFile`** qui représente le fichier image à stocker. Elle retourne l'URL du blob dans lequel l'image a été stockée. Cette méthode utilise la bibliothèque **`azure-storage-blob`** pour interagir avec le service de stockage d'objets Azure Blob Storage :
   - **`UUID.randomUUID().toString()`** : génère un UUID (Universal Unique Identifier) pour le nom du blob. Cela permet de garantir que le nom du blob est unique. De plus, cela permet de cacher le nom du fichier original, permettant de sécuriser l'accès aux fichiers stockés. Seulement un utilisateur ayant l'URL du blob pourra accéder à l'image. Il est difficile pour des utilisateurs malveillants de deviner l'URL du blob.
   - **`Map<String, String> metadata = new HashMap<>()`** : crée une map pour stocker les métadonnées du blob. Ici, nous stockons le nom du fichier original dans les métadonnées. Cela permet de conserver le nom du fichier original pour une utilisation ultérieure.
@@ -543,7 +537,7 @@ public Pizza deletePizza(Long id) {
 
 La nouvelle méthode **`deleteImageFromBlob`** permet de supprimer une image du service de stockage d'objets. Elle prend en paramètre l'URL de l'image à supprimer. Voici les explications sur cette méthode :
 - **`blobName`** : extrait le nom du blob à partir de l'URL de l'image. L'URL de l'image est de la forme **`https://imagestorage007.blob.core.windows.net/dev/imageUUID`**. Nous extrayons le nom du blob **`imageUUID`** à partir de l'URL.
-- **`BlobClientBuilder blobClientBuilder = new BlobClientBuilder()`** : crée un **`BlobClientBuilder`** pour interagir avec le service de stockage d'objets Azure Blob Storage. Le **`BlobClientBuilder`** permet de créer, lire, mettre à jour et supprimer des blobs.
+- **`BlobClientBuilder blobClientBuilder = new BlobClientBuilder()`** : crée un **`BlobClientBuilder`** pour interagir avec le service de stockage d'objets Azure Blob Storage.
 - **`blobClientBuilder.buildClient().delete()`** : supprime le blob. 
 
 # <InternalPageTitle> Comment tester une opération de l'API qui attend une image ? </InternalPageTitle>
@@ -890,7 +884,7 @@ Veuillez bien exécutez votre application frontend pour voir les changements.
 Tout devrait être fonctionnel et votre application devrait permettre de créer des pizzas avec des images et d'afficher les images des pizzas.
 
 Ainsi, lors de la création d'une pizza, l'utilisateur peut sélectionner une image pour la pizza. L'image est stockée dans le service de stockage d'objets Azure Blob Storage. L'URL de l'image est stockée dans la DB. Lors de l'affichage des pizzas, l'image de chaque pizza est affichée.
-Pour l'affichage, c'est le frontend, via une balise **`<img>`**, qui va chercher l'image stockée dans le service de stockage d'objets Azure Blob Storage.
+Pour l'affichage, c'est le browser, via une balise **`<img>`**, qui va chercher l'image stockée dans le service de stockage d'objets Azure Blob Storage.
 
 # <InternalPageTitle> Comment utiliser le service de stockage dans l'environnement de staging ? </InternalPageTitle>
 
@@ -928,7 +922,7 @@ Pour passer le token d'accès partagé pour le service de stockage d'objets Azur
       - AZURE_BLOB_SAS_TOKEN=${AZURE_BLOB_SAS_TOKEN}
 ```
 
-Est-ce que c'est nécessaire de mettre dans le fichier de configuration de docker compose qui sera exécuté sur Azure Web app ? Non, ce qui compte, c'est de configurer les variables d'environnement dans le portail Azure.  
+Est-ce que c'est nécessaire de mettre cette variable d'environnement dans le fichier de configuration de docker compose qui sera exécuté sur Azure Web app ? Non, ce qui compte, c'est de configurer les variables d'environnement dans le portail Azure.  
 Néanmoins, il est intéressant de les mettre dans le fichier de configuration pour ces raisons :
 - pour pouvoir tester en local.
 - pour avoir une trace de toutes les configurations nécessaires pour le déploiement.
@@ -941,7 +935,7 @@ Au niveau de votre Azure Web App (**`cae-groupxy-staging-app`** par exemple) via
 - Cliquer sur **`Settings`**.
 - Cliquer sur **`Environment variables`**.
 - Ajouter la variable d'environnement suivante en cliquant sur **`Add`** :
-  - **`AZURE_BLOB_SAS_TOKEN`** (**`Name`**): **`sv=2022-11-02&ss=bfqt&srt=o&sp=rwdlacupiytfx&se=2035-02-24T23:52:15Z&st=2025-02-24T15:52:15Z&spr=https&sig=OoOAYhdQZGxO74hSUHKHgDw1Bvq%2FeSciIift10CMM34%3D`** (**`Value`**). Cliquez sur **`Apply`**.
+  - **`AZURE_BLOB_SAS_TOKEN`** (**`Name`**): une valeur de token qui correspond à ce que vous avez généré précédemment, comme par exemple **`sv=2022-11-02&ss=bfqt&srt=o&sp=rwdlacupiytfx&se=2035-02-24T23:52:15Z&st=2025-02-24T15:52:15Z&spr=https&sig=OoOAYhdQZGxO74hSUHKHgDw1Bvq%2FeSciIift10CMM34%3D`** (**`Value`**). Cliquez sur **`Apply`**.
   - N'oubliez pas de cliquer sur **`Apply`** pour sauvegarder l'ajout de la variable, puis **`Confirm`**.
 
 ## Comment lancer un environnement local avec les configurations de staging ?
@@ -964,3 +958,28 @@ Pour déployer l'application sur Azure Web App, il suffit de pousser les modific
 Pour vérifier que l'application a bien été déployée, veuillez vous rendre sur le portail Azure, puis sur votre Azure Web App (**`cae-groupxy-staging-app`** par exemple).
 
 Vous devriez voir l'application frontend en vous rendant sur l'URL de l'application Azure Web App, par exemple : **`https://cae-groupxy-staging-app.azurewebsites.net`**.
+
+Si nécessaire, vous pouvez trouver le code associé à la gestion des images ici : [images](https://github.com/e-vinci/cae-theory-demos/tree/main/images).
+
+## Conclusion sur la gestion des images avec Azure Stockage pour l'environnement de développement
+
+Nous avons maintenant un nouvel environnement de développement local que nous pouvons visualiser ainsi :
+
+<PlantUML src="/diagrams/local-dev-deployment2.puml" alt="Environnement de développement"/>
+
+Pas tous les éléments de notre environnement de développement sont locaux. En effet, nous avons un service de stockage d'objets Azure Blob Storage qui est utilisé pour stocker les images des pizzas. Cela nous permet de tester le stockage des images dans un environnement similaire à celui de production.
+
+🍬 Si vous préfériez, pour votre environnement de développement uniquement, vous pourriez utiliser un serveur de fichiers statiques pour stocker les images. Cela vous permettrait de ne pas dépendre d'un service de stockage d'objets externe. Vous pourriez stocker les images dans un dossier local de votre API Spring. Nous ne verrons pas cela dans le cadre de ce cours, donc n'hésitez pas à explorer par vous-même.
+
+## Conclusion sur la gestion des images avec Azure Stockage pour l'environnement de staging
+
+Nous avons maintenant un nouvel environnement de staging que nous pouvons visualiser ainsi :
+
+<PlantUML src="/diagrams/staging-deployment2.puml" alt="Environnement de staging"/>
+
+Nous avons configuré l'API pour stocker les images des pizzas dans un blob container nommé **`staging`** dans le service de stockage d'objets Azure Blob Storage. 
+
+Tout devrait être fonctionnel et votre application devrait permettre de créer des pizzas avec des images et d'afficher les images des pizzas dans l'environnement de staging.
+
+Prochainement, nous allons voir comment faire un déploiement en production.
+
