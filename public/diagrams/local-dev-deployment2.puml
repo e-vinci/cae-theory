@@ -1,0 +1,60 @@
+
+@startuml
+
+
+'Get the Azure icons
+!define AzurePuml https://raw.githubusercontent.com/plantuml-stdlib/Azure-PlantUML/release/2-2/dist
+!include AzurePuml/AzureCommon.puml
+!include AzurePuml/Storage/AzureBlobStorage.puml
+!include AzurePuml/Storage/AzureStorageContainer.puml
+!include AzurePuml/Storage/AzureStorage.puml
+!include AzurePuml/Web/AzureWebApp.puml
+
+!include <C4/C4_Deployment>
+!include <tupadr3/common>
+!include <tupadr3/font-awesome/server>
+!include <tupadr3/font-awesome/database>
+!include <tupadr3/font-awesome/users>
+!include <tupadr3/font-awesome/laptop>
+!include <tupadr3/devicons/react>
+!include <tupadr3/devicons/postgresql>
+!include <tupadr3/devicons/java>
+!include <tupadr3/devicons/docker>
+!include <tupadr3/devicons/chrome>
+
+LAYOUT_TOP_DOWN()
+
+
+title Local development environment (C4 deployment diagram)
+
+Node(devLaptop, "Developer Laptop", , , $sprite=laptop) {
+
+    Node(webBrowser, "Web browser", "HTML/JS/CSS", "Runs the frontend", $sprite=docker) {
+        Container(spa, "Browser SPA", "HTML/JS/CSS", "The main UI that the customer interacts with", $sprite=chrome)
+    }
+
+
+    Container(front, "Frontend app", "Vite + React + TS + JS", "The main UI that the customer interacts with", $sprite=react)
+
+
+    Node(dbContainer, "Postgres container", "postgres:latest", "Runs the db", $sprite=docker) {
+        ContainerDb(db, "Database", "PostgresSQL", "Holds pizzeria's\n information", $sprite=postgresql)
+    }
+
+    Container(api, "API", "Spring Boot", "Handles all business logic", $sprite=img:https://upload.wikimedia.org/wikipedia/commons/7/79/Spring_Boot.svg{scale=0.5})
+}
+
+Node(blobContainer, "Storage container", "Azure storage container\ndev", "Provides CRUD API for images", $sprite=AzureStorageContainer{scale=0.7},) {
+    Container(blob, "Blob Storage", "Azure Blob Storage", "Stores product images", $sprite="AzureBlobStorage,color=blue")
+}
+
+
+' defining C4 relationships
+Rel(spa, front, "Requests Files", "http")
+Rel(spa, front, "Makes API calls", "http")
+Rel(spa, blob, "Reads images", "https")
+Rel(front, api, "Forwards requests to", "http")
+Rel(api, db, "Reads/Writes")
+Rel(api, blob, "Writes")
+
+@enduml

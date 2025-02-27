@@ -38,12 +38,13 @@ const siteMetaData: SiteMetaData = {
       ],
     },
     {
-      name: "Environnements",
+      name: "Itération 2",
       link: "",
       subMenu: [
-        { name:"Gestion des environnements", link: "/environments/general" },
-        { name: "Conteneurisation", link: "/environments/containerization" },
-        { name: "Déploiement", link: "/environments/deployment" },
+        { name:"Gestion des environnements", link: "/iteration2/general" },
+        { name: "Conteneurisation", link: "/iteration2/containerization" },
+        { name: "Déploiement", link: "/iteration2/deployment" },
+        { name: "Gestion des images", link: "/iteration2/images" },
       ],
     },
     {
