@@ -129,7 +129,7 @@ Dans un premier temps, nous allons tester le composant `LoginPage` qui est un co
 
 Nous allons réaliser un premier simple test unitaire pour vérifier que le composant `LoginPage` affiche deux labels ("Username" et "Password").
 
-Veuillez créer un nouveau script nommé `/src/components/pages/LoginPage.tests.tsx` :
+Veuillez créer un nouveau script nommé `/src/components/pages/LoginPage.test.tsx` :
 
 ```tsx
 import { render, screen } from '@testing-library/react';
@@ -224,7 +224,7 @@ const LoginPage = () => {
 
 Nous souhaitons ici injecter un contexte `UserContext` qui contient une fonction `loginUser` et vérifier que le composant `LoginPage` appelle correctement cette fonction lors de la soumission du formulaire.
 
-Voici un nouveau test unitaire à ajouter dans le fichier `/src/components/pages/LoginPage.tests.tsx` :
+Voici un nouveau test unitaire à ajouter dans le fichier `/src/components/pages/LoginPage.test.tsx` :
 
 ```tsx {1,3,5,21-52} showLineNumbers
 import { render, screen, fireEvent } from '@testing-library/react';
@@ -335,7 +335,7 @@ const LoginPage = () => {
 
 Dans notre précédent test, nous avons déjà vérifié que la fonction `loginUser` est appelée correctement. Pour être complet dans notre deuxième test unitaire, nous allons vérifier que la fonction `navigate` est appelée avec le chemin '/' après l'appel à `loginUser`.
 
-Voici le test unitaire à modifier dans le fichier `/src/components/pages/LoginPage.tests.tsx` :
+Voici le test unitaire à modifier dans le fichier `/src/components/pages/LoginPage.test.tsx` :
 
 ```tsx {1,2,7-13,29,31,39,64-66} showLineNumbers
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -480,7 +480,7 @@ Nous souhaiterions tester le cas où la fonction `loginUser` lance une exception
 
 Nous allons aussi vérifier que la fonction `console.error` est appelée avec le message d'erreur. Pour ce faire, nous allons mocker `console.error` et vérifier que cette fonction est appelée avec le message d'erreur.
 
-Voici le test unitaire à ajouter dans le fichier `/src/components/pages/LoginPage.tests.tsx` :
+Voici le test unitaire à ajouter dans le fichier `/src/components/pages/LoginPage.test.tsx` :
 
 ```tsx {1,2,7-13,29,31,39,64-66} showLineNumbers
 test('calls console.error when loginUser throws an error', async () => {
