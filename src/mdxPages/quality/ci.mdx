@@ -406,6 +406,13 @@ Cette section est pour les étudiants Vinci uniquement.
 
 **👉 CONSIGNE** : Pour les étudiants Vinci, veuillez cloner votre projet GitLab sur votre machine locale.
 
+> Attention, si vous avez une machine Windows, il est possible que votre Git soit mal configuré, qu'il change les caractères de sauts de ligne de **`lf`** vers **`crlf`** lors du clone du repository. Qu'est-ce que ça signifie ? Les fichiers texte sous Windows utilisent **`crlf`** (carriage return line feed) pour les sauts de ligne, tandis que les fichiers texte sous Unix/Linux utilisent **`lf`** (line feed). Si vous travaillez sur un projet avec des fichiers texte, cela peut poser des problèmes de compatibilité.  
+Pour éviter cela, nous vous recommandons d'ajouter la configuration suivante avant de cloner votre projet GitLab :
+
+```bash
+git config --global core.autocrlf false
+```
+
 Pour vous assurer que vous clonez votre projet GitLab avec votre nouveau compte GitLab, nous vous recommandons cette commande :
 
 ```bash
