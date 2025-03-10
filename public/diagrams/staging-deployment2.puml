@@ -22,7 +22,7 @@
 !include AzurePuml/Storage/AzureStorage.puml
 !include AzurePuml/Web/AzureWebApp.puml
 
-LAYOUT_TOP_DOWN()
+'LAYOUT_TOP_DOWN()
 
 title Staging Environment (Part1) : C4 Deployment Diagram
 
