@@ -12,7 +12,8 @@ date: 20/01/2025
   </PathViewer>
   <InternalPageMenuItem> Comment gérer la qualité de l'API ? </InternalPageMenuItem>
   <InternalPageMenuItem> Comment résumer le style guide de Google ? </InternalPageMenuItem>
-  <InternalPageMenuItem> Comment mettre en place le Checkstyle dans IntelliJ ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment mettre en place le Checkstyle dans IntelliJ ? </InternalPageMenuItem> 
+  <InternalPageMenuItem> Quelle bonne dose de commentaires dans du code Java ? </InternalPageMenuItem>
   <InternalPageMenuItem> Comment automatiser l'exécution d'un projet Maven ? </InternalPageMenuItem>
   <InternalPageMenuItem> Comment automatiser l'exécution du Checkstyle ? </InternalPageMenuItem>
   <InternalPageMenuItem> Comment utiliser un profile avec Maven ? </InternalPageMenuItem>
@@ -112,6 +113,28 @@ Sélectionnez le fichier `PizzaService`. Cliquez sur l'onglet `Checkstyle` pour 
 - Cliquez sur le bouton `Play` pour lancer le checkstyle pour le fichier courant. 
 - Cliquez sur le bouton `Check Project` pour lancer le checkstyle pour tout le projet.
 Le Checkstyle a trouvé 393 "Warnings" à corriger dans le projet. Vous pouvez les corriger un par un en cliquant sur le bouton `Fix` à côté de chaque élément.
+
+# <InternalPageTitle> Quelle bonne dose de commentaires dans du code Java ? </InternalPageTitle>
+
+## Généralités 
+
+L'idée générale est d'avoir **juste assez de commentaires** pour rendre le code compréhensible, mais pas trop au point de le surcharger. Un bon commentaire doit **ajouter de la valeur** et ne pas répéter ce qui est déjà évident dans le code.
+- **Trop de commentaires** → Risque de noyer l'essentiel et d'alourdir la lecture.
+- **Pas assez de commentaires** → Le code peut devenir obscur pour d'autres développeurs (ou toi-même dans quelques mois).
+ 
+## Bonne pratiques
+ 
+**Priorité au code lisible**  
+- Des **noms de variables** et **méthodes explicites** évitent de devoir commenter.
+ 
+**Commentaires uniquement quand ils ajoutent de la valeur**
+- **Expliquer le pourquoi, pas le quoi**(expliquer pourquoi une chose est faite, pas ce qu’elle fait.)
+- **Clarifier un algorithme complexe**
+- **Documenter une API publique avec Javadoc**
+ 
+**Éviter les commentaires inutiles**
+- Pas besoin de commenter du code trivial.
+- Si un commentaire explique **quelque chose qui peut être clarifié en renommant une variable ou en refactorisant le code**, il est inutile.
 
 # <InternalPageTitle> Comment automatiser l'exécution d'un projet Maven ? </InternalPageTitle>
 
