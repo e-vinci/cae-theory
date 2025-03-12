@@ -48,6 +48,13 @@ const siteMetaData: SiteMetaData = {
       ],
     },
     {
+      name: "Itération 3",
+      link: "",
+      subMenu: [
+        { name:"Gestion de la production", link: "/iteration3/production" },
+      ],
+    },
+    {
       name: `About`,
       link: `/about`,
     },

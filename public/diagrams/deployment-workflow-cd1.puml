@@ -1,0 +1,57 @@
+@startuml
+actor Développeurs
+actor Utilisateurs
+participant "GitLab CI/CD" as GitLab
+participant "GitLab Registry" as Registry
+participant "Azure Web App : Staging" as AzureStaging
+participant "Azure Web App : Prod" as AzureProd
+
+Développeurs -> GitLab: Pousser le code vers le dépôt
+GitLab -> GitLab: Déclencher le pipeline CI/CD
+
+GitLab -> GitLab: Exécuter les tests du frontend
+GitLab -> GitLab: Exécuter les tests de l'API
+alt Les tests passent
+    GitLab -> GitLab: Construire et pousser les images Docker
+    GitLab -> Registry: Pousser les images Docker
+else Les tests échouent
+    GitLab -> Développeurs: Notifier l'échec
+    return
+end
+
+alt MR sur la branche main
+    GitLab -> AzureStaging: Se connecter à Azure
+    GitLab -> AzureStaging: Déployer les images Docker depuis le Registry
+    AzureStaging -> AzureStaging: Démarrer la Web App
+
+    loop Vérification de l'état de l'API (5 minutes max)
+        GitLab -> AzureStaging: Faire une requête HTTP sur /pizzas
+        alt Code HTTP 200
+            GitLab -> GitLab: API prête, continuer
+            break
+        else Code HTTP différent de 200
+            GitLab -> GitLab: Attendre et réessayer
+        end
+    end
+
+    alt API prête
+        GitLab -> AzureStaging: Exécuter les tests e2e
+        alt Les tests e2e passent
+            GitLab -> GitLab: Pipeline réussie
+            GitLab -> AzureProd: Se connecter à Azure
+            GitLab -> AzureProd: Déployer les images Docker depuis le Registry
+            AzureProd -> AzureProd: Démarrer la Web App
+        else Les tests e2e échouent
+            GitLab -> Développeurs: Notifier l'échec
+            return
+        end
+    else API non prête après 5 minutes
+        GitLab -> Développeurs: Notifier l'échec
+        return
+    end
+else Pas de MR sur la branche main
+    GitLab -> GitLab: Ne pas déployer
+end
+
+Utilisateurs -> AzureProd: Consulter le site
+@enduml

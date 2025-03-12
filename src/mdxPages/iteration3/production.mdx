@@ -1,0 +1,702 @@
+---
+title: Production
+description: Gestion de l'environnement de production
+date: 10/03/2025
+---
+
+<InternalPageMenu>
+  <PathViewer>
+    <PathViewerItem to="/"> CAE </PathViewerItem>
+    <PathViewerItem to="/iteration3"> Itération 3 </PathViewerItem>
+    <PathViewerItem selected> Gestion de l'environnement de production </PathViewerItem>
+  </PathViewer>
+  <InternalPageMenuItem> Qu'est-ce que l'environnement de production ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment créer l'environnement de production ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment créer des environnements sous GitLab CI/CD </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment faire du Continuous Delivery ? </InternalPageMenuItem>
+</InternalPageMenu>
+
+# <InternalPageTitle> Qu'est-ce que l'environnement de production ? </InternalPageTitle>
+
+Nous l'avons déjà vu dans l'introduction sur les environnements, l'environnement de production est un environnement dans lequel l'application est déployée pour être utilisée par les utilisateurs finaux.
+
+Dans la partie sur le déploiement, nous avons vu comment déployer une application dans l'environnement de staging, que l'on peut considérer comme la pré-production. Dans cette partie, nous allons voir comment déployer une application dans l'environnement de production.
+
+Dans un premier temps, nous souhaitons faire du déploiement continu, c'est-à-dire que chaque commit sur la branche principale doit déclencher un déploiement sur l'environnement de production, et cela seulement bien sûr si tous les tests passent, y compris les tests e2e à réaliser sur l'environnement de staging (ou de pré-production).
+
+Voici le workflow que nous souhaitons mettre en place :
+
+<PlantUML src="/diagrams/deployment-workflow-cd1.puml" />
+
+# <InternalPageTitle> Comment créer l'environnement de production ? </InternalPageTitle>
+
+## Introduction
+
+Pour mettre en place l'environnement de production, nous allons utiliser les mêmes services que pour l'environnement de staging, à savoir :
+- Azure Web App pour déployer les services frontend, backend et le reverse proxy
+- Pour les étudiants Vinci, une base de données offerte par Vinci ; pour les autres, Azure Database for PostgreSQL pour la base de données
+- Un service de stockage Azure Blob pour stocker les fichiers statiques (principalement les images dans nos tutoriels)
+- GitLab CI/CD pour automatiser le déploiement.
+
+## Création de l'environnement de production sur Azure Web App
+
+Veuillez refaire les étapes de la partie sur le déploiement pour créer un nouvelle Azure Web App : [Déploiement : Comment créer une app sur Azure Web App Service](../iteration2/deployment#comment_creer_une_application_sur_azure_web_app_service).
+
+Donnez un nom à votre application, par exemple **`cae-groupxy-production-app`**.
+
+Ensuite, veuillez faire la partie pour donner accès à votre nouvelle Azure Web App via GitLab CI/CD : [Déploiement : Comment donner accès à d'autres applications à une Azure Web App ?](../iteration2/deployment#comment_creer_une_application_sur_azure_web_app_service). Veuillez créer donc un nouveau service principal et bien noter les informations de connexion. Voici un exemple de ce que vous devriez avoir à la fin de cette étape :
+```properties
+AZURE_CLIENT_SECRET=am45Q~jpcc2G64r3GumcGdYRE99cwxddfsqWeD8DcW1
+AZURE_TENANT_ID=f7a15dq7-57cb-5855-8d36-0545f95aada17
+AZURE_CLIENT_ID=fs8f6ea8-8807-4764-a394-f0bessqf7e8cbe
+```
+
+## Création de l'environnement pour le stockage des images sur Azure Blob Storage
+
+### Introduction
+
+Pour stocker les images, nous allons utiliser le service de stockage que nous avons créé lors du déploiement. Sur ce service de stockage, nous allons créer un nouveau blob container pour l'environnement de production.
+
+### Création du blob container pour l'environnement de production
+
+Pour créer un blob container pour l'environnement de production, veuillez suivre les étapes suivantes :
+- Dans le portail Azure, cliquez sur **`Storage accounts`** dans le menu de gauche.
+- Cliquez sur le **`Storage account`** que vous avez créé précédemment (**`imagestorage007`** par exemple).
+- Dans le menu de gauche, sous **`Data storage`**, cliquez sur **`Containers`**.
+- Cliquez sur **`+ Container`**.
+- Entrez un nom pour le container. Par exemple : **`prod`**.
+- Pour **`Anonymous access level`**, sélectionnez **`Blob (anonymous read access for blobs only)`**. Grâce à cela, les blobs peuvent être lus par n'importe qui, mais sans avoir le droit de lister les blobs.
+- Laissez les autres paramètres par défaut.
+- Cliquez sur **`Create`**.
+
+
+## Création de l'environnement pour la base de données
+
+### Introduction
+
+Comme nous l'avons vu dans la partie sur le déploiement, nous allons utiliser une base de données externe. Pour les étudiants Vinci, vous avez une base de données offerte par Vinci. Pour les autres, vous pouvez utiliser Azure Database for PostgreSQL.
+
+Pour votre environnement de production, veuillez utiliser une base de données différente de celle de l'environnement de staging. Vous pouvez par exemple créer une nouvelle base de données sur Azure Database for PostgreSQL. Pour les étudiants Vinci, chaque groupe possède plusieurs bases de données, vous pouvez donc en choisir une autre.
+
+### Configuration de l'API Spring Boot pour utiliser la nouvelle base de données et le nouveau blob container
+
+Veuillez repartir de votre projet GitLab pour ce nouveau tutoriel. Pensez à créer une nouvelle branche pour ce tutoriel.
+
+Veuillez au niveau de votre application Spring Boot, changer la configuration pour utiliser la nouvelle base de données. Veuillez créer le fichier **`application-production.properties`** pour qu'il ressemble à ceci :
+```properties
+spring.application.name=production
+
+server.port=3000
+
+spring.datasource.url=${SPRING_DATASOURCE_URL}
+spring.datasource.username=${SPRING_DATASOURCE_USERNAME}
+spring.datasource.password=${SPRING_DATASOURCE_PASSWORD}
+spring.jpa.generate-ddl=true
+spring.sql.init.mode=never
+
+azure.blob.service-endpoint=https://imagestorage007.blob.core.windows.net/
+azure.blob.sas-token=${AZURE_BLOB_SAS_TOKEN}
+azure.blob.container-name=production
+
+spring.servlet.multipart.enabled=true
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=10MB
+```
+
+Nous avons donc créé un nouveau profil pour Spring Boot, **`production`**, qui utilise les variables d'environnement pour la connexion à la base de données et au blob container. 
+
+Veuillez noter vos nouvelles informations de connexion à la base de données, par exemple :
+```properties
+SPRING_DATASOURCE_URL=jdbc:postgresql://cae-groupxy-production-db.postgres.database.azure.com:5432/cae_groupxy_production_db
+SPRING_DATASOURCE_USERNAME=cae_groupxy_production_user@cae-groupxy-production-db
+SPRING_DATASOURCE_PASSWORD=MySuperPassword
+```
+
+## Configuration de GitLab CI/CD pour le déploiement continu
+
+Si nous souhaitons configurer notre pipeline, nous devons ajouter une nouvelle étape pour le déploiement sur l'environnement de production.
+
+De plus, nous avons des secrets à ajouter pour la connexion à la base de données et au blob container.
+C'est pourquoi nous allons voir la gestion des environnements dans GitLab CI/CD, principalement afin d'éviter d'avoir à donner des noms de variables d'environnement différents pour chaque environnement.
+
+# <InternalPageTitle> Comment créer des environnements sous GitLab CI/CD </InternalPageTitle>
+
+## Introduction
+
+GitLab CI/CD permet de gérer des environnements pour les pipelines. Cela permet de définir des variables d'environnement pour chaque environnement, et de les utiliser dans les jobs du pipeline.
+
+Sans utiliser d'environnement, nous devrions donner des noms de variables d'environnement différents pour chaque environnement, ce qui peut être source d'erreur.
+
+Par exemple, pour la connexion à la base de données, nous devrions donner :
+- `SPRING_DATASOURCE_URL_PROD` pour l'environnement de production
+- `SPRING_DATASOURCE_URL_STAGING` pour l'environnement de staging
+- `SPRING_DATASOURCE_USERNAME_PROD` pour l'environnement de production
+- `SPRING_DATASOURCE_USERNAME_STAGING` pour l'environnement de staging
+- ...
+
+Avec les environnements sous GitLab, nous pouvons donner simplement des valeurs pour les variables `SPRING_DATASOURCE_URL` et `SPRING_DATASOURCE_USERNAME`, et GitLab se chargera de donner les bonnes valeurs en fonction de l'environnement.
+
+## Création des environnements sous GitLab CI/CD
+
+Pour créer des environnements sous GitLab CI/CD, veuillez suivre les étapes suivantes :
+- Dans votre projet GitLab, cliquez sur **`Operate`**.
+- Cliquez sur **`Environments`**.
+- Cliquez sur **`New environment`**.
+- Entrez un nom pour l'environnement. Par exemple : **`staging`**.
+- Cliquez sur **`Save`**.
+
+Veuillez recommencer l'opération pour créer un environnement pour la production.
+
+## Configuration des variables d'environnement pour les environnements GitLab
+
+### Introduction
+
+Nous souhaitons maintenant donner des valeurs pour les variables d'environnement pour chaque environnement.
+
+La valeur actuelle des variables d'environnement correspond à l'environnement de staging uniquement, ou aux deux environnements (staging et production).
+
+Voici les variables d'environnement à configurer, et pour quel environnement :
+- `AZURE_CLIENT_ID` : deux valeurs, une pour l'environnement de staging et une pour l'environnement de production
+- `AZURE_CLIENT_SECRET` : deux valeurs, une pour l'environnement de staging et une pour l'environnement de production
+- `AZURE_TENANT_ID` : deux valeurs, une pour l'environnement de staging et une pour l'environnement de production
+- `PULL_IMAGE_TOKEN_PASSWORD` : une même valeur pour l'environnement de staging et de production
+- `PULL_IMAGE_TOKEN_USERNAME` : une même valeur pour l'environnement de staging et de production
+
+### Configuration des variables d'environnement pour l'environnement de staging
+
+Ces variables d'environnement ont déjà les valeurs pour l'environnement de staging. Il faut néanmoins les configurer pour que ces valeurs ne s'appliquent que pour l'environnement de staging.
+
+Pour configurer les variables d'environnement pour l'environnement de staging, veuillez suivre les étapes suivantes :
+- Dans votre projet GitLab, cliquez sur **`Settings`**.
+- Cliquez sur **`CI/CD`**.
+- Cliquez sur l'icône **`Edit`** pour **`AZURE_CLIENT_ID`**.
+- Dans **`Environment`**, sélectionnez **`staging`**.
+- Cliquez sur **`Save changes`**.
+- Répétez l'opération pour les autres variables d'environnement : **`AZURE_CLIENT_SECRET`** et **`AZURE_TENANT_ID`**.
+
+### Configuration des variables d'environnement dont la valeur est la même pour les environnements de staging et de production
+
+Par défaut, tant qu'un environnement n'a pas de valeur pour une variable d'environnement, la valeur par défaut est utilisée, c'est-à-dire que la valeur de la variable d'environnement est utilisée pour tous les environnements.
+
+Ainsi, nous n'avons plus rien à faire pour les variables d'environnement dont la valeur est la même pour les environnements de staging et de production, c'est-à-dire :
+- **`PULL_IMAGE_TOKEN_PASSWORD`**
+- **`PULL_IMAGE_TOKEN_USERNAME`**
+
+### Configuration des variables d'environnement pour l'environnement de production
+
+Pour configurer les variables d'environnement pour l'environnement de production, veuillez suivre les étapes suivantes :
+- Dans votre projet GitLab, cliquez sur **`Settings`**.
+- Cliquez sur **`CI/CD`**.
+- Cliquez sur l'icône **`Add variable`** 
+- Dans **`Environment`**, sélectionnez **`production`**.
+- Dans **`Visibility`**, sélectionnez **`Masked`**.
+- Désactivez **`Protect variable`**.
+- Dans **`Key`**, entrez **`AZURE_CLIENT_ID`**.
+- Dans **`Value`**, donnez la valeur pour l'environnement de production.
+- Cliquez sur **`Save changes`**.
+- Répétez l'opération pour les autres variables d'environnement : **`AZURE_CLIENT_SECRET`** et **`AZURE_TENANT_ID`**.
+
+## Configuration des variables d'environnement pour l'Azure Web App de production
+
+Au niveau de votre Azure Web App (**`cae-groupxy-production-app`** par exemple) via le portail Azure, veuillez :
+- Cliquer sur **`Settings`**.
+- Cliquer sur **`Environment variables`**.
+- Ajouter les variables d'environnement suivantes en cliquant sur **`Add`** :
+  - **`SPRING_DATASOURCE_URL`** (**`Name`**): l'URL de connexion à votre DB de production (**`Value`**). Cliquez sur **`Apply`**.
+  - **`SPRING_DATASOURCE_USERNAME`** (**`Name`**): le nom d'utilisateur de votre DB de production (**`Value`**). Cliquez sur **`Apply`**.
+  - **`SPRING_DATASOURCE_PASSWORD`** (**`Name`**): le mot de passe de votre DB de production (**`Value`**). Cliquez sur **`Apply`**.
+  - **`AZURE_BLOB_SAS_TOKEN`** (**`Name`**): le token SAS pour le blob container de production (**`Value`**). Cliquez sur **`Apply`**.
+  - **`SPRING_PROFILES_ACTIVE`** (**`Name`**): le profil Spring Boot à utiliser pour l'environnement de production (**`Value`**), c'est-à-dire **`production`**.
+  - N'oubliez pas de cliquer sur **`Apply`** pour sauvegarder l'ajout des 5 variables, puis **`Confirm`**.
+
+## Comment utiliser les environnements dans les jobs du pipeline
+
+### Introduction
+
+Maintenant que nous avons créé des environnements sous GitLab CI/CD, nous pouvons les utiliser dans les jobs du pipeline.
+
+Pour cela, il suffit de donner le nom de l'environnement dans le job, et GitLab se chargera de donner les bonnes valeurs pour les variables d'environnement.
+
+### Utilisation des environnements dans les jobs du pipeline
+
+Nous allons maintenant mettre à jour notre pipeline pour qu'il déploie sur l'environnement de production.
+
+Veuillez mettre à jour votre fichier **`.gitlab-ci.yml`** pour qu'il ressemble à ceci :
+```yaml {6,8-13,70-73,79,98-99,116-144} showLineNumbers
+stages:
+  - test
+  - build
+  - staging
+  - e2e
+  - production
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  VERSION: $CI_PIPELINE_IID
+  REGISTRY: $CI_REGISTRY
+  REGISTRY_IMAGE_BASE_PATH: $REGISTRY/$CI_PROJECT_PATH
+  AZURE_WEBAPP_RESOURCE_GROUP: caeGroup
+
+api test:
+  stage: test
+  image: maven:3.9.9-amazoncorretto-21
+  cache:
+    key:
+      files:
+        - api/pom.xml
+    paths:
+      - $CI_PROJECT_DIR/.m2/repository
+  script:
+    - cd api
+    - mvn clean test
+  artifacts:
+    paths:
+      - api/target/reports/
+      - api/target/site/
+      - api/target/surefire-reports/
+
+frontend test:
+  stage: test
+  image: node:20-alpine
+  cache:
+    key:
+      files:
+        - frontend/package-lock.json
+    paths:
+      - frontend/node_modules
+  script:
+    - cd frontend
+    - npm ci
+    - npm run lint
+    - npm run coverage
+  artifacts:
+    paths:
+      - frontend/coverage/
+
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:20-dind
+  script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+    - docker-compose -f docker-compose.staging.yml build
+    - for service in frontend-prod api-prod reverse-proxy-prod; do
+      docker tag $service $REGISTRY_IMAGE_BASE_PATH/$service:latest;
+      docker tag $service $REGISTRY_IMAGE_BASE_PATH/$service:$VERSION;
+      docker push $REGISTRY_IMAGE_BASE_PATH/$service:latest;
+      docker push $REGISTRY_IMAGE_BASE_PATH/$service:$VERSION;
+      done
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+
+deploy to staging:
+  stage: staging
+  environment: staging
+  variables:
+    AZURE_WEBAPP_NAME: cae-groupxy-staging-app
+    BASE_URL: https://cae-groupxy-staging-app-fza6c0ebghahfufh.centralus-01.azurewebsites.net/
+  image: mcr.microsoft.com/azure-cli
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+  script:
+    - az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+    - az webapp stop --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP
+    - az webapp config container set --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP --multicontainer-config-type compose --multicontainer-config-file docker-compose.deploy.yml --container-registry-user $PULL_IMAGE_TOKEN_USERNAME --container-registry-password $PULL_IMAGE_TOKEN_PASSWORD
+    - az webapp start --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP
+    - |
+      for i in {1..30}; do
+        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $BASE_URL/api/pizzas);
+        if [ "$HTTP_STATUS" -eq 200 ]; then
+          echo "Azure Web App is functional."
+          break
+        fi
+        echo "Azure Web App is not ready yet. Waiting for 10 seconds..."
+        sleep 10
+      done
+      if [ "$HTTP_STATUS" -ne 200 ]; then
+        echo "Azure Web App failed to become functional."
+        exit 1
+      fi
+
+e2e tests:
+  stage: e2e
+  environment: staging
+  variables:
+    BASE_URL: https://cae-groupxy-staging-app-fza6c0ebghahfufh.centralus-01.azurewebsites.net/
+    NODE_ENV: staging
+  image: mcr.microsoft.com/playwright:v1.50.1-jammy
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+  script:
+    - cd ./e2e
+    - npm ci
+    - npx playwright test
+    - if [ $? -ne 0 ]; then echo "E2E tests failed"; exit 1; fi
+  artifacts:
+    paths:
+      - e2e/playwright-report/
+      - e2e/test-results/
+
+deploy to production:
+  stage: production
+  environment: production
+  variables:
+    AZURE_WEBAPP_NAME: production-pizzeria
+    BASE_URL: https://production-pizzeria-frd5dugfffgtarf6.centralus-01.azurewebsites.net/
+    NODE_ENV: production
+  image: mcr.microsoft.com/azure-cli
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+  script:
+    - az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+    - az webapp stop --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP
+    - az webapp config container set --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP --multicontainer-config-type compose --multicontainer-config-file docker-compose.deploy.yml --container-registry-user $PULL_IMAGE_TOKEN_USERNAME --container-registry-password $PULL_IMAGE_TOKEN_PASSWORD
+    - az webapp start --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP
+    - |
+      for i in {1..30}; do
+        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $BASE_URL/api/pizzas);
+        if [ "$HTTP_STATUS" -eq 200 ]; then
+          echo "Azure Web App is functional."
+          break
+        fi
+        echo "Azure Web App is not ready yet. Waiting for 10 seconds..."
+        sleep 10
+      done
+      if [ "$HTTP_STATUS" -ne 200 ]; then
+        echo "Azure Web App failed to become functional."
+        exit 1
+      fi
+```
+
+Nous avons donc ajouté un nouveau job pour le déploiement sur l'environnement de production. 
+
+Voici quelques explications sur le pipeline :
+- Les variables **`AZURE_WEBAPP_NAME`** et **`BASE_URL`** sont différentes pour chaque environnement. Elle ne sont donc plus reprises au niveau de la section **`variables`** mais directement dans les jobs.
+- Le fait de préciser **`environment: staging`** ou **`environment: production`** permet à GitLab de donner les bonnes valeurs pour les variables d'environnement en fonction de l'environnement.
+- Les règles **`rules`** permettent de dire que le job ne doit être exécuté que si la source du pipeline est un **`merge_request_event`** et que la branche de la merge request est la branche par défaut.
+- Nous avons ajouté **`azure webapp stop`** pour être sûr que l'application est bien arrêtée avant de la redéployer.  
+NB : Cela n'est peut-être pas nécessaire, mais cela semble régler certains problèmes potentiels de non réinitialisation de la DB au redémarrage de l'API dans l'environnement de staging.
+
+
+Veuillez donc faire un commit et un push pour déclencher le pipeline. Vérifiez que le déploiement sur l'environnement de production se passe bien.
+
+## Amélioration du pipeline
+
+### Introduction
+
+Notre pipeline actuel contient des duplications de code. En effet, les jobs **`deploy to staging`** et **`deploy to production`** sont presque identiques.
+
+Nous allons donc voir comment améliorer notre pipeline en factorisant le code commun dans un template.
+
+### Création d'un template pour le déploiement
+
+Veuillez mettre à jour votre fichier **`.gitlab-ci.yml`** pour qu'il ressemble à ceci :
+```yaml {68-90,98,126} showLineNumbers
+stages:
+  - test
+  - build
+  - staging
+  - e2e
+  - production
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  VERSION: $CI_PIPELINE_IID
+  REGISTRY: $CI_REGISTRY
+  REGISTRY_IMAGE_BASE_PATH: $REGISTRY/$CI_PROJECT_PATH
+  AZURE_WEBAPP_RESOURCE_GROUP: caeGroup
+
+api test:
+  stage: test
+  image: maven:3.9.9-amazoncorretto-21
+  cache:
+    key:
+      files:
+        - api/pom.xml
+    paths:
+      - $CI_PROJECT_DIR/.m2/repository
+  script:
+    - cd api
+    - mvn clean test
+  artifacts:
+    paths:
+      - api/target/reports/
+      - api/target/site/
+      - api/target/surefire-reports/
+
+frontend test:
+  stage: test
+  image: node:20-alpine
+  cache:
+    key:
+      files:
+        - frontend/package-lock.json
+    paths:
+      - frontend/node_modules
+  script:
+    - cd frontend
+    - npm ci
+    - npm run lint
+    - npm run coverage
+  artifacts:
+    paths:
+      - frontend/coverage/
+
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:20-dind
+  script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+    - docker-compose -f docker-compose.staging.yml build
+    - for service in frontend-prod api-prod reverse-proxy-prod; do
+      docker tag $service $REGISTRY_IMAGE_BASE_PATH/$service:latest;
+      docker tag $service $REGISTRY_IMAGE_BASE_PATH/$service:$VERSION;
+      docker push $REGISTRY_IMAGE_BASE_PATH/$service:latest;
+      docker push $REGISTRY_IMAGE_BASE_PATH/$service:$VERSION;
+      done
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+
+.deploy:
+  image: mcr.microsoft.com/azure-cli
+  script:
+    - az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+    - az webapp stop --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP
+    - az webapp config container set --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP --multicontainer-config-type compose --multicontainer-config-file docker-compose.deploy.yml --container-registry-user $PULL_IMAGE_TOKEN_USERNAME --container-registry-password $PULL_IMAGE_TOKEN_PASSWORD
+    - az webapp start --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP
+    - |
+      for i in {1..30}; do
+        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $BASE_URL/api/pizzas);
+        if [ "$HTTP_STATUS" -eq 200 ]; then
+          echo "Azure Web App is functional."
+          break
+        fi
+        echo "Azure Web App is not ready yet. Waiting for 10 seconds..."
+        sleep 10
+      done
+      if [ "$HTTP_STATUS" -ne 200 ]; then
+        echo "Azure Web App failed to become functional."
+        exit 1
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+
+deploy to staging:
+  stage: staging
+  environment: staging
+  variables:
+    AZURE_WEBAPP_NAME: cae-groupxy-staging-app
+    BASE_URL: https://cae-groupxy-staging-app-fza6c0ebghahfufh.centralus-01.azurewebsites.net/
+  extends: .deploy
+
+e2e tests:
+  stage: e2e
+  environment: staging
+  variables:
+    BASE_URL: https://cae-groupxy-staging-app-fza6c0ebghahfufh.centralus-01.azurewebsites.net/
+    NODE_ENV: staging
+  image: mcr.microsoft.com/playwright:v1.50.1-jammy
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+  script:
+    - cd ./e2e
+    - npm ci
+    - npx playwright test
+    - if [ $? -ne 0 ]; then echo "E2E tests failed"; exit 1; fi
+  artifacts:
+    paths:
+      - e2e/playwright-report/
+      - e2e/test-results/
+
+deploy to production:
+  stage: production
+  environment: production
+  variables:
+    AZURE_WEBAPP_NAME: production-pizzeria
+    BASE_URL: https://production-pizzeria-frd5dugfffgtarf6.centralus-01.azurewebsites.net/
+    NODE_ENV: production
+  extends: .deploy
+```
+
+Nous avons donc créé un template **`.deploy`** pour le déploiement. Ce template contient le code commun pour le déploiement sur l'environnement de staging et de production.
+
+Nous avons ensuite utilisé ce template dans les jobs **`deploy to staging`** et **`deploy to production`** en utilisant la directive **`extends: .deploy`**.
+
+Veuillez donc faire un commit et un push pour déclencher le pipeline. Vérifiez que le déploiement sur l'environnement de production se passe bien.
+
+## Conclusion sur la création de l'environnement de production
+
+Nous avons maintenant une pipeline qui déploie automatiquement sur l'environnement de production seulement si l'environnement de staging, très proche de la production, réussi les tests e2e.
+
+Nous avons maintenant un nouvel environnement de production que nous pouvons visualiser ainsi, si l'on prend en compte l'environnement de staging nécessaire à sa mise en place :
+
+<PlantUML src="/diagrams/prod-deployment1.puml" alt="Environnement de production"/>
+
+Nous faisons ce que nous appelons du déploiement continu (CD en anglais), c'est-à-dire que chaque commit sur la branche principale déclenche un déploiement sur l'environnement de production.
+
+Nous allons voir maintenant comment faire du Continous Delivery au lieu du Continuous Deployment.
+
+
+# <InternalPageTitle> Comment faire du Continuous Delivery ? </InternalPageTitle>
+
+## Introduction
+
+Nous avons jusque là fait du Continuous Deployment, c'est-à-dire que chaque commit sur la branche principale déclenche un déploiement sur l'environnement de production.
+
+Nous allons maintenant voir comment faire du Continuous Delivery, c'est-à-dire que chaque commit sur la branche principale déclenche un déploiement sur l'environnement de staging, et que l'on peut déclencher manuellement un déploiement sur l'environnement de production.
+
+En effet, il peut être intéressant de pouvoir vérifier, via des humains proches des utilisateurs finaux, que tout fonctionne bien sur l'environnement de staging avant de déployer sur l'environnement de production.
+
+## Mise en place du Continuous Delivery
+
+Pour mettre en place du Continuous Delivery, nous allons simplement changer le déclenchement du déploiement sur l'environnement de production.
+
+Pour cela il suffit de changer la règle pour le job **`deploy to production`** en indiquant que le job ne doit être exécuté que si le pipeline est déclenché manuellement.
+
+Veuillez mettre à jour votre fichier **`.gitlab-ci.yml`** pour qu'il ressemble à ceci :
+```yaml {127} showLineNumbers
+stages:
+  - test
+  - build
+  - staging
+  - e2e
+  - production
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  VERSION: $CI_PIPELINE_IID
+  REGISTRY: $CI_REGISTRY
+  REGISTRY_IMAGE_BASE_PATH: $REGISTRY/$CI_PROJECT_PATH
+  AZURE_WEBAPP_RESOURCE_GROUP: caeGroup
+
+api test:
+  stage: test
+  image: maven:3.9.9-amazoncorretto-21
+  cache:
+    key:
+      files:
+        - api/pom.xml
+    paths:
+      - $CI_PROJECT_DIR/.m2/repository
+  script:
+    - cd api
+    - mvn clean test
+  artifacts:
+    paths:
+      - api/target/reports/
+      - api/target/site/
+      - api/target/surefire-reports/
+
+frontend test:
+  stage: test
+  image: node:20-alpine
+  cache:
+    key:
+      files:
+        - frontend/package-lock.json
+    paths:
+      - frontend/node_modules
+  script:
+    - cd frontend
+    - npm ci
+    - npm run lint
+    - npm run coverage
+  artifacts:
+    paths:
+      - frontend/coverage/
+
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:20-dind
+  script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+    - docker-compose -f docker-compose.staging.yml build
+    - for service in frontend-prod api-prod reverse-proxy-prod; do
+      docker tag $service $REGISTRY_IMAGE_BASE_PATH/$service:latest;
+      docker tag $service $REGISTRY_IMAGE_BASE_PATH/$service:$VERSION;
+      docker push $REGISTRY_IMAGE_BASE_PATH/$service:latest;
+      docker push $REGISTRY_IMAGE_BASE_PATH/$service:$VERSION;
+      done
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+
+.deploy:
+  image: mcr.microsoft.com/azure-cli
+  script:
+    - az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+    - az webapp stop --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP
+    - az webapp config container set --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP --multicontainer-config-type compose --multicontainer-config-file docker-compose.deploy.yml --container-registry-user $PULL_IMAGE_TOKEN_USERNAME --container-registry-password $PULL_IMAGE_TOKEN_PASSWORD
+    - az webapp start --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP
+    - |
+      for i in {1..30}; do
+        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $BASE_URL/api/pizzas);
+        if [ "$HTTP_STATUS" -eq 200 ]; then
+          echo "Azure Web App is functional."
+          break
+        fi
+        echo "Azure Web App is not ready yet. Waiting for 10 seconds..."
+        sleep 10
+      done
+      if [ "$HTTP_STATUS" -ne 200 ]; then
+        echo "Azure Web App failed to become functional."
+        exit 1
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+
+deploy to staging:
+  stage: staging
+  environment: staging
+  variables:
+    AZURE_WEBAPP_NAME: cae-groupxy-staging-app
+    BASE_URL: https://cae-groupxy-staging-app-fza6c0ebghahfufh.centralus-01.azurewebsites.net/
+  extends: .deploy
+
+e2e tests:
+  stage: e2e
+  environment: staging
+  variables:
+    BASE_URL: https://cae-groupxy-staging-app-fza6c0ebghahfufh.centralus-01.azurewebsites.net/
+    NODE_ENV: staging
+  image: mcr.microsoft.com/playwright:v1.50.1-jammy
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+  script:
+    - cd ./e2e
+    - npm ci
+    - npx playwright test
+    - if [ $? -ne 0 ]; then echo "E2E tests failed"; exit 1; fi
+  artifacts:
+    paths:
+      - e2e/playwright-report/
+      - e2e/test-results/
+
+deploy to production:
+  stage: production
+  environment: production
+  variables:
+    AZURE_WEBAPP_NAME: production-pizzeria
+    BASE_URL: https://production-pizzeria-frd5dugfffgtarf6.centralus-01.azurewebsites.net/
+    NODE_ENV: production
+  extends: .deploy
+  when: manual
+```
+
+Nous avons donc ajouté la directive **`when: manual`** pour le job **`deploy to production`**. Cela signifie que le job ne sera exécuté que si le pipeline est déclenché manuellement.
+
+Veuillez donc faire un commit et un push pour déclencher le pipeline. 
+Une fois que le déploiement sur l'environnement de staging est terminé, au niveau de la visualisation de la pipeline, dans le job nommé **`production`**, vous pouvez cliquer sur le bouton **`Play`** pour déclencher le déploiement sur l'environnement de production.
+
+## Conclusion sur le Continuous Delivery
+
+Nous avons maintenant un pipeline qui déploie automatiquement sur l'environnement de staging, et qui permet de déclencher manuellement un déploiement sur l'environnement de production.
+
+Si nous avons eu des soucis avec le démarrage de l'API sur l'environnement de staging, nous avons déjà pu nous rendre compte de l'importance des logs pour le débogage. Nous allons donc voir comment améliorer les logs de notre application.
+
+Si nécessaire, vous pouvez trouver le code associé au déploiement de l'environnement de production ici : [production](https://github.com/e-vinci/cae-theory-demos/tree/main/production).
+

@@ -18,7 +18,7 @@ date: 05/02/2025
   <InternalPageMenuItem> Comment créer une application sur Azure Web App Service ? </InternalPageMenuItem>
   <InternalPageMenuItem> Comment donner accès à d'autres applications à une Azure Web App ? </InternalPageMenuItem>
     <InternalPageMenuItem> Comment faire un push des images de GitLab vers Azure App Service ? </InternalPageMenuItem>
-    <InternalPageMenuItem> Comment déployer seulement en cas de fusion de modification sur le main ? </InternalPageMenuItem>
+    <InternalPageMenuItem> Comment déployer seulement en cas de tentative de fusion de modification sur le main ? </InternalPageMenuItem>
   <InternalPageMenuItem> Comment réaliser des tests e2e sur l'app en production ? </InternalPageMenuItem>
   <InternalPageMenuItem> Comment attendre que l'API soit bien démarrée avant de lancer les tests e2e ? </InternalPageMenuItem>
 </InternalPageMenu>
@@ -97,6 +97,47 @@ Pour les autres :
    - **`Username`**
   - **`Password`**
 
+
+## Comment déployer notre DB sur Azure ?
+
+### Introduction 
+
+Pour tous les participants à ce cours qui ne sont pas étudiants à la Haute École de Vinci, nous allons voir comment déployer une base de données PostgreSQL sur Azure.
+
+### Création d'une base de données PostgreSQL sur Azure
+
+Voici comment créer une base de données PostgreSQL sur Azure :
+- Allez dans le portail Azure : https://portal.azure.com/
+- Dans **`Free services`**, cliquez sur **`Azure Database for PostgreSQL`** (750 heures gratuites et 32 GiB).
+- Dans la recherche, tapez **`postgres`** et sélectionnez **`Azure Database for PostgreSQL flexible servers`**.
+- Sélectionnez votre **`Subscription`** avec des crédits gratuits.
+- Créez un nouveau **`Resource Group`** ou utilisez un existant.
+- Donnez un **`Server name`**, par exemple **`cae-production-db`**.
+- Choisissez une **`Region`**, par exemple **`Central US`** pour être sûr de bénéficier d'une région permettant d'utiliser des crédits gratuits.
+- Choisissez une **`Version`** de PostgreSQL, par exemple **`17`**.
+- Choisissez une **`Workload type`** de **`Development`**.
+- Cliquez sur **`Set admin`** pour **`Microsoft Entra administrator`**.
+- Dans **`Search`**, cherchez le créateur de la base de données et cliquez sur **`Select`**.
+- Choisissez un **`Administrator login`** et un **`Password`**.
+- Dans l'onglet **`Networking`**, choisissez **`Allow public access from any Azure service within Azure to this server`**.
+- Cliquez sur **`Review + create`** ; attention, il faudra probablement patienter quelques minutes avant que la ressource soit disponible.
+- Cliquez sur **`Go to resource`**.
+- Cliquez sur **`Settings`**, puis sur **`Databases`**.
+- Cliquez sur **`Add`**.
+- Donnez un **`Name`**, par exemple **`cae_db`**, puis cliquez sur **`Save`**.
+- Dans **`Connect`**, vous trouverez les informations de connexion à votre base de données : 
+  - Sélectionnez la DB que vous venez de créer, comme **`cae_db`** par exemple.
+  - Comme **`Authenticatio method`**, choisissez **`PostgreSQL`**.
+  - Cliquez sur **`Connect from your app`**, puis pour **`JDDBC`**, vous trouverez l'URL de connexion à votre DB, le **`Username`** et le **`Password`**.
+  Voici l'**`URL`** de connexion à votre DB : **`jdbc:postgresql://cae-production-db.postgres.database.azure.com:5432/cae_db?user=dbadmin&password={your_password}&sslmode=require`** par exemple.  
+  NB : Le username et password correspondent à ceux que vous avez définis lors de la création de la base de données. Le **`sslmode=require`** ne doit pas nécessairement être présent.
+
+Pour pouvoir vous connecter à partir de n'importe quelle machine, vous pouvez ajouter toutes les adresses IP à la liste blanche. Pour ce faire, veuillez :
+- Cliquez sur **`Networking`**.
+- Cliquez sur **`+ Add 0.0.0.0 - 255.255.255.255`**.
+- Cliquez sur **`Save`**.
+
+Pour vérifier que votre base de données est bien accessible, nous vous conseillons d'utiliser IntelliJ pour vous connecter à votre base de données.
 
 ## Connexion à votre DB visible sur internet
 
@@ -736,19 +777,19 @@ Pour voir votre consommation de CPU, vous pouvez suivre les instructions suivant
 - Sélectionnez **`CPU Time`** au niveau de **`Metric`**.
 
 
-# <InternalPageTitle> Comment déployer seulement en cas de fusion de modification sur le main ? </InternalPageTitle>
+# <InternalPageTitle> Comment déployer seulement en cas de tentative de fusion de modification sur le main ? </InternalPageTitle>
 
 ## Introduction
 
-Nous allons voir comment déployer nos services sur Azure Web App Service uniquement en cas de fusion de modifications sur la branche **`main`**.
+Nous allons voir comment déployer nos services sur Azure Web App Service uniquement en cas de merge request sur la branche **`main`**.
 
-En fait, c'est quelque chose que nous avons déjà vu. Nous allons simplement ajouter une condition à notre job **`deploy`** pour qu'il ne s'exécute que si nous fusionnons des modifications sur la branche **`main`**.
+En fait, c'est quelque chose que nous avons déjà vu. Nous allons simplement ajouter une condition à notre job **`deploy`** pour qu'il ne s'exécute que si nous poussons des modifications associées à une merge request vers la branche **`main`**.
 
 ## Mise à jour du fichier .gitlab-ci.yml
 
-Veuillez mettre à jour le fichier **`.gitlab-ci.yml`** pour déployer nos services sur Azure Web App Service uniquement en cas de fusion de modifications sur la branche **`main`** :
+Veuillez mettre à jour le fichier **`.gitlab-ci.yml`** pour déployer nos services sur Azure Web App Service uniquement en cas de merge request sur la branche **`main`** :
 
-```yaml {68-69} showLineNumbers
+```yaml {64-65,70-71} showLineNumbers
 stages:
   - test
   - build
@@ -812,23 +853,30 @@ build:
         docker push $REGISTRY_IMAGE_BASE_PATH/$service:latest;
         docker push $REGISTRY_IMAGE_BASE_PATH/$service:$VERSION;
       done
+  rules:       
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
 
 deploy:
   stage: staging
   image: mcr.microsoft.com/azure-cli
   rules:       
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
   script:
     - az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
     - az webapp config container set --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP --multicontainer-config-type compose --multicontainer-config-file docker-compose.deploy.yml --container-registry-user $PULL_IMAGE_TOKEN_USERNAME --container-registry-password $PULL_IMAGE_TOKEN_PASSWORD
     - az webapp start --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP
 ```
 
-**`if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH`** : cette condition permet de vérifier si le nom de la branche de la fusion de modifications est égal au nom de la branche par défaut. Si c'est le cas, le job **`deploy`** s'exécute. Sinon, il ne s'exécute pas.
+**`if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH`** : cette condition permet de vérifier si la source du pipeline est une merge request et si la branche cible de la merge request est égale à la branche par défaut. Si c'est le cas, le job **`build`** et le job **`deploy`** s'exécutent. Sinon, ils ne s'exécutent pas.
 
-Veuillez faire un push de vos modifications sur votre "feature branch". Vous devriez voir que le job **`deploy`** ne s'exécute pas. 
 
-Si vous fusionnez vos modifications sur la branche **`main`**, le job **`deploy`** s'exécutera. Nous n'allons pas tout de suite le faire car nous allons voir comment réaliser des tests e2e sur notre application en production.
+Veuillez faire un push de vos modifications sur votre "feature branch". Vous devriez voir que ni le job **`build`** ni le job **`deploy`** ne s'exécutent. 
+
+Pour voir que tout fonctionne correctement, veuillez ajouter une merge request sur la branche **`main`**.
+
+Veuillez ajouter une simple modification et faire un push sur votre feature branch. Vous devriez voir que le job **`build`** et le job **`deploy`** s'exécutent.
+
+Nous allons maintenant voir comment réaliser des tests e2e sur notre application en production.
 
 # <InternalPageTitle> Comment réaliser des tests e2e sur l'app en production ? </InternalPageTitle>
 
@@ -864,7 +912,7 @@ baseURL:
 
 Veuillez mettre à jour le fichier **`.gitlab-ci.yml`** pour réaliser les tests e2e sur notre application en production :
 
-```yaml {5,14-15,79-92} showLineNumbers
+```yaml {5,14-15,83-96} showLineNumbers
 stages:
   - test
   - build
@@ -932,6 +980,8 @@ build:
         docker push $REGISTRY_IMAGE_BASE_PATH/$service:latest;
         docker push $REGISTRY_IMAGE_BASE_PATH/$service:$VERSION;
       done
+  rules:       
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
 
 deploy:
   stage: staging
@@ -942,12 +992,14 @@ deploy:
     - az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
     - az webapp config container set --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP --multicontainer-config-type compose --multicontainer-config-file docker-compose.deploy.yml --container-registry-user $PULL_IMAGE_TOKEN_USERNAME --container-registry-password $PULL_IMAGE_TOKEN_PASSWORD
     - az webapp start --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP
+  rules:       
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
 
 e2e tests:
   stage: e2e
   image: mcr.microsoft.com/playwright:v1.50.1-jammy
   rules:       
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
   script:
     - cd ./e2e
     - npm ci
@@ -959,13 +1011,13 @@ e2e tests:
       - e2e/test-results/
 ```
 
-Nous avons ajouté un nouveau job **`e2e tests`** qui va réaliser les tests e2e sur notre application en production. Ce job s'exécute uniquement si nous fusionnons des modifications sur la branche **`main`**.
+Nous avons ajouté un nouveau job **`e2e tests`** qui va réaliser les tests e2e sur notre application en production. Ce job s'exécute uniquement en cas de merge request sur la branche **`main`**.
 
 Nous avons ajouté une nouvelle variable d'environnement **`BASE_URL`** qui contient l'URL de notre Web App Azure.
 
 Nous avons aussi ajouté une nouvelle variable d'environnement **`NODE_ENV`** qui contient l'environnement de notre application. Cette variable est utilisée pour déterminer l'URL de notre application dans le fichier **`playwright.config.ts`** du projet **`e2e`**.
 
-Veuillez pousser vos modifications sur votre repository GitLab. Si les stages **`test`** et **`build`**  passent, la MR peut être mergée. Si la MR est mergée sur la branche **`main`**, les jobs **`staging`** et **`e2e tests`** s'exécuteront après avoir réexécuté les stages **`test`** et **`build`**.
+Veuillez pousser vos modifications sur votre repository GitLab. Si les stages **`test`**, **`build`**, **`deploy`** et **`e2e`** passent, la MR peut être mergée. 
 
 Il est fort probable que nos tests e2e ne passent pas du premier coup. Mais pourquoi ?
 
@@ -1042,7 +1094,7 @@ Voici le workflow que nous allons suivre :
 
 Veuillez mettre à jour le fichier **`.gitlab-ci.yml`** pour attendre que l'API soit bien démarrée avant de lancer les tests e2e :
 
-```yaml {77-86} showLineNumbers
+```yaml {79-92} showLineNumbers
 stages:
   - test
   - build
@@ -1109,12 +1161,14 @@ build:
       docker push $REGISTRY_IMAGE_BASE_PATH/$service:latest;
       docker push $REGISTRY_IMAGE_BASE_PATH/$service:$VERSION;
       done
+  rules:       
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
 
 deploy:
   stage: staging
   image: mcr.microsoft.com/azure-cli
-  rules:
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+  rules:       
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
   script:
     - az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
     - az webapp config container set --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP --multicontainer-config-type compose --multicontainer-config-file docker-compose.deploy.yml --container-registry-user $PULL_IMAGE_TOKEN_USERNAME --container-registry-password $PULL_IMAGE_TOKEN_PASSWORD
@@ -1129,12 +1183,17 @@ deploy:
         echo "Azure Web App is not ready yet. Waiting for 10 seconds..."
         sleep 10
       done
+      if [ "$HTTP_STATUS" -ne 200 ]; then
+        echo "Azure Web App failed to become functional."
+        exit 1
+      fi
+  
 
 e2e tests:
   stage: e2e
   image: mcr.microsoft.com/playwright:v1.50.1-jammy
-  rules:
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+  rules:       
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
   script:
     - cd ./e2e
     - npm ci
@@ -1150,10 +1209,10 @@ Dans la boucle **`for`** :
 - Nous faisons une requête HTTP sur l'opération de lecture de toutes les pizzas.
 - Si le code HTTP est égal à 200, alors l'API est bien démarrée.
 - Sinon, nous attendons 10 secondes et nous réessayons jusqu'à 30 fois.
+- Si après 30 essais, l'API n'est pas bien démarrée, alors nous arrêtons le pipeline.
 - NB : **`curl -s -o /dev/null -w "%{http_code}" $BASE_URL/api/pizzas`** permet de faire une requête HTTP sur l'opération de lecture de toutes les pizzas et de récupérer le code HTTP. **`-s`** permet de ne pas afficher les détails de la requête, **`-o /dev/null`** permet de rediriger la sortie de la requête vers **`/dev/null`** (**`/dev/null`** agit comme un "trou noir", tout ce qui y est écrit est directement supprimé) et **`-w "%{http_code}"`** permet de récupérer le code HTTP.
 
-Veuillez pousser vos modifications sur votre repository GitLab. Si les stages **`test`** et **`build`**  passent, la MR peut être mergée. Si la MR est mergée sur la branche **`main`**, les jobs **`staging`** et
-**`e2e tests`** s'exécuteront après avoir réexécuté les stages **`test`** et **`build`**.
+Veuillez pousser vos modifications sur votre repository GitLab. Si tous les stages passent, la MR peut être mergée. 
 
 Normalement, tout devrait fonctionner correctement. Vous devriez voir que les tests e2e passent. Et votre pipeline GitLab CI/CD est maintenant complet. Votre application devrait être déployée sur Azure Web App Service avec succès 🚀 !
 
