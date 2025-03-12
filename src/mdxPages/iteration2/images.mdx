@@ -322,6 +322,51 @@ AZURE_BLOB_SAS_TOKEN=sv=2024-11-02&ss=bfqt&srt=o&sp=rwdlacaerpiytfx&se=2035-02-2
 
 Pour rappel, lorsque nous utiliserons IntelliJ pour lancer l'API, comme nous avons installé la dépendance **`spring-dotenv`**, les variables d'environnement stockées dans le fichier **`/api/.env`** seront automatiquement chargées.
 
+## Configuration de nginx pour servir les images
+
+### Introduction
+
+Par défaut, nginx ne permet pas de servir des requêtes qui sont plus grande que 1MB. Nous allons donc modifier la configuration de nginx pour augmenter cette limite à 10MB.
+
+### Modification de la configuration de nginx
+
+Pour modifier la configuration de nginx, nous allons ajouter une directive **`client_max_body_size`** dans le fichier de configuration de nginx.
+
+Veuillez mettre à jour le fichier de configuration de nginx dans **`/reverse-proxy/nginx.conf`** comme suit :
+
+```nginx {9} showLineNumbers
+events {
+}
+
+http {
+    include /etc/nginx/mime.types;
+    
+    server {
+        listen 80;
+        client_max_body_size 10M;
+
+        # Proxy API requests
+        location /api/ {
+            proxy_pass http://api:3000/; # Forward to the API service
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Redirect all other requests to SPA
+        location / {
+            proxy_pass http://frontend:5172; # Forward to the SPA service
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+    }
+}
+```
+
 ## Création d'une opération pour stocker une image dans le service de stockage
 
 ### Introduction
