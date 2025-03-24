@@ -219,6 +219,10 @@ Notamment, en cas de tentative de modification du nom du produit, le client peut
 
 Il faudrait bien sûr adapter ce code à votre application, en fonction de vos besoins et de votre architecture. Par exemple, vous pourriez ajouter un champs pour gérer la confirmation de la modification du nom du produit, ou ajouter des informations supplémentaires dans la réponse pour aider le client à gérer le conflit.
 
+## En savoir plus
+
+Si vous souhaitez en savoir plus sur l'optimistic locking, vous pouvez consulter cet article : https://www.baeldung.com/jpa-optimistic-locking
+
 # <InternalPageTitle> Pessimistic Locking dans Spring Boot </InternalPageTitle>
 
 ## Introduction
@@ -290,6 +294,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 }
 
 ```
+
+## En savoir plus
+
+Si vous souhaitez en savoir plus sur le pessimistic locking, vous pouvez consulter cet article : https://www.baeldung.com/jpa-pessimistic-locking
 
 # <InternalPageTitle> Comment gérer des transactions dans Spring Boot ? </InternalPageTitle>
 
@@ -472,3 +480,6 @@ public class GlobalExceptionHandler {
 
 Ici, le gestionnaire global d'exceptions renvoie une réponse **`409 Conflict`** au client en cas d'exception **`AddressAlreadyExistsException`**. Cela signifie que si l'adresse existe déjà, le client recevra une réponse **`409 Conflict`**.
 
+## En savoir plus
+
+Si vous souhaitez en savoir plus sur les transactions avec Spring Boot, vous pouvez consulter cet article : https://docs.spring.io/spring-framework/reference/data-access/transaction.html
