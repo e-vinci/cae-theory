@@ -41,7 +41,7 @@ const siteMetaData: SiteMetaData = {
       name: "Itération 2",
       link: "",
       subMenu: [
-        { name:"Gestion des environnements", link: "/iteration2/general" },
+        { name: "Gestion des environnements", link: "/iteration2/general" },
         { name: "Conteneurisation", link: "/iteration2/containerization" },
         { name: "Déploiement", link: "/iteration2/deployment" },
         { name: "Gestion des images", link: "/iteration2/images" },
@@ -51,8 +51,9 @@ const siteMetaData: SiteMetaData = {
       name: "Itération 3",
       link: "",
       subMenu: [
-        { name:"Gestion de la production", link: "/iteration3/production" },
+        { name: "Gestion de la production", link: "/iteration3/production" },
         { name: "Gestion des logs & exceptions", link: "/iteration3/logs" },
+        { name: "Gestion de la concurrence", link: "/iteration3/concurrency" },
       ],
     },
     {
@@ -76,11 +77,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
         <html>
           <head>
             <title>CAE Course</title>
-            <link
-              rel="icon"
-              type="image/svg+xml"
-              href={faviconUrl}
-            />
+            <link rel="icon" type="image/svg+xml" href={faviconUrl} />
           </head>
           <body>
             <Header siteMetaData={siteMetaData} />

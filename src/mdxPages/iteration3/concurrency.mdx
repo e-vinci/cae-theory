@@ -1,0 +1,474 @@
+---
+title: Concurrence
+description: Gestion de la concurrence
+date: 24/03/2025
+---
+
+<InternalPageMenu>
+  <PathViewer>
+    <PathViewerItem to="/"> CAE </PathViewerItem>
+    <PathViewerItem to="/iteration3"> Itération 3 </PathViewerItem>
+    <PathViewerItem selected> Gestion de la concurrence </PathViewerItem>
+  </PathViewer>
+  <InternalPageMenuItem> Pourquoi gérer la concurrence ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment gérer la concurrence ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Optimistic Locking dans Spring Boot </InternalPageMenuItem>
+  <InternalPageMenuItem> Pessimistic Locking dans Spring Boot </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment gérer des transactions dans Spring Boot ? </InternalPageMenuItem>
+</InternalPageMenu>
+
+# <InternalPageTitle> Pourquoi gérer la concurrence ? </InternalPageTitle>
+
+La concurrence est un sujet important en informatique. En effet, de nombreux problèmes peuvent survenir si la concurrence n'est pas gérée correctement. Par exemple, si deux processus essaient de modifier la même donnée en même temps, il peut y avoir des problèmes de cohérence des données.
+
+Prenons l'exemple d'une application où l'on gère un stock de produits. Si deux utilisateurs essaient de modifier la quantité d'un produit en même temps, il peut y avoir des problèmes de cohérence des données. Par exemple, si un utilisateur essaie d'ajouter 5 unités à la quantité d'un produit, et qu'un autre utilisateur essaie de retirer 3 unités du même produit en même temps, il peut y avoir des problèmes de cohérence des données.
+
+NB : La concurrence pourrait entraîner des problèmes de performance si elle n'est pas gérée correctement. Par exemple, si plusieurs processus essaient d'accéder à la même ressource en même temps, il peut y avoir des problèmes de latence et de ralentissement. Néanmoins, nous ne devons généralement pas gérer ce type de problème car cela est automatiquement traité par les frameworks que nous utilisons. En effet, en cas de multiples requêtes sur une même ressource, le framework Spring Boot gère cela en créant un pool de threads pour traiter les requêtes. Comment ça fonctionne ?  
+Lorsqu'une requête HTTP arrive, un thread est extrait du pool pour traiter cette requête.  
+Une fois la requête traitée, le thread est remis dans le pool pour être réutilisé.  
+Cela permet de limiter le nombre de threads actifs et d'éviter de créer un nouveau thread pour chaque requête, ce qui serait coûteux en termes de performances.
+
+# <InternalPageTitle> Comment gérer la concurrence ? </InternalPageTitle>
+
+## Introduction
+
+Il existe plusieurs façons de gérer la concurrence en informatique. Voici quelques-unes des techniques les plus courantes :
+- **Optimistic Locking** : Cette technique consiste à vérifier si la donnée a été modifiée par un autre processus avant de la modifier. Si la donnée a été modifiée, une exception est levée et le processus doit gérer cette exception.
+- **Pessimistic Locking** : Cette technique consiste à verrouiller la donnée avant de la modifier. Cela garantit qu'aucun autre processus ne peut modifier la donnée tant que le verrou n'est pas libéré.
+- **Transactions** : Les transactions sont un moyen de regrouper plusieurs opérations sur une base de données en une seule unité logique. Cela garantit que toutes les opérations sont exécutées de manière atomique, c'est-à-dire que toutes les opérations sont exécutées ou aucune opération n'est exécutée. Les transactions sont particulièrement utiles pour garantir la cohérence des données dans des scénarios de concurrence, sans pour autant régler les problèmes de concurrence en eux-mêmes.
+- **Vérous distribués** : Les verrous distribués sont des verrous qui peuvent être utilisés pour coordonner l'accès à une ressource partagée entre plusieurs processus. Redis peut être utilisé pour ce genre d'applications. Des verrous peuvent être utilisés pour garantir que seuls un certain nombre de processus peuvent accéder à la ressource en même temps. Cela est particulièrement utile dans des architectures distribuées, type microservices, où plusieurs instances doivent gérer une ressource partagée. Nous n'aborderons pas ce sujet dans ce cours, car notre application n'est pas distribuée.
+- **File de messages** : Une file de messages (comme RabbitMQ ou Kafka) peut être utilisée pour gérer la concurrence. Les messages sont envoyés à une file, puis traités par un ou plusieurs consommateurs. Cela permet de gérer la concurrence en séparant la production de la consommation de messages. Ce type de solution est particulièrement utile dans des architectures distribuées, où plusieurs instances doivent traiter des messages en parallèle. Nous n'aborderons pas ce sujet dans ce cours.
+
+# <InternalPageTitle> Optimistic Locking dans Spring Boot </InternalPageTitle>
+
+
+## Introduction
+
+L'optimistic locking repose sur l'idée que les conflits sont rares. Avant de mettre à jour une donnée, on vérifie si elle a été modifiée par un autre processus en utilisant un champ de version.
+
+L'optimistic locking est idéal pour les scénarios où les conflits sont peu fréquents, comme la mise à jour d'un nom de produit ou la mise à jour d'une quantité en stock, lorsque le stock est modifiable par un nombre limité d'utilisateurs.
+
+L'intérêt de l'optimistic locking est qu'il n'y a pas de verrouillage de la ressource, ce qui permet à plusieurs processus de lire la ressource en même temps. Cela améliore les performances de l'application. Cependant, si un conflit survient, il faut gérer l'exception levée par la base de données.
+
+## Bases pour l'optimistic locking
+
+Voici un exemple d'optimistic locking en Java avec JPA :
+
+```java {11,19,29} showLineNumbers
+@Entity
+public class Product {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+
+    private int quantity;
+
+    @Version
+    private int version; // Champ utilisé pour l'optimistic locking
+
+    // Getters et setters
+}
+
+// Partie du service pour mettre à jour le stock d'un produit
+
+@Transactional
+public void updateStock(Long productId, int quantityToRemove) {
+    Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
+    
+    if(product.getQuantity() < quantityToRemove) {
+        throw new RuntimeException("Stock insuffisant");
+    }
+
+    product.setQuantity(product.getQuantity() - quantityToRemove);
+    productRepository.save(product); // Vérifie automatiquement la version
+}
+```
+
+Dans cet exemple, le champ **`version`** est utilisé pour l'optimistic locking. Lorsque la méthode `save` est appelée, JPA vérifie automatiquement si la version de l'entité en base de données correspond à la version de l'entité en mémoire. Si ce n'est pas le cas, une exception **`OptimisticLockException`** est levée.
+
+**`@Transactional`** : Cette annotation permet de définir une méthode comme transactionnelle. Cela signifie que toutes les opérations effectuées dans cette méthode seront regroupées en une seule transaction. Ici, comme il n'y a qu'une seule opération (la mise à jour du stock), l'annotation **`@Transactional`** n'est pas strictement nécessaire, mais elle est recommandée pour des raisons de clarté.  
+En effet, si vous ajoutez d'autres opérations de modification dans cette méthode, elles seront automatiquement incluses dans la transaction.
+
+Ici l'on vérifie la version de l'entité en base de données au moment de la sauvegarde. Cela est suffisant pour gérer les conflits dans le cadre d'une opération transactionnelle unique, si l'on imaginait que deux utilisateurs essaient de modifier la quantité d'un produit en même temps. 
+
+> Attention : Le code donné pour l'optimistic locking dans l'exemple ci-dessus fonctionne bien dans le cadre d'une opération transactionnelle unique, où la version est vérifiée au moment de l'exécution de la méthode **`updateStock`**. Cependant, dans le contexte d'une API RESTful, où les appels sont effectués par des clients distincts (par exemple, deux requêtes HTTP séparées), ce code ne couvre pas le cas où la version doit être vérifiée entre deux requêtes clientes, lorsqu'il y a une opération de lecture suivie d'une opération de mise à jour. Nous verrons comment gérer ce cas dans la section suivante.
+
+
+
+## Optimistic locking dans une API RESTful avec lecture suivie d'une mise à jour
+
+### Introduction
+
+Dans une API RESTful, il est courant que le client effectue une requête **`GET`** pour récupérer une ressource, puis une requête **`PUT`** ou **`PATCH`** pour la mettre à jour. Dans ce cas, il est nécessaire de vérifier que la version de la ressource n'a pas changé entre les deux requêtes.
+
+Par exemple, si l'on veut assurer que deux clients ne modifient pas en même temps le nom d'un produit, on doit vérifier que la version du produit n'a pas changé entre la lecture et la mise à jour. Car si un client lit le produit, puis un autre client modifie le produit, le premier client pourrait écraser les modifications du second client sans le savoir.
+
+### Exemple concret 
+
+1. Ajouter le champ **`@Version`** dans l'entité  
+Le champ **`@Version`** est utilisé pour gérer l'optimistic locking. JPA vérifie automatiquement ce champ lors de la sauvegarde.
+
+
+```java {11} showLineNumbers
+@Entity
+public class Product {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+
+    private int quantity;
+
+    @Version
+    private int version; // Champ utilisé pour l'optimistic locking
+
+    // Getters et setters
+}
+```
+
+
+
+2. Lecture de la ressource avec la version (GET)  
+Lorsqu'un client récupère une ressource, incluez la version dans la réponse pour qu'il puisse l'utiliser lors de la mise à jour.
+
+```java {15} showLineNumbers
+@GetMapping("/products/{id}")
+public ProductDTO getProduct(@PathVariable Long id) {
+    Product product = productRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
+
+    return new ProductDTO(product.getId(), product.getName(), product.getQuantity(), product.getVersion());
+}
+
+// Code pour l'opération de lecture d'un produit
+@GetMapping("/products/{id}")
+public ProductDTO getProduct(@PathVariable Long id) {
+    Product product = productRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
+
+    return new ProductDTO(product.getId(), product.getName(), product.getQuantity(), product.getVersion());
+}
+```
+
+3. Mise à jour de la ressource avec vérification de la version (PUT)  
+Lors de la mise à jour, le client doit inclure la version qu'il a reçue dans la requête. Si cette version ne correspond pas à la version actuelle de la ressource, on décide de lever une exception **`OptimisticLockException`** seulement si le nom du produit a été mis à jour.  
+De plus, JPA effectue automatiquement la vérification de la version si le champ **`@Version`** est présent dans l'entité et que vous utilisez une méthode comme **`save()`** pour persister l'entité. Lorsque vous appelez **`productRepository.save(product)`**, JPA compare la version de l'entité en mémoire avec celle en base de données.  
+Si elles ne correspondent pas (par exemple, si un autre client a modifié la ressource entre-temps), une exception **`OptimisticLockException`** est aussi levée.
+
+```java {13-17} showLineNumbers
+// Code pour l'opération de mise à jour d'un produit
+@Transactional
+@PutMapping("/products/{id}")
+public ResponseEntity<Void> updateProduct(@PathVariable Long id, @RequestBody UpdateProductRequest request) {
+    Product product = productRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
+
+    if(product.getQuantity() < request.getQuantityToRemove()) {
+        throw new RuntimeException("Stock insuffisant");
+    }
+
+    // Vérification explicite de la version 
+    if (!product.getVersion().equals(request.getVersion())) {
+      if(!product.getName().equals(request.getName())) {
+        throw new OptimisticLockException("Conflit de version détecté lors du changement de nom");
+      }
+    }
+
+    // Mise à jour du nom
+    product.setName(request.getName());
+
+    // Mise à jour de la quantité
+    product.setQuantity(product.getQuantity() + request.getQuantityToRemove());
+    productRepository.save(product);
+
+    return ResponseEntity.noContent().build();
+}
+
+// Code pour UpdateProductRequest
+public class UpdateProductRequest {
+    private string name;
+    private int quantityToRemove;
+    private int version; // Version reçue lors de la lecture
+
+    // Getters et setters
+}
+```
+
+4. Gestion des conflits  
+
+
+```java
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(OptimisticLockException.class)
+    public ResponseEntity<String> handleOptimisticLockException(OptimisticLockException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body("Conflit de version détecté");
+    }
+}
+```
+
+En cas de conflit de version, le gestionnaire global d'exceptions renvoie une réponse **`409 Conflict`** au client.  
+
+Le client peut alors gérer ce cas en récupérant à nouveau la ressource, en affichant un message à l'utilisateur ou en effectuant une autre action appropriée.  
+Notamment, en cas de tentative de modification du nom du produit, le client peut afficher un message à l'utilisateur pour l'informer du conflit et lui demander de confirmer la modification.
+
+Il faudrait bien sûr adapter ce code à votre application, en fonction de vos besoins et de votre architecture. Par exemple, vous pourriez ajouter un champs pour gérer la confirmation de la modification du nom du produit, ou ajouter des informations supplémentaires dans la réponse pour aider le client à gérer le conflit.
+
+# <InternalPageTitle> Pessimistic Locking dans Spring Boot </InternalPageTitle>
+
+## Introduction
+
+Le pessimistic locking repose sur l'idée que les conflits sont fréquents. Avant de mettre à jour une donnée, on verrouille la ressource pour empêcher tout autre processus de la modifier.
+
+Le pessimistic locking est idéal pour les scénarios où les conflits sont fréquents, comme la mise à jour d'un stock de produits lorsque le stock peut être modifié par énormément d'utilisateurs en même temps.
+
+## Bases pour le pessimistic locking
+
+Voici un exemple de pessimistic locking en Java avec JPA :
+
+```java {2,15} showLineNumbers
+// Partie du service pour mettre à jour le stock d'un produit
+@Transactional
+public void updateStockWithPessimisticLock(Long productId, int quantityToAdd) {
+    Product product = productRepository.findByIdWithLock(productId)
+            .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
+
+    product.setQuantity(product.getQuantity() + quantityToAdd);
+    productRepository.save(product);
+}
+
+// Repository
+
+@Repository
+public interface ProductRepository extends JpaRepository<Product, Long> {
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<Product> findById(Long productId);
+}
+```
+
+Avec JPA, vous pouvez utiliser **`@Lock`** directement sur la méthode **`findById`** pour appliquer un verrou pessimiste sans avoir besoin d'une requête personnalisée.
+
+**`@Lock(LockModeType.PESSIMISTIC_WRITE)`** : Cette annotation permet d'appliquer un verrou pessimiste en écriture sur la ressource. Cela signifie que la ressource est verrouillée pour empêcher tout autre processus de la modifier.
+
+Dans cet exemple, le verrou pessimiste est appliqué lors de la recherche du produit à mettre à jour. Cela garantit qu'aucun autre processus ne peut modifier le produit tant que le verrou n'est pas libéré. A quel moment le verrou est-il libéré ? Le verrou est généralement libéré à la fin de la transaction, c'est-à-dire lorsque la méthode annotée avec **`@Transactional`** se termine.
+
+Que se passe-t-il si un autre processus essaie de lire ou de modifier la ressource verrouillée ? Imaginons que 10 utilisateurs essaient de mettre à jour le stock d'un produit en même temps. Le premier utilisateur obtient le verrou et met à jour le stock. Les 9 autres utilisateurs attendent que le verrou soit libéré. Une fois que le premier utilisateur a terminé, le verrou est libéré et un des 9 autres utilisateurs obtient le verrou et met à jour le stock. Les 8 autres utilisateurs attendent, et ainsi de suite.
+
+## Problème éventuel de performance 
+
+Le pessimistic locking peut entraîner des problèmes de performance si les verrous sont maintenus trop longtemps. Par exemple, si un utilisateur obtient un verrou et met à jour le stock, mais ne termine pas l'opération, le verrou est maintenu et les autres utilisateurs doivent attendre. Cela peut entraîner des problèmes de latence et de ralentissement.
+
+Heureusement, si une exception est levée, grâce à la transaction **`@Transactional`**, le verrou est automatiquement libéré. 
+
+Pour éviter que les verrous ne soient maintenus trop longtemps, il est recommandé de limiter la durée des transactions en ajoutant un timeout. Par exemple, vous pouvez ajouter une annotation **`@Transactional(timeout = 10)`** pour limiter la durée de la transaction à 10 secondes. Si la transaction ne se termine pas dans les 10 secondes, une exception est levée et le verrou est libéré.
+
+Comment s'appelle l'exception levée en cas de timeout ? L'exception levée en cas de timeout est une **`TransactionTimedOutException`**. Cette exception est levée si la transaction ne se termine pas dans le délai imparti.
+
+Voici notre exemple de pessimistic locking avec un timeout :
+
+```java {1} showLineNumbers
+@Transactional(timeout = 10)
+public void updateStockWithPessimisticLock(Long productId, int quantityToAdd) {
+    Product product = productRepository.findByIdWithLock(productId)
+            .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
+
+    product.setQuantity(product.getQuantity() + quantityToAdd);
+    productRepository.save(product);
+}
+
+// Repository
+
+@Repository
+public interface ProductRepository extends JpaRepository<Product, Long> {
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<Product> findById(Long productId);
+}
+
+```
+
+# <InternalPageTitle> Comment gérer des transactions dans Spring Boot ? </InternalPageTitle>
+
+## Introduction
+
+Les transactions sont un moyen de regrouper plusieurs opérations en une seule unité logique. Cela garantit que toutes les opérations sont exécutées de manière atomique, c'est-à-dire que toutes les opérations sont exécutées ou aucune opération n'est exécutée.
+
+Avec Spring Boot, vous pouvez gérer les transactions en utilisant l'annotation **`@Transactional`**. Cette annotation permet de définir une méthode comme transactionnelle. Cela signifie que toutes les opérations sur la base de données effectuées dans cette méthode seront regroupées en une seule transaction.
+
+Par exemple, si vous souhaitez ajouter une adresse à un utilisateur, vous devez ajouter l'adresse et mettre à jour l'utilisateur en même temps. Si l'une des opérations échoue, vous ne voulez pas que l'autre opération soit exécutée. Les transactions garantissent que les deux opérations sont exécutées ensemble.
+
+Les transactions ne règlent pas les problèmes de concurrence, mais couplé à l'optimistic ou pessimistic locking, elles permettent de gérer les conflits de manière plus robuste.
+
+## Bases pour les transactions
+
+Voici un exemple de transaction en Java avec Spring Boot, lorsque nous avons un repository pour les utilisateurs et un repository pour les adresses.
+
+Voici les entités :
+
+```java {} showLineNumbers
+@Entity
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "address_id", referencedColumnName = "id")
+    private Address address;
+
+    // Getters et setters
+}
+
+@Entity
+public class Address {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true) // Empêche les doublons d'adresses
+    private String street;
+
+    private String city;
+
+    private String postalCode;
+
+    // Getters et setters
+}
+```
+
+
+Voici les repositories :
+
+```java {} showLineNumbers
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
+}
+```
+
+Voici les DTO pour les requêtes :
+
+```java {} showLineNumbers
+public class UserDTO {
+    private String name;
+    private AddressDTO address;
+
+    // Getters et setters
+}
+
+public class AddressDTO {
+    private String street;
+    private String city;
+    private String postalCode;
+
+    // Getters et setters
+}
+```
+
+Voici le contrôleur :
+
+```java {} showLineNumbers
+@RestController
+@RequestMapping("/users")
+public class UserController {
+
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @PostMapping
+    public User addUserWithAddress(@RequestBody UserDTO userDTO) {
+        return userService.addUserWithAddress(userDTO);
+    }
+}
+```
+
+Voici l'exception que nous souhaitons lancer pour une adresse déjà existante :
+
+```Java
+public class AddressAlreadyExistsException extends RuntimeException {
+    public AddressAlreadyExistsException(String message) {
+        super(message);
+    }
+}
+```
+
+Voici un service pour ajouter une adresse et un utilisateur :
+
+```java {12} showLineNumbers
+@Service
+public class UserService {
+
+    private final UserRepository userRepository;
+    private final AddressRepository addressRepository;
+
+    public UserService(UserRepository userRepository, AddressRepository addressRepository) {
+        this.userRepository = userRepository;
+        this.addressRepository = addressRepository;
+    }
+
+    @Transactional
+    public User addUserWithAddress(UserDTO userDTO) {
+        // Vérifier si l'adresse existe déjà
+        Optional<Address> existingAddress = addressRepository.findByStreetAndCityAndPostalCode(
+                userDTO.getAddress().getStreet(),
+                userDTO.getAddress().getCity(),
+                userDTO.getAddress().getPostalCode()
+        );
+
+        if (existingAddress.isPresent()) {
+            throw new AddressAlreadyExistsException("L'adresse existe déjà !");
+        }
+
+        // Sauvegarder l'adresse
+        Address address = new Address();
+        address.setStreet(userDTO.getAddress().getStreet());
+        address.setCity(userDTO.getAddress().getCity());
+        address.setPostalCode(userDTO.getAddress().getPostalCode());
+        addressRepository.save(address);
+
+        // Sauvegarder l'utilisateur
+        User user = new User();
+        user.setName(userDTO.getName());
+        user.setAddress(address);
+        return userRepository.save(user); // Retourner l'utilisateur sauvegardé
+    }
+}
+```
+
+> Ici la gestion des transactions est assurée par l'annotation **`@Transactional`** sur la méthode **`addUserWithAddress`**. Cela signifie que toutes les opérations effectuées dans cette méthode seront regroupées en une seule transaction. Cela garantit que toutes les opérations sont exécutées de manière atomique, c'est-à-dire que toutes les opérations sont exécutées ou aucune opération n'est exécutée.
+
+💭 Peux-tu imaginer une autre raison pour que JPA échoue à sauvegarder l'adresse ?  
+Normalement, JPA ne devrait pas échouer à sauvegarder l'adresse, car normalement, dans le contrôleur, on est censé valider tous les paramètres avant d'appeler le service.  
+
+Une fois l'adresse sauvegardée, on pourrait imaginer que l'on ne peut pas sauvegarder l'utilisateur. Par exemple, si l'utilisateur a déjà été sauvegardé, on ne peut pas le sauvegarder à nouveau.  
+L'avantage de la transaction est que si l'une des opérations échoue, l'autre opération ne sera pas exécutée. Cela garantit que les données restent cohérentes.  
+Bien sûr, pour rendre le code plus robuste et clair, il faudrait aussi vérifier si l'utilisateur existe déjà avant de le sauvegarder.
+
+Et finalement, voici le gestionnaire global d'exceptions pour l'exception **`AddressAlreadyExistsException`** :
+
+```java {} showLineNumbers
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AddressAlreadyExistsException.class)
+    public void handleAddressAlreadyExistsException(AddressAlreadyExistsException ex) {
+        throw new ResponseStatusException(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public void handleGenericException(Exception ex) {
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Une erreur est survenue : " + ex.getMessage());
+    }
+}
+```
+
+Ici, le gestionnaire global d'exceptions renvoie une réponse **`409 Conflict`** au client en cas d'exception **`AddressAlreadyExistsException`**. Cela signifie que si l'adresse existe déjà, le client recevra une réponse **`409 Conflict`**.
+
