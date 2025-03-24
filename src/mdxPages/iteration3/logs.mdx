@@ -11,13 +11,1310 @@ date: 12/03/2025
     <PathViewerItem selected> Gestion des logs et des erreurs </PathViewerItem>
   </PathViewer>
   <InternalPageMenuItem> Pourquoi gérer des logs ? </InternalPageMenuItem>
-  <InternalPageMenuItem> TBC </InternalPageMenuItem>
-  <InternalPageMenuItem> TBC </InternalPageMenuItem>
-  <InternalPageMenuItem> TBC </InternalPageMenuItem>
-  <InternalPageMenuItem> TBC </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment gérer les exceptions dans une application Spring Boot ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment gérer les exceptions de Spring Boot comme AccessDeniedException ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment logguer les exceptions de manière centralisée ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment visualiser les logs dans l'environnement déployé ? </InternalPageMenuItem>
   <InternalPageMenuItem> TBC </InternalPageMenuItem>
   <InternalPageMenuItem> TBC </InternalPageMenuItem>
 </InternalPageMenu>
 
 # <InternalPageTitle> Pourquoi gérer des logs ? </InternalPageTitle>
 
+## Introduction
+
+Lorsqu'une application est en production, les logs sont essentiels pour comprendre les erreurs qui se produisent et pour les corriger rapidement. Ils permettent également de suivre les performances de l'application et de détecter les problèmes potentiels.
+
+Les logs doivent être clairs, concis et informatifs. Ils doivent contenir suffisamment d'informations pour permettre de comprendre l'erreur et de la corriger, mais ne pas être trop verbeux pour ne pas noyer l'opérateur d'informations inutiles.
+
+Les logs doivent permettre de répondre à plusieurs questions :
+- Quand l'erreur s'est-elle produite ?
+- Où l'erreur s'est-elle produite ?
+- Qui a provoqué l'erreur ?
+- Quelle est la nature de l'erreur ?
+- Comment l'erreur peut-elle être corrigée ?
+
+Ces questions doivent être prises en compte lors de la rédaction des logs. Cela permettra de faciliter le travail d'investigation et de correction des erreurs par les développeurs.
+
+## Types de logs
+
+Il existe plusieurs types de logs, en fonction de leur gravité et de leur importance. Voici quelques exemples de types de logs courants :
+- **DEBUG** : Informations de débogage, utiles pour comprendre le fonctionnement interne de l'application.
+- **INFO** : Informations générales sur le fonctionnement de l'application.
+- **WARN** : Avertissements sur des situations potentiellement problématiques.
+- **ERROR** : Erreurs qui ont empêché le bon fonctionnement de l'application.
+- **FATAL** : Erreurs graves qui ont provoqué l'arrêt de l'application. Il est à noter que la librairie **Logback** ne supporte pas ce niveau de log. **FATAL** est donc souvent remplacé par **ERROR**.
+- **TRACE** : Informations détaillées sur le fonctionnement de l'application, utiles pour le débogage.
+
+Il est important de choisir le bon type de log en fonction de la gravité de l'erreur. Les logs de type DEBUG ne doivent pas être activés en production, car ils peuvent contenir des informations sensibles sur le fonctionnement interne de l'application.
+
+## Quels services sont à logguer ?
+
+Au sein de notre application d'entreprise, l'API Spring Boot qui gère les requêtes HTTP des clients doit être logguée pour suivre les erreurs et les performances.
+
+Est-ce que le frontend doit être loggué ? Non, car le frontend est une application statique qui ne nécessite pas de logs. Les erreurs du frontend peuvent être suivies via les outils de développement du navigateur. D'autre part, les développeurs n'ont pas accès aux logs du navigateur des utilisateurs, ce qui rend difficile le suivi des erreurs côté client.
+
+Est-ce que la base de données doit être logguée ? Oui, car les erreurs de connexion à la base de données peuvent être critiques pour le bon fonctionnement de l'application. Les logs de la base de données doivent être activés pour suivre les erreurs de connexion et les requêtes SQL. Néanmoins, les logs de la base de données ne doivent pas contenir d'informations sensibles, comme les mots de passe. De plus, comme nous utilisons Spring Data JPA, les logs de la base de données sont générés automatiquement par Hibernate, il n'y a donc rien à faire au niveau de la base de données, seulement au niveau de l'API.
+
+Est-ce que Docker doit être loggué ? Oui, car les erreurs de déploiement et de configuration de Docker peuvent être critiques pour le bon fonctionnement de l'application. Les logs de Docker doivent être activés pour suivre les erreurs de déploiement et de configuration. De plus, les logs de Docker peuvent être utiles pour suivre les performances des conteneurs et détecter les problèmes potentiels.
+
+## Comment gérer les logs des exceptions ?
+
+Les exceptions doivent être logguées de manière appropriée pour permettre de comprendre l'erreur et de la corriger rapidement. Mais attention, nous ne souhaitons pas polluer le code avec des **`try-catch`** un peu partout.
+
+Avant de continuer dans la gestion des logs, nous allons donc voir les bonnes pratiques pour gérer les exceptions dans une application Spring Boot.
+
+# <InternalPageTitle> Comment gérer les exceptions dans une application Spring Boot ? </InternalPageTitle>
+
+## Introduction
+
+Il est important de gérer correctement les exceptions dans une application Spring Boot pour garantir un comportement fiable et prévisible. Les exceptions peuvent survenir à tout moment pendant l'exécution de l'application et doivent être traitées de manière appropriée pour éviter les plantages et les comportements inattendus.
+
+De plus, il existe des bonnes pratiques pour gérer les exceptions afin d'éviter de polluer le code avec des **`try-catch`** inutiles et de garantir une gestion cohérente des erreurs.
+
+Et finalement, avec Spring Boot, il y a beaucoup de parties de code qui génèrent déjà des exceptions sans que cela soit directement visible dans le code. Nous pensons ici notamment aux erreur de base de données (via les repositories), aux erreurs d'authentification (via Spring Security), etc...   
+Il est donc important de savoir comment gérer ces exceptions de manière centralisée.
+
+
+## Gestion actuelle des exceptions via ResponseStatusException
+
+Dans notre application actuelle, nous utilisons la classe **`ResponseStatusException`** pour gérer les exceptions et renvoyer des réponses HTTP appropriées aux clients. Cette classe permet de spécifier le code de statut HTTP à renvoyer ainsi que le message d'erreur à afficher.
+
+En voici un exemple : 
+
+```java {11}
+  /**
+   * Get a pizza by id.
+   *
+   * @param id the pizza id.
+   * @return the pizza.
+   */
+  @GetMapping("/{id}")
+  public Pizza getPizza(@PathVariable long id) {
+    Pizza pizza = pizzaService.getPizza(id);
+    if (pizza == null) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Pizza not found");
+    }
+    return pizza;
+  }
+```
+
+Dans cet exemple, si la pizza n'est pas trouvée, une exception de type **`ResponseStatusException`** est lancée avec le code de statut HTTP **`404 NOT FOUND`** et le message d'erreur **`Pizza not found`**.
+
+Est-ce que cette exception est logguée automatiquement ? Non, les exception de type **`ResponseStatusException`** ne sont pas logguées automatiquement par Spring Boot. Il est donc nécessaire de les logguer manuellement pour suivre les erreurs de manière cohérente. Nous allons voir ça tout prochainement.
+
+Cette approche est simple et efficace pour gérer les exceptions et renvoyer des réponses HTTP appropriées aux clients. Cependant, elle ne permet pas de logguer les exceptions de manière centralisée et de suivre les erreurs de manière cohérente.
+
+## Gérer des exceptions personnalisées
+
+Pour gérer les exceptions de manière centralisée et cohérente, il est recommandé d'utiliser des exceptions personnalisées. Ces exceptions peuvent être étendues à partir de la classe **`RuntimeException`** ou de l'une de ses sous-classes, comme **`IllegalArgumentException`** ou **`IllegalStateException`**.
+
+Si l'on reprend l'exemple précédent, nous pourrions créer une exception personnalisée **`ResourceNotFoundException`** pour gérer les cas où une ressource n'est pas trouvée. Cela nous permettra d'avoir une gestion plus globale des exceptions, nous pourrons utiliser la même exception dans plusieurs parties de l'application, car en fait, cela n'est pas vraiment utile dans le message renvoyé au client de préciser que la pizza n'a pas été trouvée. C'est généralement évident que si une opération pour effacer une ressource de type pizza n'a pas abouti, c'est que la pizza n'existe pas. Renvoyer juste un message d'erreur générique est suffisant. D'ailleurs renvoyer juste un code d'erreur est suffisant.
+
+Pour ce tutoriel, veuillez dans votre projet GitLab créer une nouvelle classe **`ResourceNotFoundException`** dans un nouveau package **`exceptions`**. Cette classe doit étendre la classe **`RuntimeException`** et accepter un message d'erreur en paramètre.
+
+
+```java
+package be.vinci.ipl.cae.demo.exceptions;
+
+/**
+ * ResourceNotFoundException to handle resource not found exceptions.
+ */
+public class ResourceNotFoundException extends RuntimeException {
+
+  /**
+   * Constructor for ResourceNotFoundException.
+   */
+  public ResourceNotFoundException() {
+    super();
+  }
+
+  /**
+   * Constructor for ResourceNotFoundException.
+   *
+   * @param message the message.
+   */
+  public ResourceNotFoundException(String message) {
+    super(message);
+  }
+}
+```
+
+Nous allons maintenant modifier notre contrôleur **`controllers/PizzaController`** pour utiliser cette exception personnalisée.
+
+```java {12}
+/**
+   * Delete a pizza by id.
+   *
+   * @param id the pizza id.
+   * @return the pizza.
+   */
+  @DeleteMapping("/{id}")
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  public Pizza deletePizza(@PathVariable long id) {
+    Pizza pizza = pizzaService.deletePizza(id);
+    if (pizza == null) {
+      throw new ResourceNotFoundException();
+    }
+    return pizza;
+  }
+```
+
+Dans cet exemple, si la pizza n'est pas trouvée, une exception de type **`ResourceNotFoundException`** est lancée. Actuellement, comme nous ne traitons pas cette exception, elle sera renvoyée au client sous forme de réponse HTTP **`500 INTERNAL SERVER ERROR`**. Nous allons voir comment gérer cette exception de manière centralisée et la logguer correctement.
+
+## Comment gérer les exceptions de manière centralisée ?
+
+Pour gérer les exceptions de manière centralisée, nous allons utiliser un gestionnaire d'exceptions global. Ce gestionnaire d'exceptions interceptera toutes les exceptions non traitées par les contrôleurs et les logguera de manière appropriée.
+
+Pour ce tutoriel, veuillez dans votre projet GitLab créer une nouvelle classe **`GlobalExceptionHandler`** dans un nouveau package **`exceptions`**. Cette classe doit être annotée avec **`@ControllerAdvice`** pour indiquer qu'elle est un gestionnaire d'exceptions global.
+
+```java showLineNumbers
+package be.vinci.ipl.cae.demo.exceptions;
+
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.server.ResponseStatusException;
+
+/**
+ * GlobalExceptionHandler to handle exceptions globally.
+ */
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+  /**
+   * Handle ResourceNotFoundException.
+   *
+   * @param ex      the exception.
+   * @param request the request.
+   * @return the response entity.
+   */
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ResponseEntity<?> handleResourceNotFoundException(ResourceNotFoundException ex,
+      WebRequest request) {
+
+    if (ex.getMessage() == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    ErrorDetails errorDetails = new ErrorDetails(HttpStatus.NOT_FOUND.value(), ex.getMessage(),
+        request.getDescription(false));
+
+    return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
+  }
+
+  /**
+   * Handle ResponseStatusException.
+   *
+   * @param ex      the exception.
+   * @param request the request.
+   * @return the response entity.
+   */
+  @ExceptionHandler(ResponseStatusException.class)
+  public ResponseEntity<?> handleResponseStatusException(ResponseStatusException ex,
+      WebRequest request) {
+
+    if (ex.getReason() == null) {
+      return new ResponseEntity<>(ex.getStatusCode());
+    }
+
+    ErrorDetails errorDetails = new ErrorDetails(ex.getStatusCode().value(), ex.getReason(),
+        request.getDescription(false));
+    return new ResponseEntity<>(errorDetails, ex.getStatusCode());
+  }
+
+  /**
+   * Handle all other exceptions.
+   *
+   * @param ex      the exception.
+   * @param request the request.
+   * @return the response entity.
+   */
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<?> handleGlobalException(Exception ex, WebRequest request) {
+    ErrorDetails errorDetails = new ErrorDetails(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+        ex.getMessage(), request.getDescription(false));
+    return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+}
+```
+
+Quelques explications sur ce code :
+- La méthode **`handleResourceNotFoundException`** gère les exceptions de type **`ResourceNotFoundException`**. Elle renvoie une réponse HTTP **`404 NOT FOUND`** avec le message d'erreur s'il est défini.
+- La méthode **`handleResponseStatusException`** gère les exceptions de type **`ResponseStatusException`**. Elle renvoie une réponse HTTP avec le code de statut et le message d'erreur de l'exception. Cette méthode permet donc d'utiliser les exceptions de type **`ResponseStatusException`** pour renvoyer des réponses HTTP aux clients, sans être obligé de créer des exceptions personnalisées.
+- La méthode **`handleGlobalException`** gère toutes les autres exceptions non traitées par les contrôleurs. Elle renvoie une réponse HTTP **`500 INTERNAL SERVER ERROR`** avec le message d'erreur de l'exception.
+
+Afin de renvoyer dans le body de la réponse HTTP un message d'erreur plus détaillé au format JSON, nous allons créer une classe **`ErrorDetails`** dans le même package **`exceptions`**.
+
+```java
+package be.vinci.ipl.cae.demo.exceptions;
+
+import lombok.Data;
+
+/**
+ * ErrorDetails to handle error details.
+ */
+@Data
+public class ErrorDetails {
+
+  private int statusCode;
+  private String message;
+  private String details;
+
+  /**
+   * Constructor for ErrorDetails.
+   *
+   * @param statusCode the status code.
+   * @param message    the message.
+   * @param details    the details.
+   */
+  public ErrorDetails(int statusCode, String message, String details) {
+    this.statusCode = statusCode;
+    this.message = message;
+    this.details = details;
+  }
+}
+```
+
+Cette classe **`ErrorDetails`** contient les informations sur l'erreur à renvoyer dans le body de la réponse HTTP. Elle contient le code de statut, le message d'erreur et les détails de l'erreur.
+
+Veuillez tenter de lancer votre application Spring Boot et de tester les différentes exceptions que vous avez mises en place, avec au minimum :
+- Une exception de type **`ResourceNotFoundException`** sans message d'erreur. Veuillez vérifier que le code de statut HTTP **`404 NOT FOUND`** est renvoyé, et que la réponse HTTP ne contient pas de body. Attention à ne pas oublier de d'abord s'authentifier avec un utilisateur ayant le rôle **`ROLE_ADMIN`** pour pouvoir supprimer une pizza.
+- Une exception de type **`ResourceNotFoundException`** avec un message d'erreur. Pour cela vous pouvez, dans l'opération de suppression d'une pizza, utiliser **`throw new ResourceNotFoundException("Pizza not found");`**.  
+Veuillez vérifier que le code de statut HTTP **`404 NOT FOUND`** est renvoyé, et que la réponse HTTP contient le message d'erreur dans le body.
+- Une exception de type **`ResponseStatusException`**. Pour cela vous pouvez, par exemple, tentez de lire une pizza qui n'existe pas.
+
+💭 Comment tester le passage dans la méthode globale **`handleGlobalException`** ?  Pour cela, vous pouvez par exemple, stopper votre base de données et tenter de lire une pizza.
+
+Vous devriez obtenir la réponse HTTP **`500 INTERNAL SERVER ERROR`** avec le message d'erreur de l'exception dans le body :
+
+```json
+{
+  "statusCode": 500,
+  "message": "Could not open JPA EntityManager for transaction",
+  "details": "uri=/pizzas/3"
+}
+```
+
+Et si l'on souhaitait connaître la classe d'exception qui a été levée, comment faire ? Pour cela, il suffit de modifier la méthode **`handleGlobalException`** pour soit renvoyer le nom de la classe de l'exception, soit ajouter la cause de l'exception dans le message d'erreur. Ici nous avons choisi d'ajouter tant le nom de la classe que la cause de l'exception :
+
+```java
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<?> handleGlobalException(Exception ex, WebRequest request) {
+
+    ErrorDetails errorDetails = new ErrorDetails(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+        ex.getClass().getName() + " : " + ex.getMessage() + ". Cause: " + ex.getCause(),
+        request.getDescription(false));
+    return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+```
+
+Cela est impressionnant, nous sommes maintenant capable de "catcher" toutes les exceptions non traitées par les contrôleurs et de les logguer de manière centralisée.
+
+Pour les exceptions soulevées par la DB, il semble OK de les traiter au sein de la méthode **`handleGlobalException`** et de renvoyer un code d'erreur **`500 INTERNAL SERVER ERROR`**. Mais comment gérer les erreurs associées à l'autorisation ? Par exemple, si un utilisateur non autorisé tente de supprimer une pizza alors qu'il n'est pas admin, une exception de type **`AccessDeniedException`** est levée. 
+
+# <InternalPageTitle> Comment gérer les exceptions de Spring Boot comme AccessDeniedException ? </InternalPageTitle>
+
+## Introduction
+
+Lorsqu'une exception de type **`AccessDeniedException`** est levée par Spring Security, cela signifie que l'utilisateur n'est pas autorisé à accéder à la ressource demandée. Cette exception est levée automatiquement par Spring Security lorsqu'un utilisateur tente d'accéder à une ressource sans les autorisations nécessaires.
+
+Pour ce tutorial, via les requêtes HTTP, veuillez tenter de supprimer une pizza en tant qu'utilisateur non admin (**`guest`** par exemple). Vous devriez normalement obtenir une réponse HTTP **`403 FORBIDDEN`** avec le message d'erreur **`Access is denied`**.
+
+Néanmoins, pour l'instant, vous recevez une réponse HTTP **`500 INTERNAL SERVER ERROR`** avec le message d'erreur **` "org.springframework.security.authorization.AuthorizationDeniedException : Access Denied. Cause: null",`**. Cela signifie que l'exception de type **`AccessDeniedException`** n'est pas correctement gérée par notre gestionnaire d'exceptions global.
+
+## Comment gérer les exceptions de Spring Boot ?
+
+Ici, nous devons trouver la classe de l'exception qui est levée par Spring Security lorsqu'un utilisateur n'est pas autorisé à accéder à une ressource. 
+
+En regardant la documentation de Spring Security (https://docs.spring.io/spring-security/reference/api/java/org/springframework/security/authorization/AuthorizationDeniedException.html), nous découvrons qu'une **`AuthorizationDeniedException`** est une **`AccessDeniedException`** contenant un **`AuthorizationResult`**. Nous allons donc modifier notre gestionnaire d'exceptions global pour gérer les exceptions de type **`AccessDeniedException`**.
+
+```java
+  /**
+   * Handle AccessDeniedException.
+   *
+   * @param ex      the exception.
+   * @param request the request.
+   * @return the response entity.
+   */
+  @ExceptionHandler(AccessDeniedException.class)
+  public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException ex,
+      WebRequest request) {
+
+    ErrorDetails errorDetails = new ErrorDetails(HttpStatus.FORBIDDEN.value(), ex.getMessage(),
+        request.getDescription(false));
+    return new ResponseEntity<>(errorDetails, HttpStatus.FORBIDDEN);
+  }
+```
+
+Veuillez tester à nouveau de supprimer une pizza en tant qu'utilisateur non admin (**`guest`** par exemple). Vous devriez maintenant obtenir une réponse HTTP **`403 FORBIDDEN`** avec le message d'erreur :
+
+```json
+{
+  "statusCode": 403,
+  "message": "org.springframework.security.authorization.AuthorizationDeniedException : Access Denied. Cause: null",
+  "details": "uri=/pizzas/2"
+}
+```
+
+Et maintenant, veuillez tester la requête pour tenter d'effacer la pizza avec l'id 2 mais sans fournir de token ! Qu'est-ce que vous obtenez ? Vous obtenez aussi un status code **`403 FORBIDDEN`** avec le message d'erreur **`Access is denied`**. Cela signifie que la même exception de type **`AccessDeniedException`** est lancée que l'on soit connecté ou non. Cela est dû au fait que Spring Security intercepte la requête avant même que le contrôleur ne soit appelé.  
+Pour que cela soit propre, nous devrions renvoyer un code d'erreur **`401 UNAUTHORIZED`** pour indiquer que l'utilisateur n'est pas autorisé à accéder à la ressource car il n'est pas authentifié. Pour cela, nous devons mettre à jour notre code pour vérifier s'il y a un token dans la requête et renvoyer un code d'erreur **`401 UNAUTHORIZED`** si ce n'est pas le cas.
+
+Veuillez mettre à jour le code de la méthode **`handleAccessDeniedException`** pour vérifier si l'utilisateur est authentifié et renvoyer un code d'erreur **`401 UNAUTHORIZED`** si ce n'est pas le cas.
+
+```java {12-14} showLineNumbers
+/**
+   * Handle AccessDeniedException.
+   *
+   * @param ex      the exception.
+   * @param request the request.
+   * @return the response entity.
+   */
+  @ExceptionHandler(AccessDeniedException.class)
+  public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException ex,
+      WebRequest request) {
+
+    if (request.getHeader("Authorization") == null) {
+      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+
+    ErrorDetails errorDetails = new ErrorDetails(HttpStatus.FORBIDDEN.value(),
+        ex.getClass().getName() + " : " + ex.getMessage() + ". Cause: " + ex.getCause(),
+        request.getDescription(false));
+    return new ResponseEntity<>(errorDetails, HttpStatus.FORBIDDEN);
+  }
+``` 
+
+Veuillez tester à nouveau de supprimer une pizza en tant qu'utilisateur non authentifié. Vous devriez maintenant obtenir une réponse HTTP **`401 UNAUTHORIZED`**. Et si vous tentez de supprimer une pizza en tant qu'utilisateur non admin, vous devriez obtenir une réponse HTTP **`403 FORBIDDEN`**.
+
+## Conclusion sur la gestion des exceptions dans une application Spring Boot
+
+Nous avons vu comment gérer les exceptions de manière centralisée dans une application Spring Boot en utilisant un gestionnaire d'exceptions global. Ce gestionnaire d'exceptions intercepte toutes les exceptions non traitées par les contrôleurs. Nous avons également vu comment gérer les exceptions de type **`AccessDeniedException`** levées par Spring Security lorsqu'un utilisateur n'est pas autorisé à accéder à une ressource. Cet apprentissage devrait vous permettre de gérer n'importe quel type d'exceptions de manière cohérente et de renvoyer des réponses HTTP appropriées aux clients.
+
+Nous allons maintenant voir comment logguer les exceptions de manière centralisée pour suivre les erreurs de manière cohérente et les corriger rapidement.
+
+# <InternalPageTitle> Comment logguer les exceptions de manière centralisée ? </InternalPageTitle>
+
+## Introduction
+
+Maintenant que nous avons appris à centraliser les exceptions au sein d'un gestionnaire d'exceptions global, il est temps de les logguer de manière centralisée pour suivre les erreurs de manière cohérente et les corriger rapidement.
+
+Pour logguer les exceptions de manière centralisée, nous allons utiliser le logger par défaut de Spring Boot, **`Logback`**. **`Logback`** est une librairie de log très populaire dans l'écosystème Spring Boot et offre de nombreuses fonctionnalités pour gérer les logs de manière efficace. C'est le successeur de **`Log4j`** et **`Log4j2`** et est largement utilisé dans les applications Spring Boot.  
+
+Pour information, **`Logback`** implémente l'interface **`SLF4J`** (Simple Logging Facade for Java), qui est une façade de logging standardisée pour Java. **`SLF4J`** permet de séparer le code de l'application des implémentations de logging, ce qui facilite le changement de librairie de log sans modifier le code de l'application.
+
+Si vous souhaitez découvrir plus en détail **`Logback`**, vous pouvez consulter la documentation officielle : https://logback.qos.ch/
+
+Par défaut, **`Logback`** est configuré pour logguer les messages de niveau **`ERROR`** et supérieur dans la console. 
+Nous nous rendons donc compte que les exceptions de type **`AccessDeniedException`** ne sont pas logguées par défaut, tout comme les exceptions de type **`ResponseStatusException`**, **`ResourceNotFoundException`** car elles ne sont pas affichées dans la console. 
+
+Comment faire pour logguer ces exceptions de manière centralisée ? Nous allons devoir mettre à jour notre gestionnaire d'exceptions global pour logguer les exceptions de manière appropriée.
+
+## Logguer les exceptions de manière centralisée
+
+Veuillez mettre à jour la classe **`exceptions/GlobalExceptionHandler`** avec ces ajouts :
+
+```java {4-5,20,34-41,57-64,80-91,109} showLineNumbers
+package be.vinci.ipl.cae.demo.exceptions;
+
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.server.ResponseStatusException;
+
+/**
+ * GlobalExceptionHandler to handle exceptions globally.
+ */
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+  private Logger logger = LoggerFactory.getLogger("GlobalExceptionHandler");
+
+
+  /**
+   * Handle ResourceNotFoundException.
+   *
+   * @param ex      the exception.
+   * @param request the request.
+   * @return the response entity.
+   */
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ResponseEntity<?> handleResourceNotFoundException(ResourceNotFoundException ex,
+      WebRequest request) {
+
+    ErrorDetails errorDetails = new ErrorDetails(HttpStatus.NOT_FOUND.value(), ex.getMessage(),
+        request.getDescription(false));
+
+    logger.info("Resource not found: {}", errorDetails);
+
+    if (ex.getMessage() == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
+  }
+
+  /**
+   * Handle ResponseStatusException.
+   *
+   * @param ex      the exception.
+   * @param request the request.
+   * @return the response entity.
+   */
+  @ExceptionHandler(ResponseStatusException.class)
+  public ResponseEntity<?> handleResponseStatusException(ResponseStatusException ex,
+      WebRequest request) {
+
+    ErrorDetails errorDetails = new ErrorDetails(ex.getStatusCode().value(), ex.getReason(),
+        request.getDescription(false));
+
+    logger.info("Response status exception: {}", errorDetails);
+
+    if (ex.getReason() == null) {
+      return new ResponseEntity<>(ex.getStatusCode());
+    }
+
+    return new ResponseEntity<>(errorDetails, ex.getStatusCode());
+  }
+
+  /**
+   * Handle AccessDeniedException.
+   *
+   * @param ex      the exception.
+   * @param request the request.
+   * @return the response entity.
+   */
+  @ExceptionHandler(AccessDeniedException.class)
+  public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException ex,
+      WebRequest request) {
+
+    if (request.getHeader("Authorization") == null) {
+      ErrorDetails errorDetails = new ErrorDetails(HttpStatus.UNAUTHORIZED.value(),
+          ex.getClass().getName() + " : " + ex.getMessage() + ". Cause: " + ex.getCause(),
+          request.getDescription(false));
+      logger.info("Unauthorized access: {}", errorDetails);
+      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+
+    ErrorDetails errorDetails = new ErrorDetails(HttpStatus.FORBIDDEN.value(),
+        ex.getClass().getName() + " : " + ex.getMessage() + ". Cause: " + ex.getCause(),
+        request.getDescription(false));
+    logger.info("Forbidden access: {}", errorDetails);
+    return new ResponseEntity<>(errorDetails, HttpStatus.FORBIDDEN);
+  }
+
+  /**
+   * Handle all other exceptions.
+   *
+   * @param ex      the exception.
+   * @param request the request.
+   * @return the response entity.
+   */
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<?> handleGlobalException(Exception ex, WebRequest request) {
+
+    ErrorDetails errorDetails = new ErrorDetails(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+        ex.getClass().getName() + " : " + ex.getMessage() + ". Cause: " + ex.getCause(),
+        request.getDescription(false));
+
+    logger.error("Internal server error: {}", errorDetails);
+
+    return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+}
+```
+
+Quelques explications sur ce code :
+- Nous avons ajouté un logger de type **`Logger`** pour logguer les exceptions de manière centralisée. Nous lui avons donné le nom **`GlobalExceptionHandler`** pour le distinguer des éventuels autres loggers.
+- Nous avons ajouté des instructions **`logger.info`** et **`logger.error`** pour logguer les exceptions de manière appropriée. Nous utilisons le niveau **`INFO`** pour les exceptions de type **`ResourceNotFoundException`**, **`ResponseStatusException`** et **`AccessDeniedException`**, et le niveau **`ERROR`** pour les autres exceptions non traitées par les contrôleurs.
+- Nous avons ajouté des messages d'erreur détaillés pour chaque type d'exception, y compris le code de statut, le message d'erreur et les détails de l'erreur. Ces messages d'erreur seront loggués dans la console et permettront de suivre les erreurs de manière cohérente.
+
+Pour rappel, voici les différents niveau de log que l'on peut utiliser avec **`Logback`** :
+- **`TRACE`** : Informations détaillées sur le fonctionnement de l'application, utiles pour le débogage.
+- **`DEBUG`** : Informations de débogage, utiles pour comprendre le fonctionnement interne de l'application.
+- **`INFO`** : Informations générales sur le fonctionnement de l'application.
+- **`WARN`** : Avertissements sur des situations potentiellement problématiques.
+- **`ERROR`** : Erreurs qui ont empêché le bon fonctionnement de l'application.
+
+Pour créer un log selon le niveau adéquat, il suffit d'appeler la méthode correspondante sur l'objet **`Logger`**. Par exemple, pour créer un log de niveau **`INFO`**, on appelle la méthode **`logger.info`**.
+
+Quelle est la différence entre un niveau **`Trace`** et un niveau **`Debug`** ? Le niveau **`Trace`** est plus détaillé que le niveau **`Debug`**. Le niveau **`Trace`** est utilisé pour des informations très détaillées sur le fonctionnement de l'application, utiles pour le débogage. Le niveau **`Debug`** est utilisé pour des informations de débogage, utiles pour comprendre le fonctionnement interne de l'application.
+
+Veuillez tester à nouveau de supprimer une pizza en tant qu'utilisateur non authentifié. Vous devriez maintenant obtenir une réponse HTTP **`401 UNAUTHORIZED`** et voir le message d'erreur loggué dans la console.  
+
+Vous remarquez que dans le détails, on ne voit pas beaucoup d'informations. On souhaiterait par exemple connaître le type de requête faire sur l'URI.
+
+Pour ce faire, voici comment on pourrait modifier la classe **`GlobalExceptionHandler`** pour ajouter le type de requête et d'autres infos sur le client ayant fait la requête amenant à une exception :
+
+```java showLineNumbers
+package be.vinci.ipl.cae.demo.exceptions;
+
+
+import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.server.ResponseStatusException;
+
+/**
+ * GlobalExceptionHandler to handle exceptions globally.
+ */
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+  private Logger logger = LoggerFactory.getLogger("GlobalExceptionHandler");
+
+
+  /**
+   * Handle ResourceNotFoundException.
+   *
+   * @param ex      the exception.
+   * @param request the request.
+   * @return the response entity.
+   */
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ResponseEntity<?> handleResourceNotFoundException(ResourceNotFoundException ex,
+      WebRequest request, HttpServletRequest httpRequest) {
+
+    ErrorDetails errorDetailsClient = new ErrorDetails(HttpStatus.NOT_FOUND.value(),
+        ex.getMessage(),
+        request.getDescription(false));
+
+    ErrorDetails errorDetailsLog = new ErrorDetails(HttpStatus.NOT_FOUND.value(), ex.getMessage(),
+        "httpMethod=" + httpRequest.getMethod() + ";" + request.getDescription(true));
+
+    logger.info("Resource not found: {}", errorDetailsLog);
+
+    if (ex.getMessage() == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    return new ResponseEntity<>(errorDetailsClient, HttpStatus.NOT_FOUND);
+  }
+
+  /**
+   * Handle ResponseStatusException.
+   *
+   * @param ex      the exception.
+   * @param request the request.
+   * @return the response entity.
+   */
+  @ExceptionHandler(ResponseStatusException.class)
+  public ResponseEntity<?> handleResponseStatusException(ResponseStatusException ex,
+      WebRequest request, HttpServletRequest httpRequest) {
+
+    ErrorDetails errorDetailsClient = new ErrorDetails(ex.getStatusCode().value(), ex.getReason(),
+        request.getDescription(false));
+    ErrorDetails errorDetailsLog = new ErrorDetails(ex.getStatusCode().value(), ex.getReason(),
+        "httpMethod=" + httpRequest.getMethod() + ";" + request.getDescription(true));
+
+    logger.info("Response status exception: {}", errorDetailsLog);
+
+    if (ex.getReason() == null) {
+      return new ResponseEntity<>(ex.getStatusCode());
+    }
+
+    return new ResponseEntity<>(errorDetailsClient, ex.getStatusCode());
+  }
+
+  /**
+   * Handle AccessDeniedException.
+   *
+   * @param ex      the exception.
+   * @param request the request.
+   * @return the response entity.
+   */
+  @ExceptionHandler(AccessDeniedException.class)
+  public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException ex,
+      WebRequest request, HttpServletRequest httpRequest) {
+
+    if (request.getHeader("Authorization") == null) {
+      ErrorDetails errorDetails = new ErrorDetails(HttpStatus.UNAUTHORIZED.value(),
+          ex.getClass().getName() + " : " + ex.getMessage() + ". Cause: " + ex.getCause(),
+          "httpMethod=" + httpRequest.getMethod() + ";" + request.getDescription(true));
+
+      logger.info("Unauthorized access: {}", errorDetails);
+      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+
+    ErrorDetails errorDetailsClient = new ErrorDetails(HttpStatus.FORBIDDEN.value(),
+        ex.getClass().getName() + " : " + ex.getMessage() + ". Cause: " + ex.getCause(),
+        request.getDescription(false));
+
+    ErrorDetails errorDetailsLog = new ErrorDetails(HttpStatus.FORBIDDEN.value(),
+        ex.getClass().getName() + " : " + ex.getMessage() + ". Cause: " + ex.getCause(),
+        "httpMethod=" + httpRequest.getMethod() + ";" + request.getDescription(true));
+
+    logger.info("Forbidden access: {}", errorDetailsLog);
+    return new ResponseEntity<>(errorDetailsClient, HttpStatus.FORBIDDEN);
+  }
+
+  /**
+   * Handle all other exceptions.
+   *
+   * @param ex      the exception.
+   * @param request the request.
+   * @return the response entity.
+   */
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<?> handleGlobalException(Exception ex, WebRequest request,
+      HttpServletRequest httpRequest) {
+
+    ErrorDetails errorDetailsClient = new ErrorDetails(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+        ex.getClass().getName() + " : " + ex.getMessage() + ". Cause: " + ex.getCause(),
+        request.getDescription(false));
+
+    ErrorDetails errorDetailsLog = new ErrorDetails(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+        ex.getClass().getName() + " : " + ex.getMessage() + ". Cause: " + ex.getCause(),
+        "httpMethod:" + httpRequest.getMethod() + request.getDescription(true));
+
+    logger.error("Internal server error: {}", errorDetailsLog);
+
+    return new ResponseEntity<>(errorDetailsClient, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+}
+``` 
+
+Est-ce que ce code est correct point de vue de PMD & CPD ?  
+N'hésitez pas à lancer les outils de vérification de code pour le vérifier, comme par exemple localement via :
+
+```bash
+mvn clean test
+```
+
+Une fois cette commande lancée, on voit qu'il y a de la duplication de code. Comment pourrait-on améliorer cela ?
+
+Pour éviter la duplication de code, on pourrait extraire la logique de création des **`ErrorDetails`** dans une méthode privée. Voici comment mettre à jour la classe **`GlobalExceptionHandler`** pour extraire la logique de création des **`ErrorDetails`** dans une méthode privée :
+
+```java showLineNumbers
+package be.vinci.ipl.cae.demo.exceptions;
+
+import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.server.ResponseStatusException;
+
+/**
+ * GlobalExceptionHandler to handle exceptions globally.
+ */
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+  private Logger logger = LoggerFactory.getLogger("GlobalExceptionHandler");
+
+  private ErrorDetails createErrorDetails(HttpStatus status, Exception ex, WebRequest request,
+      HttpServletRequest httpRequest, boolean forLog) {
+    String description =
+        forLog ? "httpMethod=" + httpRequest.getMethod() + ";" + request.getDescription(true)
+            : request.getDescription(false);
+    return new ErrorDetails(status.value(),
+        ex.getClass().getName() + " : " + ex.getMessage() + ". Cause: " + ex.getCause(),
+        description);
+  }
+
+  /**
+   * Handle ResourceNotFoundException.
+   *
+   * @param ex      the exception.
+   * @param request the request.
+   * @return the response entity.
+   */
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ResponseEntity<?> handleResourceNotFoundException(ResourceNotFoundException ex,
+      WebRequest request, HttpServletRequest httpRequest) {
+    ErrorDetails errorDetailsClient = createErrorDetails(HttpStatus.NOT_FOUND, ex, request,
+        httpRequest, false);
+    ErrorDetails errorDetailsLog = createErrorDetails(HttpStatus.NOT_FOUND, ex, request,
+        httpRequest, true);
+
+    logger.info("Resource not found: {}", errorDetailsLog);
+
+    if (ex.getMessage() == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    return new ResponseEntity<>(errorDetailsClient, HttpStatus.NOT_FOUND);
+  }
+
+  /**
+   * Handle ResponseStatusException.
+   *
+   * @param ex      the exception.
+   * @param request the request.
+   * @return the response entity.
+   */
+  @ExceptionHandler(ResponseStatusException.class)
+  public ResponseEntity<?> handleResponseStatusException(ResponseStatusException ex,
+      WebRequest request, HttpServletRequest httpRequest) {
+    ErrorDetails errorDetailsClient = createErrorDetails(
+        HttpStatus.valueOf(ex.getStatusCode().value()), ex, request,
+        httpRequest, false);
+    ErrorDetails errorDetailsLog = createErrorDetails(
+        HttpStatus.valueOf(ex.getStatusCode().value()), ex, request, httpRequest,
+        true);
+
+    logger.info("Response status exception: {}", errorDetailsLog);
+
+    if (ex.getReason() == null) {
+      return new ResponseEntity<>(ex.getStatusCode());
+    }
+
+    return new ResponseEntity<>(errorDetailsClient, ex.getStatusCode());
+  }
+
+  /**
+   * Handle AccessDeniedException.
+   *
+   * @param ex      the exception.
+   * @param request the request.
+   * @return the response entity.
+   */
+  @ExceptionHandler(AccessDeniedException.class)
+  public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException ex, WebRequest request,
+      HttpServletRequest httpRequest) {
+    if (request.getHeader("Authorization") == null) {
+      ErrorDetails errorDetails = createErrorDetails(HttpStatus.UNAUTHORIZED, ex, request,
+          httpRequest, true);
+      logger.info("Unauthorized access: {}", errorDetails);
+      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+
+    ErrorDetails errorDetailsClient = createErrorDetails(HttpStatus.FORBIDDEN, ex, request,
+        httpRequest, false);
+    ErrorDetails errorDetailsLog = createErrorDetails(HttpStatus.FORBIDDEN, ex, request,
+        httpRequest, true);
+
+    logger.info("Forbidden access: {}", errorDetailsLog);
+    return new ResponseEntity<>(errorDetailsClient, HttpStatus.FORBIDDEN);
+  }
+
+  /**
+   * Handle all other exceptions.
+   *
+   * @param ex      the exception.
+   * @param request the request.
+   * @return the response entity.
+   */
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<?> handleGlobalException(Exception ex, WebRequest request,
+      HttpServletRequest httpRequest) {
+    ErrorDetails errorDetailsClient = createErrorDetails(HttpStatus.INTERNAL_SERVER_ERROR, ex,
+        request, httpRequest, false);
+    ErrorDetails errorDetailsLog = createErrorDetails(HttpStatus.INTERNAL_SERVER_ERROR, ex, request,
+        httpRequest, true);
+
+    logger.error("Internal server error: {}", errorDetailsLog);
+
+    return new ResponseEntity<>(errorDetailsClient, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+}
+```
+
+Est-ce que ce code est correct point de vue de PMD & CPD ?  
+N'hésitez pas à lancer les outils de vérification de code pour le vérifier, comme par exemple localement via :
+
+```bash
+mvn clean test
+```
+
+Maintenant, nous avons une méthode privée **`createErrorDetails`** qui prend en paramètre le code de statut, l'exception, la requête, la requête HTTP et un booléen pour indiquer si les détails sont pour le log ou pour le client. Cette méthode crée un objet **`ErrorDetails`** avec les informations nécessaires pour logguer l'erreur de manière centralisée.
+
+Veuillez tester à nouveau de supprimer une pizza en tant qu'utilisateur non authentifié. Vous devriez maintenant obtenir une réponse HTTP **`401 UNAUTHORIZED`** et voir le message d'erreur loggué dans la console avec le type de requête et d'autres informations sur le client ayant fait la requête.  
+Veuillez aussi observer que le message d'erreur renvoyé au client ne contient pas ces informations sensibles !
+
+## Configuration de Logback
+
+### Introduction
+
+Nous souhaitons toujours afficher les logs de niveau **`ERROR`** et supérieur dans la console, tout en logguant toutes les exceptions de type **`AccessDeniedException`**, **`ResponseStatusException`**, **`ResourceNotFoundException`**, etc..., dans un fichier de log.
+
+Dans les profiles de développement, nous souhaitons afficher les logs de niveau **`DEBUG`** et supérieur dans la console, tout en logguant toutes les exceptions dans un fichier de log.
+
+Dans les profiles de production, nous souhaitons afficher les logs de niveau **`INFO`** et supérieur dans la console, tout en logguant toutes les exceptions dans un fichier de log.
+Pourquoi ? Parce que les logs de niveau **`DEBUG`** peuvent contenir des informations sensibles sur le fonctionnement interne de l'application et ne doivent pas être activés en production.
+
+### Configuration de Logback pour le profile de développement
+
+Nous pouvons configurer certaines options dans le fichier **`application.properties`** pour écrire les logs dans le fichier **`logs/application.log`**. Pour cela, veuillez ajouter les lignes suivantes dans le fichier **`application.properties`** :
+
+```properties
+debug=true
+logging.file.name=logs/application.log
+logging.logback.rollingpolicy.max-file-size=10MB
+logging.logback.rollingpolicy.max-history=7
+``` 
+
+Ces lignes permettent de configurer le fichier de log **`logs/application.log`** pour qu'il ne dépasse pas 10 Mo et qu'il conserve les 7 derniers fichiers de log.
+
+**`debug=true`** permet d'activer les logs de niveau **`DEBUG`** et supérieur dans la console.
+
+
+Comme nous ne précisons pas le niveau de log, toutes les exceptions seront logguées dans ce fichier de log.
+
+Est-ce que les logs sont aussi affichés dans la console ? Oui, les logs sont également affichés dans la console, car nous n'avons pas modifié la configuration par défaut de **`Logback`** pour afficher les logs dans la console.  
+Si on avait souhaité stopper l'affichage des logs dans la console, on pourrait ajouter la ligne suivante dans le fichier **`application.properties`** :
+
+```properties
+logging.pattern.console=
+```
+
+Cela aurait permis de supprimer les logs de la console, mais nous ne souhaitons pas le faire !
+
+### Ignorer les fichiers de log dans Git
+
+Pour éviter de commiter les fichiers de log dans Git, nous devons ajouter le dossier **`logs`** dans le fichier **`.gitignore`**. Pour cela, veuillez ajouter la ligne suivante dans le fichier **`.gitignore`** de votre API :
+
+```properties
+logs/
+```
+
+Veuillez redémarrer votre API et tester à nouveau de supprimer une pizza en tant qu'utilisateur non authentifié. Vous devriez maintenant obtenir une réponse HTTP **`401 UNAUTHORIZED`** et voir le message d'erreur loggué dans le fichier **`logs/application.log`**. De plus, vous devriez voir les logs de niveau **`DEBUG`** et supérieur dans la console.
+
+### Configuration de Logback pour le profile de développement pour plus de détails sur les logs de type DB
+
+Pour avoir plus de détails sur les logs de type DB, nous pouvons ajouter les lignes suivantes dans le fichier **`application.properties`** :
+
+```properties
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+logging.level.org.hibernate.SQL=DEBUG
+logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
+```
+
+Que font ces lignes ?
+
+- **`spring.jpa.show-sql=true`** permet d'afficher les requêtes SQL générées par Hibernate dans la console.
+- **`spring.jpa.properties.hibernate.format_sql=true`** permet de formater les requêtes SQL générées par Hibernate pour les rendre plus lisibles.
+- **`logging.level.org.hibernate.SQL=DEBUG`** permet d'afficher les requêtes SQL générées par Hibernate dans la console avec le niveau de log **`DEBUG`**.
+- **`logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE`** permet d'afficher les valeurs des paramètres des requêtes SQL générées par Hibernate dans la console avec le niveau de log **`TRACE`**.
+
+
+### Configuration de Logback pour le profile de production
+
+Est-ce que les logs de type **`DEBUG`** sont activés en production ? Non, les logs de type **`DEBUG`** ne sont pas activés en production, car ils peuvent contenir des informations sensibles sur le fonctionnement interne de l'application. Nous allons donc configurer **`Logback`** pour afficher les logs de niveau **`INFO`** et supérieur en production.
+
+Dans le fichier **`application-production.properties`**, veuillez ajouter les
+lignes suivantes :
+
+```properties
+logging.level.root=INFO
+logging.file.name=logs/application.log
+logging.logback.rollingpolicy.max-file-size=10MB
+logging.logback.rollingpolicy.max-history=7
+```
+
+Ces lignes permettent de configurer le niveau de log à **`INFO`** et supérieur en production, et d'écrire les logs dans le fichier **`logs/application.log`**.
+
+### Configuration de Logback pour le profile de test et le profile de staging
+
+Pour les profiles de test et de staging, nous souhaitons afficher les logs de niveau **`DEBUG`** et supérieur dans la console, tout en logguant toutes les exceptions dans un fichier de log.
+
+Dans le fichier **`application-test.properties`**, veuillez ajouter les lignes suivantes :
+
+```properties
+logging.level.root=DEBUG
+logging.file.name=logs/application.log
+logging.logback.rollingpolicy.max-file-size=10MB
+logging.logback.rollingpolicy.max-history=7
+
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+logging.level.org.hibernate.SQL=DEBUG
+logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
+```
+
+Dans le fichier **`application-staging.properties`**, veuillez ajouter les lignes suivantes :
+
+```properties
+logging.level.root=DEBUG
+logging.file.name=logs/application.log
+logging.logback.rollingpolicy.max-file-size=10MB
+logging.logback.rollingpolicy.max-history=7
+```
+
+# <InternalPageTitle> Comment visualiser les logs dans l'environnement déployé ? </InternalPageTitle>
+
+## Introduction
+
+Comment visualiser les logs dans l'environnement déployé ?  
+Ou en d'autres termes, comment stocker les logs dans un endroit sûr et les consulter facilement pour suivre les erreurs de manière cohérente et les corriger rapidement ?
+
+Dans notre cours, nous avons choisi de déployer l'API dans Azure Web App à l'aide de Docker Compose. De plus, pour les assets, nous utilisons Azure Blob Storage. Nous allons donc stocker les logs dans Azure Blob Storage pour les rendre persistants et les consulter facilement.
+
+## Visualiser les derniers logs dans le portail Azure
+
+Dans le portail Azure, vous pouvez visualiser les derniers logs de l'API en temps réel. Pour cela, veuillez suivre ces étapes :
+- Connectez-vous au portail Azure.
+- Recherchez et sélectionnez votre **`App Service`**.
+- Dans le menu de gauche, sélectionnez **`Log stream`**.
+- Vous pouvez maintenant voir les logs en temps réel de l'API.
+
+## Stocker les diagnostics dans Azure storage
+
+### Création d'un compte de stockage Azure
+
+Pour stocker les logs dans Azure Blob Storage, vous devez créer un compte de stockage Azure dans la même région que votre Azure Web App. 
+
+Nous vous avons jusque là recommandé de créer vos services Azure dans la région **`East US`**. Pourquoi ? C'est aussi la région la moins chère pour les étudiants Azure.
+
+Pour que le service de stockage soit visible par l'Azure Web App, il doit être dans la même région que l'Azure Web App.
+
+Vous pourriez utiliser le service de stockage créé pour stocker les images de l'API pour stocker les logs de l'API. 
+
+Néanmoins, pour être sûr que le service de stockage est dans la même région que l'Azure Web App, nous allons créer un nouveau service de stockage pour stocker les logs de l'API. 
+
+Veuillez vérifier la région de votre Azure Web App dans le portail Azure et créer un compte de stockage Azure dans la même région. Pour cela, veuillez suivre ces étapes :
+- Connectez-vous au portail Azure.
+- Choisissez **`Free services`** dans la recherche pour voir les services gratuits.
+- Recherchez et sélectionnez **`Azure Blob Storage`**.
+- Indiquez comme **`Resource group`** le même que celui de votre Azure Web App.
+- Donnez un nom à votre compte de stockage, par exemple **`log007`**.
+- Cliquez sur **`Review + create`**.
+- Cliquez sur **`Create`**.
+- Cliquez sur **`Go to resource`** une fois le compte de stockage créé.
+
+
+### Pour stocker les logs et les visualiser facilement via Azure Monitor, vous pouvez activer les diagnostics de l'API dans Azure Web App. Pour cela, veuillez suivre ces étapes :
+- Connectez-vous au portail Azure.
+- Recherchez et sélectionnez votre **`App Service`**.
+- Dans le menu de gauche, sélectionnez **`Diagnostics settings`**.
+- Cliquez sur **`Add diagnostic setting`**.
+- Donnez un nom à votre diagnostic setting, par exemple **`Project diagnostic`**.
+- Sélectionnez les logs que vous souhaitez stocker. Pour ce tutoriel, nous allons sélectionner **`App Service Console Logs`**, **`App Service Application Logs`** et **`App Service Platform logs`**.
+- Sélectionnez le **`Destination`**. Pour ce tutoriel, nous allons sélectionner **`Archive to a storage account`**.
+- Pour la **`Subscription`**, sélectionnez votre abonnement Azure, **`Azure for Students`** par exemple.
+- Pour le **`Storage account`**, sélectionnez un compte de stockage Azure existant, celui que vous avez créé dans la même région et dans le même Resource group (**`log007`** par exemple).
+- Cliquez sur **`Save`**.
+
+## Activer les diagnostics dans l'application
+
+### Activer les logs dans Azure Web App
+
+Comme nous capturons les Application Logs, nous devons activer les logs dans Azure Web App. Pour cela, veuillez suivre ces étapes :
+- Connectez-vous au portail Azure.
+- Recherchez et sélectionnez votre **`App Service`**.
+- Dans le menu de gauche, Dans **`Monitoring`**, sélectionnez **`App Service logs`**.
+- Pour **`Application Logging`**, sélectionnez **`File System`**.
+- Cliquez sur **`Save`**.
+
+### Activer l'accès FTPS
+
+Nous souhaitons accéder aux logs de l'API via FTPS. Pour cela, veuillez suivre ces étapes :
+- Connectez-vous au portail Azure.
+- Recherchez et sélectionnez votre **`App Service`**.
+- Dans le menu de gauche, dans **`Settings`**, sélectionnez **`
+Configuration`**.
+- Pour **`FTP Basic Auth Publishing Credentials`**, sélectionnez **`On`**.
+- Cliquez sur **`Save`**.
+- Dans le menu de gauche, dans **`Deployment`**, sélectionnez **`Deployment Center`**.
+- Cliquez sur **`FTPS credentials`** pour accéder aux logs via FTPS.
+- Notez les informations de connexion FTPS, **`FTPS endpoint`** (**`ftps://waws-prod-dm1-173.ftp.azurewebsites.windows.net/site/wwwroot`** par exemple)
+- Créer un **`Username`** avec le bon format, par exemple **`caeuser007`** (doit être unique au sein de Azure !) et un **`Password`** respectant aussi le bon format, comme **`Metoo123!*`**. Pour se logguer, le username sera quelque chose du style **`staging-pizzeria\caeuser007`** (voir dans le portail, il s'agit de d'abor indiquer le nom de l'app) et le password **`Metoo123!*`**.
+
+## Accéder aux logs
+
+Comment accéder à ces logs ? Pour accéder à ces logs, vous pouvez soit utiliser les **`Advanced Tools`** de l'Azure Web App. Pour cela, veuillez suivre ces étapes :
+- Connectez-vous au portail Azure.
+- Recherchez et sélectionnez votre **`App Service`**.
+- Dans le menu de gauche, dans **`Development Tools`**, sélectionnez **`Advanced tools`** et cliquez sur **`Go`**.
+- Cliquez sur **`Current Docker logs`** (**`Download as zip`**) pour télécharger les logs de Docker.
+- Cliquez sur **`Log stream`** pour visualiser les logs en temps réel.
+
+Sinon, vous pouvez aussi accéder aux logs via FTP. Pour cela, veuillez suivre ces étapes :
+- Récupérez les informations de connexion FTPS que vous avez notées précédemment.
+- Utilisez un client FTP pour vous connecter à l'Azure Web App, comme par exemple votre explorateur de fichiers.
+- Naviguez dans le dossier **`LogFiles`** pour accéder aux logs de l'API.
+
+## Visualiser les logs dans Azure Blob Storage
+
+Les logs de Azure Web App sont disponibles dans votre compte de stockage Azure. Pour les visualiser, veuillez suivre ces étapes :
+- Connectez-vous au portail Azure.
+- Recherchez et sélectionnez votre **`Storage account`**.
+- Dans le menu de gauche, sélectionnez **`Containers`**.
+- Vous pouvez maintenant voir les logs de l'API dans le conteneur **`insights-logs-appserviceconsolelogs`* et **`insights-logs-appserviceplatformlogs`**.
+
+Ces logs sont stockés dans des fichiers de log au format **`json`**. Vous pourriez les télécharger et les consulter facilement pour suivre les erreurs de manière cohérente et les corriger rapidement.
+
+Néanmoins, il serait plus facile d'avoir une application qui permet de visualiser les logs en temps réel. Pour cela, vous pourriez utiliser Azure Monitor pour visualiser les logs en temps réel.
+
+
+## Utiliser Azure Monitor pour visualiser les logs en temps réel
+
+### Introduction
+
+Azure Monitor est un service Azure qui permet de visualiser les logs en temps réel. Pour l'utiliser, vous devez créer un **`Log Analytics workspace`** et connecter votre Azure Web App à ce workspace.
+
+### Création d'un Log Analytics workspace
+
+Pour créer un **`Log Analytics workspace`**, veuillez suivre ces étapes :
+- Connectez-vous au portail Azure.
+- Recherchez et sélectionnez **`Log Analytics workspaces`**.
+- Cliquez sur **`Create`**.
+- Sélectionnez votre abonnement Azure, **`Azure for Students`** par exemple.
+- Sélectionnez le **`Resource group`** de votre Azure Web App, **`pizzeria_group`** par exemple.
+- Donnez un nom à votre workspace, par exemple **`cae-log-analytics`**.
+- Sélectionnez la région de votre Azure Web App, **`Central US`** par exemple.
+- Cliquez sur **`Review + create`**.
+- Cliquez sur **`Create`**.
+- Cliquez sur **`Go to resource`** une fois le workspace créé.
+
+### Connecter votre Azure Web App à votre Log Analytics workspace
+
+Pour connecter votre Azure Web App à votre **`Log Analytics workspace`**, veuillez suivre ces étapes :
+- Connectez-vous au portail Azure.
+- Recherchez et sélectionnez votre **`App Service`**.
+- Dans le menu de gauche, sélectionnez **`Diagnostics settings`**.
+- Cliquez sur **`Add diagnostic setting`**.
+- Donnez un nom à votre diagnostic setting, par exemple **`Project analytics`**.
+- Sélectionnez les logs que vous souhaitez stocker. Pour ce tutoriel, nous allons sélectionner **`App Service Console Logs`**, **`App Service Application Logs`** et **`App Service Platform logs`**.
+- Sélectionnez le **`Destination`**. Pour ce tutoriel, nous allons maintenant sélectionner **`Send to Log Analytics`**.
+- Pour la **`Subscription`**, sélectionnez votre abonnement Azure, **`Azure for Students`** par exemple.
+- Pour le **`Log Analytics workspace`**, sélectionnez le workspace que vous avez créé, **`cae-log-analytics`** par exemple.
+- Cliquez sur **`Save`**.
+
+### Visualiser les logs en temps réel dans Azure Monitor
+
+Il est maintenant possible de faire des requêtes sur les logs de l'API dans Azure Monitor ou directement dans le **`Monitoring`** de l'Azure Web App.
+
+Pour cela, veuillez suivre ces étapes :
+- Connectez-vous au portail Azure.
+- Sélectionnez votre **`Azure Web App`**.
+- Dans le menu de gauche, sélectionnez **`Monitoring`**.
+- Sélectionnez **`Logs`**.
+- Vous pouvez maintenant faire des requêtes sur les logs de l'API en temps réel.
+- Un Queries hub est disponible pour vous aider à écrire des requêtes sur les logs de l'API. Pour ce tutoriel, vous pouvez le fermer.
+- Cliquez sur **`Table`**, et dans **`App Services`**, sélectionnez **`AppServiceConsoleLogs`**.
+- Vous pouvez maintenant voir les logs de l'API en temps réel.
+- En cliquant sur **`Simple mdoe`**, vous pouvez switcher vers le mode **`KQL mode`** pour écrire des requêtes plus avancées sur les logs de l'API.
+- En tapant sur **Enter** après **AppServiceConsoleLogs**, vous devriez obtenir des options pour construire votre requête. Par exemple, vous pouvez remplacer la requête par **`AppServiceConsoleLogs | where ResultDescription contains "ERROR"`** pour afficher les logs d'erreur de l'API.
+
+Attention, il est possible que les logs ne soient pas immédiatement disponibles dans Azure Monitor. Il faut parfois attendre quelques minutes avant qu'ils deviennent disponibles.
+
+## Conclusion sur la visualisation des logs dans l'environnement déployé
+
+Dans ce tutoriel, nous avons vu comment visualiser les logs dans l'environnement déployé. Nous avons vu comment stocker les logs dans Azure Blob Storage pour les rendre persistants et les consulter (facilement) pour suivre les erreurs de manière cohérente et les corriger. Nous avons aussi vu comment utiliser Azure Monitor pour visualiser les logs en temps réel.
+
+Nous comprenons que la gestion des logs dépend fortement de chaque provider cloud. N'hésitez pas à consulter la documentation de votre provider cloud pour plus d'informations sur la gestion des logs.
+
+Une autre façon intéressante de gérer la persistance des logs pourrait être d'utiliser Spring pour directement stocker les logs dans Azure Blob Storage. Cela pourrait être une piste intéressante pour un projet futur.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+A EFFACER
+
+Nous utilisons déjà Azure Blob Storage pour stocker les images de l'API. Nous allons donc simplement créer un volume Docker pour stocker les logs dans Azure Blob Storage.
+
+Il existe plusieurs options pour stocker les logs dans Azure Blob Storage :
+- Soit directement mettre à jour l'image de l'API pour écrire les logs dans Azure Blob Storage.
+- Soit créer un nouveau service dans Docker Compose pour stocker les logs dans Azure Blob Storage.
+- Soit au niveau de la pipeline de GitLab CI/CD, stocker les logs dans Azure Blob Storage.
+
+Pour ce cours, nous avons choisi la deuxième option qui consiste à simplement créer un nouveau service dans Docker Compose pour stocker les logs dans Azure Blob Storage.
+
+## Créer un nouveau service dans Docker Compose pour stocker les logs dans Azure Blob Storage
+
+Veuillez mettre à jour le fichier **`docker-compose.staging.yml`** pour ajouter un nouveau service **`blobfuse`** qui stocke les logs dans Azure Blob Storage en temps réel :
+
+```yaml {2-14,32-33,48-49} showLineNumbers
+services:
+  blobfuse:
+    image: mcr.microsoft.com/azure-blobfuse2:latest
+    container_name: blobfuse
+    privileged: true # Nécessaire pour utiliser FUSE
+    environment:
+      - AZURE_STORAGE_ACCOUNT=imagestorage007
+      - AZURE_BLOB_CONTAINER=staging
+      - AZURE_BLOB_SAS_TOKEN=${AZURE_BLOB_SAS_TOKEN}
+    volumes:
+      - blobfuse-logs:/mnt/blob # Monte le conteneur Azure Blob Storage dans /mnt/blob
+    entrypoint: >
+      blobfuse2 mount /mnt/blob
+      --config-file=/blobfuse2-config.yaml
+
+  frontend:
+    container_name: frontend-prod
+    image: frontend-prod
+    build:
+      context: ./frontend
+    ports:
+      - 5172:5172
+    depends_on:
+      - api
+
+  api:
+    container_name: api-prod
+    image: api-prod
+    build: ./api
+    ports:
+      - 3000:3000
+    volumes:
+      - blobfuse-logs:/api/logs # Partage le volume monté par Blobfuse avec le conteneur API
+    environment:
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - AZURE_BLOB_SAS_TOKEN=${AZURE_BLOB_SAS_TOKEN}
+    entrypoint: ["java", "-jar", "app.jar", "--spring.profiles.active=staging"]
+
+  reverse-proxy:
+    container_name: reverse-proxy-prod
+    image: reverse-proxy-prod
+    build: ./reverse-proxy
+    ports:
+      - 80:80
+
+volumes:
+  blobfuse-logs:
+```
+
+Veuillez aussi mettre à jour le fichier **`docker-compose.deploy.yml`** pour ajouter un nouveau service **`blobfuse`** qui stocke les logs dans Azure Blob Storage en temps réel :
+
+```yaml {2-14,29-30,44-45} showLineNumbers
+services:
+  blobfuse:
+    image: mcr.microsoft.com/azure-blobfuse2:latest
+    container_name: blobfuse
+    privileged: true # Nécessaire pour utiliser FUSE
+    environment:
+      - AZURE_STORAGE_ACCOUNT=imagestorage007
+      - AZURE_BLOB_CONTAINER=production
+      - AZURE_BLOB_SAS_TOKEN=${AZURE_BLOB_SAS_TOKEN}
+    volumes:
+      - blobfuse-logs:/mnt/blob # Monte le conteneur Azure Blob Storage dans /mnt/blob
+    entrypoint: >
+      blobfuse2 mount /mnt/blob
+      --config-file=/blobfuse2-config.yaml
+
+  frontend:
+    image: registry.gitlab.com/e-vinci/cae-projects/2025-cae-projects/cae-group-xy/frontend-prod:latest
+    container_name: frontend-prod
+    ports:
+      - 5172:5172
+    depends_on:
+      - api
+
+  api:
+    image: registry.gitlab.com/e-vinci/cae-projects/2025-cae-projects/cae-group-xy/api-prod:latest
+    container_name: api-prod
+    ports:
+      - 3000:3000
+    volumes:
+      - blobfuse-logs:/mnt/blob # Monte le conteneur Azure Blob Storage dans /mnt/blob
+    environment:
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - AZURE_BLOB_SAS_TOKEN=${AZURE_BLOB_SAS_TOKEN}
+    entrypoint: ["java", "-jar", "app.jar", "--spring.profiles.active=staging"]
+
+  reverse-proxy:
+    image: registry.gitlab.com/e-vinci/cae-projects/2025-cae-projects/cae-group-xy/reverse-proxy-prod:latest
+    container_name: reverse-proxy-prod
+    ports:
+      - 80:80
+
+volumes:
+  blobfuse-logs:
+```
+
+Il faut aussi ajouter la variable d'environnement **`AZURE_BLOB_SAS_TOKEN`** dans GitLab CI/CD pour stocker les logs dans Azure Blob Storage. Pour cela, veuillez ajouter la variable d'environnement **`AZURE_BLOB_SAS_TOKEN`** dans les variables d'environnement de votre pipeline de déploiement.  
+
+Pour rappel :
+- Dans votre projet GitLab, allez dans **`Settings`** > **`CI/CD`** > **`Variables`**.
+- Cliquez sur **`Add variable`**.
+- Déselectionnez **`Protected`** pour que la variable soit accessible dans les branches protégées.
+- Ajoutez la variable **`AZURE_BLOB_SAS_TOKEN`** avec la valeur de votre **`SAS Token`**.
+
+
+
+## Création d'un Azure File Share pour stocker les logs dans Azure Blob Storage
+
+Pour stocker les logs dans Azure Blob Storage, nous devons créer un Azure File Share pour stocker les logs dans Azure Blob Storage. Pour cela, veuillez suivre les étapes suivantes :
+- Connectez-vous à votre compte Azure sur le portail Azure : https://portal.azure.com/
+- Sélectionnez votre Storage account, par exemple **`imagestorage007`**.
+- Cliquez sur **`File shares`** dans le menu de gauche au sein de **`Data storage`**.
+- Donnez un nom à votre **`File share`**, par exemple **`staging-cae-logs`**.
+- Cliquez sur **`Review + Create`** pour créer le **`File share`**.
+- Cliquez sur **`Create`** pour créer le **`File share`**.
+
+## Monter le Azure File Share dans la Web App
+
+Pour monter le **`Azure File Share`** dans la **`Web App`**, veuillez suivre les étapes suivantes :
+- Connectez-vous à votre compte Azure sur le portail Azure : https://portal.azure.com/
+- Sélectionnez votre **`Web App`**, par exemple **`staging-cae-projects`**.
+- Cliquez sur **`Configuration`** dans le menu de gauche.
+- Cliquez sur **`Path mappings`**.
+- Cliquez sur **`New Azure file share`**.
+- Ecrivez votre **`Storage account`**, par exemple **`imagestorage007`**.
+- Donnez un nom à votre **`Azure File Share`**, par exemple **`logs`**.
+- Pour **`Storage type`**, sélectionnez **`Azure Files`**.
+- Sélectionnez votre **`Share name`**, par exemple **`staging-cae-logs`**.
+- Comme **`Access key`**, sélectionnez et copier **`Key1`** à partir de votre **`Storage account`**, dans **`Security + networking`** > **`Access keys`**.
+- Pour le **`Mount path`**, sélectionnez **`/mnt/logs`**.
+- Cliquez sur **`OK`** pour monter le **`Azure File Share`** dans la **`Web App`**.
+
+## Monter le File Share au sein de l'API
+
+Veuillez mettre à jour le fichier **`application-staging.properties`** pour stocker les logs dans le **`Azure File Share`** :
+
+```properties
+logging.file.name=/mnt/logs/application.log
+```
+
+Veuillez mettre à jour le fichier **`application-production.properties`** pour stocker les logs dans le **`Azure File Share`** :
+
+```properties
+logging.file.name=/mnt/logs/application.log
+```
