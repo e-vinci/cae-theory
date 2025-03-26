@@ -20,6 +20,7 @@ import { SiteMetaData } from "@/types";
 import MenuIcon from "@mui/icons-material/Menu";
 
 import { useTheme } from "@mui/material/styles";
+import DarkLightToggler from "../DarkLightToggler/DarkLightToggler";
 
 interface NavbarProps {
   siteMetaData: SiteMetaData;
@@ -133,7 +134,11 @@ const Navbar = ({ siteMetaData }: NavbarProps) => {
     <>
       <AppBar
         position="static"
-        sx={{ color: theme.palette.primary.contrastText }}
+        sx={{
+          backgroundColor: theme.palette.primary.main, 
+          color: theme.palette.primary.contrastText,
+          
+        }}
       >
         <Toolbar>
           <IconButton
@@ -152,6 +157,7 @@ const Navbar = ({ siteMetaData }: NavbarProps) => {
           >
             {siteMetaData.title}
           </Typography>
+          <DarkLightToggler />
           <Box sx={{ display: { xs: "none", sm: "block" } }}>
             {siteMetaData.menuLinks.map((link) => (
               <Box key={link.name} sx={{ display: "inline" }}>

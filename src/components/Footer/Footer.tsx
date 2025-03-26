@@ -17,8 +17,8 @@ const Footer = ({ siteMetaData }: FooterProps) => {
           spacing={2}          
           alignItems="center"
           sx={{
-            backgroundColor: theme.palette.primary.main, // Couleur primaire
-            color: theme.palette.primary.contrastText, // Texte contrasté
+            backgroundColor: theme.palette.primary.main, 
+            color: theme.palette.primary.contrastText,
             display: "flex",
             alignItems: "center",
             padding: "16px",
