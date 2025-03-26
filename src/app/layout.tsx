@@ -1,12 +1,13 @@
 import "./code-block.css";
 import "prism-themes/themes/prism-vsc-dark-plus.css"; // Import Prism CSS
-import { Container } from "@mui/material";
+import { Box, Container } from "@mui/material";
 import "@fontsource/roboto";
 import { SiteMetaData } from "@/types";
 import Header from "@/components/Header/Header";
 import ScrollToTop from "@/components/ScrollToTop/ScrollToTop";
 import { ClientThemeProvider } from "@/components/ClientThemeProvider/ClientThemeProvider";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
+import Footer from "@/components/Footer/Footer";
 
 const siteMetaData: SiteMetaData = {
   version: "", // "2.0.0",
@@ -14,7 +15,7 @@ const siteMetaData: SiteMetaData = {
   description: "siteDescription",
   url: "siteURL",
   youtubeUrl: "youtubeUrl",
-  authorEmail: "authorEmail",
+  authorEmail: "raphael.baroni@vinci.be",
   facebookUrl: "facebookUrl",
   instagramUrl: "instagramUrl",
   menuLinks: [
@@ -53,7 +54,10 @@ const siteMetaData: SiteMetaData = {
       subMenu: [
         { name: "Gestion de la production", link: "/iteration3/production" },
         { name: "Gestion des logs & exceptions", link: "/iteration3/logs" },
-        { name: "Gestion de transactions et de la concurrence", link: "/iteration3/concurrency" },
+        {
+          name: "Gestion de transactions et de la concurrence",
+          link: "/iteration3/concurrency",
+        },
       ],
     },
     {
@@ -86,14 +90,25 @@ const RootLayout = ({ children }: RootLayoutProps) => {
             <title>CAE Course</title>
             <link rel="icon" type="image/svg+xml" href={faviconUrl} />
           </head>
-          <body>
+          <Box
+            component="body" // Utilisation de Box pour remplacer <body>
+            sx={{
+              display: "flex", // Flexbox pour organiser les enfants
+              flexDirection: "column", // Disposition en colonne
+              minHeight: "100vh", // Hauteur minimale pour couvrir toute la fenêtre
+              margin: 0, // Supprime les marges par défaut
+            }}
+          >
             <Header siteMetaData={siteMetaData} />
 
-            <Container sx={{ padding: "1rem", wordWrap: "break-word" }}>
+            <Container
+              sx={{ padding: "1rem", wordWrap: "break-word", flex: 1 }}
+            >
               {children}
             </Container>
             <ScrollToTop />
-          </body>
+            <Footer siteMetaData={siteMetaData} />
+          </Box>
         </html>
       </ClientThemeProvider>
     </AppRouterCacheProvider>
