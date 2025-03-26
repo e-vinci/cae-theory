@@ -1,0 +1,49 @@
+---
+title: Bonus
+description: Bonus
+date: 26/03/2025
+---
+
+<InternalPageMenu>
+  <PathViewer>
+    <PathViewerItem to="/"> CAE </PathViewerItem>
+    <PathViewerItem to="/iteration4"> Itération 4 </PathViewerItem>
+    <PathViewerItem selected> Pour aller plus loin ? </PathViewerItem>
+  </PathViewer>
+  <InternalPageMenuItem> Vous souhaitez aller plus loin ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment gérer une augmentation de la charge ? </InternalPageMenuItem>
+  <InternalPageMenuItem> D'autres idées ? </InternalPageMenuItem>
+</InternalPageMenu>
+
+# <InternalPageTitle> Vous souhaitez aller plus loin ? </InternalPageTitle>
+
+Cette partie est dédiée à ceux qui souhaitent aller plus loin dans la gestion de leur applications d'entreprise. Vous trouverez ici des idées pour améliorer votre application, des pistes pour gérer une augmentation de la charge, et d'autres idées pour aller plus loin par vous-même.
+
+# <InternalPageTitle> Comment gérer une augmentation de la charge ? </InternalPageTitle>
+
+Si votre application commence à être utilisée par un grand nombre d'utilisateurs, vous pourriez rencontrer des problèmes de performance. Voici quelques pistes pour gérer une augmentation de la charge :
+- **Utiliser docker compose pour créer plusieurs instances de vos services** :
+  - Docker compose est un outil qui permet de définir et de lancer des applications multi-conteneurs. Vous pouvez utiliser docker compose pour créer plusieurs instances de vos services (par exemple **`docker-compose up --scale api=3`**), ce qui vous permettra de répartir la charge entre ces instances. En configurant le reverse proxy (par exemple :
+    ```http 
+    upstream api_backend {
+        server api-prod:3000; # Instance 1
+        server api-prod_1:3000; # Instance 2
+        server api-prod_2:3000; # Instance 3
+    }
+    ```
+    pour qu'il distribue les requêtes entre les instances (par exemple en utilisant l'algorithme round-robin par défaut) pourra alors rediriger les requêtes vers les différentes instances en fonction de la charge.
+- **Réaliser des tests de charge** :
+  - Les tests de charge vous permettront de simuler un grand nombre d'utilisateurs et de vérifier que votre application peut supporter cette charge. Vous pourriez par exemple utiliser **`k6`** (https://k6.io/) pour réaliser des tests de charge sur votre application. Nous recommandons cet outil car il permet de réaliser des tests de charge en utilisant du code JavaScript, ce qui facilite la création de scénarios de test. Attention à ne pas surcharger Azure Web App, car cela pourrait entraîner des coûts supplémentaires, voire des limitations de service si Azure venait à considérer qu'il est sous attaque.
+- **Utiliser un service de cache** :
+  - Un service de cache peut vous aider à améliorer les performances de votre application en stockant des données en mémoire. Cela permettra de réduire le temps de réponse de votre application et de soulager votre base de données. Vous pouvez par exemple utiliser **`Redis`** pour mettre en cache les résultats de requêtes fréquentes.
+- **Passer à Kubernetes** (déconseillé pour le projet des étudiants Vinci car il y aurait trop de travail) :
+  - Kubernetes offre des fonctionnalités avancées pour la gestion de la montée en charge, telles que l'auto-scaling, qui permet d'ajuster automatiquement le nombre d'instances en fonction de la charge. Vous pouvez par exemple utiliser **`kubectl scale deployment api --replicas=3`** pour augmenter le nombre d'instances de votre service API à 3. Kubernetes se chargera alors de répartir la charge entre ces instances. Vous pouvez aussi utiliser Kubernetes pour avoir plusieurs instances de votre application, et les répartir sur plusieurs nœuds pour éviter les pannes si par exemple un reverse proxy tombe en panne (chose impossible à gérer avec Docker Compose seul, sauf si l'on utilise un outil de gestion de conteneurs comme Docker Swarm).
+  - Sous Azure, vous pourriez utiliser **Azure Kubernetes Service (AKS)** pour déployer et gérer des clusters Kubernetes. AKS vous permettrait de bénéficier des fonctionnalités avancées de Kubernetes sans avoir à gérer l'infrastructure sous-jacente.
+- ...
+
+# <InternalPageTitle> D'autres idées ? </InternalPageTitle>
+
+Si vous avez d'autres idées pour améliorer votre application, n'hésitez pas à les partager avec nous 😉
+
+Nous vous souhaitons une bonne continuation dans la gestion de vos applications d'entreprise ! 🚀
+```
