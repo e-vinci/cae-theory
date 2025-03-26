@@ -24,7 +24,7 @@
 
 'LAYOUT_TOP_DOWN()
 
-title Staging Environment (Part1) : C4 Deployment Diagram
+title Production Environment : C4 Deployment Diagram
 
 Node(docker_host, "Gitlab CI/CD Docker Host", "Gitlab CI/CD", "Runs the pipeline", $sprite=gitlab) {
 
@@ -44,7 +44,7 @@ Node(docker_host, "Gitlab CI/CD Docker Host", "Gitlab CI/CD", "Runs the pipeline
 
 }
 
-Node(azureWebApp, "Azure Web App", "Docker Compose\nhttps://pizzeria-g5f9f8cte0g7efcx.centralus-01.azurewebsites.net","Hosts the front & API" , $sprite=AzureWebApp{scale=0.7},  $link="https://pizzeria-g5f9f8cte0g7efcx.centralus-01.azurewebsites.net") {
+Node(azureWebApp, "Azure Web App", "Docker Compose\nhttps://staging-pizzeria-g5f9f8cte0g7efcx.centralus-01.azurewebsites.net","Hosts the front & API" , $sprite=AzureWebApp{scale=0.7},  $link="https://pizzeria-g5f9f8cte0g7efcx.centralus-01.azurewebsites.net") {
     Node(docker_compose, "Docker Compose Network", "Configuration", "Configure and manage containers",  $sprite=docker) {
 
         Node(nginxContainer, "Reverse proxy", "nginx:alpine", "Handles all requests", $sprite=docker) {
@@ -63,8 +63,31 @@ Node(azureWebApp, "Azure Web App", "Docker Compose\nhttps://pizzeria-g5f9f8cte0g
     }
 }
 
- Node(dbContainer, "Postgres", "Vinci Hosting or \nAzure DB for PostgreSQL", "Runs the db") {
+Node(azureWebAppProd, "Azure Web App", "Docker Compose\nhttps://production-pizzeria-g5f9f8cte0g7efcx.centralus-01.azurewebsites.net","Hosts the front & API" , $sprite=AzureWebApp{scale=0.7},  $link="https://pizzeria-g5f9f8sdfqse0g7efcx.centralus-01.azurewebsites.net") {
+    Node(docker_composeProd, "Docker Compose Network", "Configuration", "Configure and manage containers",  $sprite=docker) {
+
+        Node(nginxContainerProd, "Reverse proxy", "nginx:alpine", "Handles all requests", $sprite=docker) {
+            Container(nginxProd, "Reverse proxy", "Nginx", "Handles all requests", $sprite=nginx)
+        }
+
+
+        Node(frontContainerProd, "Front container", "nginx:alpine", "Host the front", $sprite=docker) {
+            Container(frontendProd, "Frontend", "HTML/JS/CSS", "The main UI that the customer interacts with", $sprite=react)
+        }
+        Node(apiContainerProd, "API container", "eclipse-temurin:21-jre-jammy", "Runs the API", $sprite=docker) {
+            Container(apiProd, "API", "Spring Boot", "Handles all business logic", $sprite=img:https://upload.wikimedia.org/wikipedia/commons/7/79/Spring_Boot.svg{scale=0.5})
+        }
+
+
+    }
+}
+
+ Node(dbContainer, "Postgres", "Vinci Hosting or \nAzure DB for PostgreSQL\nstaging", "Runs the db") {
     ContainerDb(db, "Database", "PostgreSQL", "Holds pizzeria's information", $sprite=postgresql)
+}
+
+Node(dbContainerProd, "Postgres", "Vinci Hosting or \nAzure DB for PostgreSQL\production", "Runs the db") {
+    ContainerDb(dbProd, "Database", "PostgreSQL", "Holds pizzeria's information", $sprite=postgresql)
 }
 
  System_Boundary(external, "External Systems") {
@@ -76,15 +99,26 @@ Node(blobContainer, "Storage container", "Azure storage container\nstaging", "Pr
     Container(blob, "Blob Storage", "Azure Blob Storage", "Stores product images", $sprite="AzureBlobStorage,color=blue")
 }
 
+Node(blobContainerProd, "Storage container", "Azure storage container\nproduction", "Provides CRUD API for images", $sprite=AzureStorageContainer{scale=0.7},) {
+    Container(blobProd, "Blob Storage", "Azure Blob Storage", "Stores product images", $sprite="AzureBlobStorage,color=blue")
+}
+
 
 Rel(browser, nginx, "Requests Files", "HTTP")
+Rel(browser, nginxProd, "Requests Files", "HTTP")
 Rel(browser, nginx, "Makes API calls", "HTTP")
+Rel(browser, nginxProd, "Makes API calls", "HTTP")
 Rel(e2e, nginx, "Requests Files", "HTTP")
 Rel(e2e, nginx, "Makes API calls", "HTTP")
 Rel(nginx, frontend, "Forwards requests to", "https")
 Rel(nginx, api, "Forwards /api requests to", "https")
+Rel(nginxProd, frontend, "Forwards requests to", "https")
+Rel(nginxProd, api, "Forwards /api requests to", "https")
 Rel(api, db, "Reads/Writes", "JDBC")
+Rel(apiProd, dbProd, "Reads/Writes", "JDBC")
 Rel(browser, blob, "Reads images", "https")
+Rel(browser, blobProd, "Reads images", "https")
 Rel(api, blob, "Writes")
+Rel(apiProd, blobProd, "Writes")
 
 @enduml
