@@ -69,7 +69,7 @@ const DynamicGlobalStyles = () => {
         },
         "tr:hover": {
           backgroundColor: theme.palette.action.selected,
-        },
+        },    
       }}
     />
   );

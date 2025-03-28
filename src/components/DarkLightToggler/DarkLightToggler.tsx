@@ -1,6 +1,11 @@
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
-import { IconButton, useColorScheme, useTheme } from "@mui/material";
+import {
+  IconButton,
+  useColorScheme,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 
 /**
  * A component that toggles between dark and light mode.
@@ -9,8 +14,12 @@ import { IconButton, useColorScheme, useTheme } from "@mui/material";
 const DarkLightToggler = () => {
   const theme = useTheme();
   const { mode, setMode } = useColorScheme();
+  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
 
   const toggleDarkLight = () => {
+    if (mode === "system") {
+      setMode(prefersDarkMode ? "light" : "dark");
+    }
     setMode(mode === "light" ? "dark" : "light");
   };
 
@@ -25,7 +34,7 @@ const DarkLightToggler = () => {
         aria-label="Toggle dark/light mode"
         sx={{ color: theme.palette.primary.contrastText }}
       >
-        {mode === "light" || mode === undefined ? (
+        {mode === "light" || mode === "system" && !prefersDarkMode ? (
           <LightModeIcon />
         ) : (
           <DarkModeIcon />
