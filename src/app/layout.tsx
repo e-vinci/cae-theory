@@ -54,16 +54,16 @@ const siteMetaData: SiteMetaData = {
       subMenu: [
         { name: "Gestion de la production", link: "/iteration3/production" },
         { name: "Gestion des logs & exceptions", link: "/iteration3/logs" },
-        {
-          name: "Gestion de transactions et de la concurrence",
-          link: "/iteration3/concurrency",
-        },
       ],
     },
     {
       name: "Itération 4",
       link: "",
       subMenu: [
+        {
+          name: "Gestion de transactions et de la concurrence",
+          link: "/iteration3/concurrency",
+        },
         { name: "🍬 Pour aller plus loin ?", link: "/iteration4/bonus" },
       ],
     },
