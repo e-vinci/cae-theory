@@ -378,6 +378,51 @@ Voici quelques explications sur le pipeline :
 - Nous avons ajouté **`azure webapp stop`** pour être sûr que l'application est bien arrêtée avant de la redéployer.  
 NB : Cela n'est peut-être pas nécessaire, mais cela semble régler certains problèmes potentiels de non réinitialisation de la DB au redémarrage de l'API dans l'environnement de staging.
 
+### Mise à jour du fichier docker-compose.deploy.yml
+
+Le fichier **`docker-compose.deploy.yml`** doit être mis à jour pour indiquer à l'API d'utiliser le bon profil Spring Boot. 
+
+Pour ce faire, nous allons utiliser la variable d'environnement **`SPRING_PROFILES_ACTIVE`** que nous avons créée précédemment et qui est configurée dans chacune de nos deux Azure Web Apps ; cette variable d'environnement est utilisée par défaut par Spring Boot pour savoir quel profil utiliser.
+
+Voici le code existant du fichier **`docker-compose.deploy.yml`** que nous souhaitons rendre plus générique :
+```yaml
+    entrypoint: ["java", "-jar", "app.jar", "--spring.profiles.active=staging"]
+```
+
+Voici les modifications à apporter :
+```yaml {21-22} showLineNumbers
+services:
+  
+  frontend:
+    image: registry.gitlab.com/e-vinci/cae-projects/2025-cae-projects/cae-group-admin/frontend-prod:latest # A remplacer par le nom de votre projet & image
+    container_name: frontend-prod
+    ports:
+      - 5172:5172
+    depends_on:
+      - api
+
+  api:
+    image: registry.gitlab.com/e-vinci/cae-projects/2025-cae-projects/cae-group-admin/api-prod:latest # A remplacer par le nom de votre projet & image
+    container_name: api-prod
+    ports:
+      - 3000:3000
+    environment:
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - AZURE_BLOB_SAS_TOKEN=${AZURE_BLOB_SAS_TOKEN}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+    entrypoint: ["java", "-jar", "app.jar"]
+
+  reverse-proxy:
+    image: registry.gitlab.com/e-vinci/cae-projects/2025-cae-projects/cae-group-admin/reverse-proxy-prod:latest # A remplacer par le nom de votre projet & image
+    container_name: reverse-proxy-prod
+    ports:
+      - 80:80
+```
+
+Notez ici que **`docker-compose`** a accès aux variables d'environnement de l'environnement de staging ou de production, et donc à la variable **`SPRING_PROFILES_ACTIVE`**. Néanmoins, pour qu'un service puisse accéder à une variable d'environnement définie sur l'hôte, il faut la définir dans le fichier **`docker-compose.`**. C'est pourquoi nous avons ajouté la variable **`SPRING_PROFILES_ACTIVE`** dans le service **`api`**.
+
 
 Veuillez donc faire un commit et un push pour déclencher le pipeline. Vérifiez que le déploiement sur l'environnement de production se passe bien.
 
