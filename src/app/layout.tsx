@@ -62,7 +62,7 @@ const siteMetaData: SiteMetaData = {
       subMenu: [
         {
           name: "Gestion de transactions et de la concurrence",
-          link: "/iteration3/concurrency",
+          link: "/iteration4/concurrency",
         },
         { name: "🍬 Pour aller plus loin ?", link: "/iteration4/bonus" },
       ],
