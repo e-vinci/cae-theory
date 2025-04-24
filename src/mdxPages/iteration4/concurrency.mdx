@@ -76,7 +76,7 @@ Voici les repositories :
 
 ```java {} showLineNumbers
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends CrudRepository<User, Long> {
 }
 ```
 
@@ -719,7 +719,7 @@ public void updateStockWithPessimisticLock(Long productId, int quantityToAdd) {
 // Repository
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product, Long> {
+public interface ProductRepository extends CrudRepository<Product, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<Product> findById(Long productId);
 }
@@ -758,7 +758,7 @@ public void updateStockWithPessimisticLock(Long productId, int quantityToAdd) {
 // Repository
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product, Long> {
+public interface ProductRepository extends CrudRepository<Product, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<Product> findById(Long productId);
 }
