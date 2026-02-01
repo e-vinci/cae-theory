@@ -24,47 +24,11 @@ const siteMetaData: SiteMetaData = {
       link: `/`,
     },
     {
-      name: `Intro`,
-      link: `/intro`,
-    },
-    {
-      name: `Qualité`,
+      name: `Partie 1`,
       link: ``,
       subMenu: [
-        { name: "Qualité générale", link: "/quality/general" },
-        { name: "Qualité du frontend", link: "/quality/frontend" },
-        { name: "Qualité de l'API", link: "/quality/api" },
-        { name: "Intégration Continue", link: "/quality/ci" },
-        { name: "Tests e2e", link: "/quality/e2e" },
-      ],
-    },
-    {
-      name: "Itération 2",
-      link: "",
-      subMenu: [
-        { name: "Gestion des environnements", link: "/iteration2/general" },
-        { name: "Conteneurisation", link: "/iteration2/containerization" },
-        { name: "Déploiement", link: "/iteration2/deployment" },
-        { name: "Gestion des images", link: "/iteration2/images" },
-      ],
-    },
-    {
-      name: "Itération 3",
-      link: "",
-      subMenu: [
-        { name: "Gestion de la production", link: "/iteration3/production" },
-        { name: "Gestion des logs & exceptions", link: "/iteration3/logs" },
-      ],
-    },
-    {
-      name: "Itération 4",
-      link: "",
-      subMenu: [
-        {
-          name: "Gestion de transactions et de la concurrence",
-          link: "/iteration4/concurrency",
-        },
-        { name: "🍬 Pour aller plus loin ?", link: "/iteration4/bonus" },
+        { name: "Introduction", link: "/part1/intro" },
+        { name: "Qualité générale", link: "/part1/general" },
       ],
     },
     {
