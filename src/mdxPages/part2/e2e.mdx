@@ -1,0 +1,763 @@
+---
+title: Tests e2e
+description: Tests e2e
+date: 23/02/2025
+---
+
+<InternalPageMenu>
+  <PathViewer>
+    <PathViewerItem to="/"> CAE </PathViewerItem>
+    <PathViewerItem> Partie 2 </PathViewerItem>
+    <PathViewerItem selected> Tests e2e </PathViewerItem>
+  </PathViewer>
+  <InternalPageMenuItem> Comment gérer des tests de bout en bout ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment mettre en place les tests e2e avec Playwright ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Où enregistrer les spécifications de test ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment tester une application web avec Playwright ?  </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment s'assurer de l'état de l'application avant de commencer les tests ?  </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment gérer les duplications de code dans les tests ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Comment écrire des tests e2e de qualité ? </InternalPageMenuItem>
+</InternalPageMenu>
+
+
+
+# <InternalPageTitle> Comment gérer des tests de bout en bout ? </InternalPageTitle>
+
+## Introduction
+
+Les tests de bout en bout (e2e) sont des tests qui simulent le comportement d'un utilisateur sur une application. Ils permettent de vérifier que l'application fonctionne correctement dans son ensemble, en testant l'interaction entre les différentes parties de l'application.
+
+Pour pouvoir gérer efficacement les tests e2e, il est important de suivre quelques bonnes pratiques :
+- **Définir une stratégie de test** : Avant de commencer à écrire des tests e2e, il est important de définir une stratégie de test qui détermine quels scénarios seront testés et comment ils seront testés.
+- **Utiliser des outils adaptés** : Il existe de nombreux outils pour écrire des tests e2e, comme Playwright, Cypress, Selenium ou Puppeteer. Il est important de choisir l'outil qui convient le mieux à votre projet.
+- **Écrire des tests robustes** : Les tests e2e doivent être robustes et fiables. Il est important de s'assurer qu'ils sont capables de détecter les erreurs et les problèmes potentiels dans l'application.
+- **Automatiser les tests** : Les tests e2e peuvent être automatisés pour pouvoir être exécutés régulièrement et rapidement. Il est possible de les intégrer à votre pipeline CI/CD.
+- **Suivre les bonnes pratiques de développement** : Comme pour les autres types de tests, il est important de suivre les bonnes pratiques de développement pour écrire des tests e2e de qualité.
+
+Pour ce cours, nous avons choisi l'outil **Playwright** pour écrire nos tests e2e. Playwright est un outil moderne et puissant qui permet d'écrire des tests e2e pour les applications web et mobiles. Il offre de nombreuses fonctionnalités avancées, comme la prise en charge des applications PWA, des tests parallèles et la possibilité de tester sur plusieurs navigateurs.
+
+## Comment définir une stratégie de test e2e ?
+
+### Introduction 
+
+Avant de commencer à écrire des tests e2e, il est important de définir une stratégie de test qui détermine quels scénarios seront testés et comment ils seront testés. Voici quelques étapes à suivre pour définir une stratégie de test e2e :
+- **Identifier les scénarios à tester** : Commencez par identifier les scénarios les plus importants de votre application. Il peut s'agir de scénarios critiques pour le bon fonctionnement de l'application, de scénarios qui couvrent les fonctionnalités les plus utilisées par les utilisateurs, ou de scénarios qui ont été à l'origine de bugs dans le passé.
+- **Déterminer les cas de test** : Pour chaque scénario identifié, déterminez les cas de test ("test cases" en anglais) à exécuter. Un cas de test est une séquence d'actions qui permet de vérifier le bon fonctionnement d'une fonctionnalité de l'application.
+
+### Identification des scénarios à tester
+
+Un scénario de test décrit une situation ou un flux d'utilisation spécifique que vous souhaitez tester. Il se concentre sur les actions de l'utilisateur et les résultats attendus de manière générale.
+
+Pour identifier les scénarios à tester, nous vous recommandons cette approche :
+- **Identification des cas d'utilisation** : Commencez par identifier les cas d'utilisation de votre application. Un cas d'utilisation est une description d'une interaction entre un utilisateur et l'application, c'est une fonctionnalité offerte par votre application.
+- **Priorisation des cas d'utilisation** : Priorisez les cas d'utilisation en fonction de leur importance pour l'application. Vous pouvez utiliser des critères comme la criticité, la fréquence d'utilisation, ou l'impact sur l'expérience utilisateur.
+- **Définition des scénarios de test** : Pour chaque cas d'utilisation priorisé, définissez un ou plusieurs scénarios de test qui couvrent les différentes étapes de l'interaction entre l'utilisateur et l'application.
+
+Par exemple, pour tester le cas d'utilisation "Créer un compte utilisateur", vous pourriez définir les scénarios de test suivants :
+- **Scénario 1** : L'utilisateur saisit son username et son mot de passe, puis clique sur le bouton "Créer un compte". Il devrait être redirigé vers la homepage.
+- **Scénario 2** : L'utilisateur saisit un username déjà existant, puis clique sur le bouton "Créer un compte". Il devrait voir un message d'erreur indiquant que le username est déjà pris.
+- **Scénario 3** : L'utilisateur saisit un username valide et un mot de passe invalide, puis clique sur le bouton "Créer un compte". Il devrait voir un message d'erreur.
+
+### Détermination des cas de test
+
+
+Un cas de test est une instance spécifique d'un scénario de test. Il inclut des données d'entrée précises, des actions détaillées, et des résultats attendus. Un scénario de test peut avoir plusieurs cas de test pour couvrir différentes variations et conditions.
+
+
+Pour chaque scénario identifié, déterminez les cas de test à exécuter. 
+
+Pour couvrir les tests du cas d'utilisation "Créer un compte utilisateur", vous pourriez définir les cas de test suivants :
+
+#### Scénario 1 : L'utilisateur saisit son username et son mot de passe, puis clique sur le bouton "Créer un compte". Il devrait être redirigé vers la page de connexion.
+
+- **Cas de test 1.1** : Saisir un username et un mot de passe valides, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur est redirigé vers la page de connexion.
+
+
+#### Scénario 2 : L'utilisateur saisit un username déjà existant, puis clique sur le bouton "Créer un compte". Il devrait voir un message d'erreur indiquant que le username est déjà pris.
+
+- **Cas de test 2.1** : Saisir un username déjà existant et un mot de passe valide, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur voit un message d'erreur indiquant que le username est déjà pris.
+- **Cas de test 2.2** : Saisir un username déjà existant et laisser le champ mot de passe vide, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur voit un message d'erreur indiquant que le mot de passe est requis.
+
+#### Scénario 3 : L'utilisateur saisit un username valide et un mot de passe invalide, puis clique sur le bouton "Créer un compte". Il devrait voir un message d'erreur.
+
+- **Cas de test 3.1** : Saisir un username valide et un mot de passe trop court, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur voit un message d'erreur indiquant que le mot de passe est trop court.
+- **Cas de test 3.2** : Saisir un username valide et laisser le champ mot de passe vide, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur voit un message d'erreur indiquant que le mot de passe est requis.
+
+
+# <InternalPageTitle> Comment mettre en place les tests e2e avec Playwright ? </InternalPageTitle>
+
+## Introduction
+
+Playwright est un outil moderne et puissant pour écrire des tests e2e pour les applications web et mobiles. Il offre de nombreuses fonctionnalités avancées, comme la prise en charge des applications PWA, des tests parallèles et la possibilité de tester sur plusieurs navigateurs.
+
+Pour mettre en place les tests e2e avec Playwright, vous devez suivre quelques étapes :
+- **Installation de Playwright** : Commencez par installer Playwright et les dépendances nécessaires. Pour utiliser Playwright, nous vous recommandons de créer un nouveau projet ; vous pourriez l'intégrer dans le frontend de votre application, mais nous vous conseillons de le garder séparé pour des raisons de clarté.
+- **Écriture des tests** : Écrivez les tests e2e en utilisant l'API de Playwright pour simuler le comportement de l'utilisateur.
+
+
+## Installation des dépendances
+
+Pour ce tutorial, veuillez créer un nouveau répertoire `e2e-tests` sur base d'un copier / coller de `ci` : [ci](https://github.com/e-vinci/cae-theory-demos/tree/main/ci).
+
+Une fois votre répertoire `e2e-tests` créé, veuillez démarrer l'API et le frontend de la pizzeria du projet `e2e-tests`.
+
+Pour ce tutoriel, au sein du répertoire `e2e-tests`, nous allons créer un projet de tests e2e avec Playwright et nommer ce projet `e2e`.  
+Pour ce faire, créez un répertoire nommé `e2e` au sein du répertoire `e2e-tests` et placez-vous dedans.
+
+Pour utiliser Playwright, vous devez installer les dépendances suivantes au sein de `e2e-tests/e2e` :
+
+```bash
+npm init playwright@latest
+```
+
+Veuillez suivre les instructions et sélectionnez toutes les options par défaut :
+- le langage de programmation : TypeScript
+- `Where to put your end-to-end tests?` : `tests` (c'est le dossier où seront stockés les tests e2e)
+- `Add a GitHub Actions workflow?` : false (pour ajouter un workflow GitHub Actions pour exécuter les tests e2e)
+- `Install Playwright browsers (can be done manually via 'npx playwright install')?` : true (pour installer les navigateurs pris en charge par Playwright)
+
+Une fois l'installation terminée, vous devriez voir un nouveau répertoire `tests` dans votre projet `e2e` et un fichier `playwright.config.ts` à la racine du projet.
+
+`playwright.config.ts` : Ce fichier contient la configuration de Playwright pour les tests e2e. Vous pouvez personnaliser cette configuration en fonction de vos besoins, notamment pour définir les navigateurs à utiliser, les options de lancement, ou les paramètres de test.
+
+Le répertoire `tests` contient un fichier `example.spec.ts` qui donne un exemple de test e2e avec Playwright. Vous pouvez le modifier ou le supprimer selon vos besoins.
+
+
+## Exécution des tests
+
+### Exécution des tests e2e dans le terminal 
+
+Pour exécuter les tests e2e avec Playwright en mode headless, c'est-à-dire sans interface graphique, vous pouvez utiliser la commande suivante :
+
+```bash
+npx playwright test
+```
+
+Les résultats des tests s'afficheront dans la console, indiquant si les tests ont réussi ou échoué. 
+
+Veuillez taper cette commande dans le répertoire `e2e` de votre projet.
+
+Playwright détecte toutes les spécifications de tests se trouvant dans le répertoire `tests`.
+
+La seule spécification de test fournie par défaut est `example.spec.ts` qui contient deux tests. Comme par défaut il y a 3 browsers installés, les tests seront exécutés sur ces 3 navigateurs, à savoir Chromium, Firefox et WebKit.  
+C'est pourquoi, au sein du terminal, vous verrez que 6 tests ont passé. C'est en fait que 2 tests ont passé avec succès sur chacun des 3 navigateurs.
+
+### Execution des tests e2e dans le mode UI
+
+Pour exécuter les tests e2e dans le mode UI, vous pouvez utiliser la commande suivante :
+
+```bash
+npx playwright test --ui
+```
+
+Cette commande ouvre une interface graphique qui vous permet de visualiser les tests en cours d'exécution et de voir les résultats en temps réel.
+
+Veuillez lancer les tests à l'aide de l'UI.
+
+### Exécution de tests au sein de VS Code
+
+VS Code a une extension Playwright qui permet d'exécuter les tests e2e directement dans l'éditeur. Pour utiliser cette extension, vous devez l'installer à partir du marketplace des extensions de VS Code.  
+Pour ce faire, veuillez suivre les étapes suivantes :
+- Ouvrez VS Code
+- Cliquez sur l'icône des extensions dans la barre latérale gauche
+- Recherchez "Playwright" dans la barre de recherche
+- Cliquez sur "Installer" pour installer l'extension `Playwright Test for VSCode `
+
+
+Une fois l'extension installée, vous pouvez configurer et exécuter les tests e2e directement dans VS Code en cliquant sur l'icône "Testing" dans la barre latérale gauche.
+
+Pour configurer les tests, vous devez cliquer sur l'onglet "Playwright" dans la barre latérale gauche.
+
+Par exemple, veuillez sélectionner seulement le navigateur Chromium pour exécuter les tests.
+
+Vous pouvez ensuite lancer les tests soit :
+- via le `Test Explorer` : en cliquant sur le bouton `Run Test`
+- via le fichier `example.spec.ts` : en cliquant sur le bouton `Run` à côté du mot clé `test` ou `describe`.
+
+Pour en savoir plus, veuillez consulter la documentation : https://playwright.dev/docs/getting-started-vscode
+
+
+## Rapports de tests au format HTML
+
+Par défaut, si certains tests échouent, Playwright génère un rapport de tests au format HTML dans le répertoire `test-results` et ouvre automatiquement ce rapport.
+
+Il est possible de visualiser le rapport de tests en tapant la commande suivante :
+
+```sh
+npx playwright show-report
+```
+
+Une façon de visualiser le rapport de tests est de consulter le fichier `playwright-report/index.html` dans votre navigateur.
+
+# <InternalPageTitle> Où enregistrer les spécifications de test ? </InternalPageTitle>
+
+Playwright détecte toutes les spécifications de tests se trouvant dans le répertoire `tests` par défaut. Vous pouvez personnaliser ce répertoire dans le fichier `playwright.config.ts` en modifiant la propriété `testDir`.
+
+Vous pouvez ajouter d'autres spécifications de test en créant de nouveaux fichiers `*.spec.ts` dans le répertoire `tests`.
+
+Pour apprendre à écrire des tests e2e avec Playwright, veuillez lire la documentation officielle : https://playwright.dev/docs/writing-tests
+
+
+# <InternalPageTitle> Comment tester une application web avec Playwright ? </InternalPageTitle>
+
+## Introduction
+
+Nous souhaitons tester une application web avec Playwright. Pour ce tutorial, nous souhaitons tester la création d'un compte utilisateur sur une application web.
+
+Pour ce faire, vous devez avoir démarré l'application web que vous souhaitez tester. 
+Veuillez démarrer l'api du site de la pizzeria et le frontend de la pizzeria :
+- Pour l'API, vous devez d'abord démarrer la DB localement à l'aide de Docker Compose (ou Docker Desktop). Veuillez démarrer la dernière version de l'API en utilisant la commande `npm run dev` dans le répertoire `/e2e-tests/api`.
+- Pour le frontend, vous devez démarrer la dernière version du frontend de la pizzeria en utilisant la commande `npm run dev` dans le répertoire `/e2e-tests/frontend`.
+
+## Écriture des tests
+
+Pour tester le register d'un utilisateur sur une application web, vous pouvez écrire des tests e2e avec Playwright. 
+
+Veuillez créer une nouvelle spécification de test dans le répertoire `tests` de votre projet `/e2e-tests/e2e` en créant un fichier `register.spec.ts`.
+
+Nous allons commencer par ce scénario : `Scénario 1 - "Register OK" : L'utilisateur clic sur "Créer un utilisateur", saisit son username et son mot de passe, puis clique sur le bouton "Créer le compte". Il devrait être redirigé vers la homepage.`.
+
+Pour un scénario donné, vous pouvez définir plusieurs cas de test. Nous allons commencer par ce premier cas de test : `Cas de test 1.1 : Naviguer vers "Créer un utilisateur", saisir un username et un mot de passe valides, puis cliquer sur le bouton "Créer le compte". Vérifier que l'utilisateur est redirigé vers la homepage et que l'on affiche son username`.
+
+Voici le code de la spécification de test `register.spec.ts` pour ce cas de test :
+
+```ts
+import { test, expect } from "@playwright/test";
+
+test.describe("Register", () => {
+  test("TC1.1: should register a new user when valid username & password", async ({
+    page,
+  }) => {
+    const username = "ananda";
+    const password = "123456";
+
+    await page.goto("http://localhost:5173/");
+
+    await page.getByText("créer un utilisateur").click();
+
+    await expect(page).toHaveURL("http://localhost:5173/register");
+
+    await page.getByRole("textbox", { name: "username" }).fill(username);
+    await page.getByRole("textbox", { name: "password" }).fill(password);
+    await page.getByRole("button", { name: "Créer le compte" }).click();
+
+    await expect(page.getByText(`Hello dear ${username}`)).toBeVisible();
+  });
+});
+```
+
+Quelques explications sur ce code :
+- **`test.describe`** : Cette fonction permet de définir un groupe de tests. Dans notre cas, nous avons un groupe de tests pour tous les scénarios associés au cas d'utilisation "Créer un compte" (ou "Register").
+- **`test`** : Cette fonction permet de définir un test individuel. Dans notre cas, nous avons un test pour le cas de test 1.1.
+- **`page.goto`** : Cette fonction permet de naviguer vers une URL spécifique. Dans notre cas, nous naviguons vers la page d'accueil de l'application.
+- **`page.getByText`** : Cette fonction permet de sélectionner un élément de la page par son texte. Dans notre cas, nous sélectionnons le bouton "créer un utilisateur". Par défaut, la recherche est insensible à la casse.
+- **`expect(page).toHaveURL`** : Cette fonction permet de vérifier que l'URL de la page correspond à une valeur spécifique. Dans notre cas, nous vérifions que l'utilisateur est redirigé vers la page de register.
+- **`page.getByRole`** : Cette fonction permet de sélectionner un élément de la page par son rôle. Dans notre cas, nous sélectionnons les champs de texte pour le username et le mot de passe, ainsi que le bouton "Créer le compte".
+- **`locator.fill`** : Cette fonction permet de remplir un champ de texte avec une valeur spécifique. Dans notre cas, nous remplissons les champs de texte avec le username et le mot de passe. Un `locator` est un objet qui représente un élément de la page.
+- **`locator.click`** : Cette fonction permet de cliquer sur un élément de la page. Dans notre cas, nous cliquons sur le bouton "Créer le compte".
+- **`expect(page.getByText).toBeVisible`** : Cette fonction permet de vérifier que l'élément de la page est visible. Dans notre cas, nous vérifions que le message de bienvenue contenant le username est affiché.
+
+Nous avons écrit un test pour le cas de test 1.1. Ce test fonctionne une seule fois pour un username et un mot de passe donnés.  
+Comment pourrions-nous écrire un test qui fonctionne à chaque fois ?
+Pour ce faire, il faudrait pouvoir supprimer l'utilisateur créé à la fin du test : nous pourrions, par exemple, utiliser une fonction **`afterEach`** qui serait exécutée après chaque test. Cette fonction permettrait de nettoyer l'état de l'application après chaque test. Néanmoins, pour supprimer un utilisateur, il faudrait que l'API de l'application web permette de supprimer un utilisateur. Ce genre d'opération est généralement réservé aux administrateurs, elle demanderait donc une authentification. Ce qui est un peu plus complexe à mettre en place.
+
+Pour simplifier, nous pourrions simplement générer un username aléatoire à chaque test. Pour ce faire, nous allons utiliser la librairie `faker` qui permet de générer des données aléatoires.
+
+Pour installer la librairie `faker`, veuillez taper la commande suivante :
+
+```bash
+npm install @faker-js/faker -D
+```
+
+Toutes les API de `faker` sont disponibles ici : https://fakerjs.dev/api/
+
+Voici le code mis à jour pour le cas de test 1.1 :
+
+```ts {2,8-9} showLineNumbers
+import { test, expect } from "@playwright/test";
+import { faker } from "@faker-js/faker";
+
+test.describe("Register", () => {
+  test("TC1.1: should register a new user when valid username & password", async ({
+    page,
+  }) => {
+    const username = faker.internet.username();
+    const password = faker.internet.password();
+
+    await page.goto("http://localhost:5173/");
+
+    await page.getByText("créer un utilisateur").click();
+
+    await expect(page).toHaveURL("http://localhost:5173/register");
+
+    await page.getByRole("textbox", { name: "username" }).fill(username);
+    await page.getByRole("textbox", { name: "password" }).fill(password);
+    await page.getByRole("button", { name: "Créer le compte" }).click();
+    
+    await expect(page.getByText(`Hello dear ${username}`)).toBeVisible();
+  });
+});
+```
+
+Dans ce code, nous utilisons la fonction **`faker.internet.username()`** pour générer un username aléatoire et la fonction **`faker.internet.password()`** pour générer un mot de passe aléatoire.  
+Notons que `faker` permet de configurer les données générées. Par exemple, pour générer un username sur base d'un username, vous pouvez utiliser `faker.internet.username({firstName:"ananda"})`.
+
+# <InternalPageTitle> Comment s'assurer de l'état de l'application avant de commencer les tests ? </InternalPageTitle>
+
+Notons que dans pas mal de tests, on peut considérer qu'il soit important de démarrer une suite de test avec un état initial connu. 
+
+Il existe pas mal de solutions pour obtenir un état initial connu avant de commencer les tests. 
+
+## Méthode 1 : Utiliser des hooks de tests et des opérations d'API
+
+### Introduction
+
+Il est possible d'utiliser des hooks de test comme **`beforeAll`** et **`beforeEach`** pour réinitialiser la base de données avant chaque suite de tests ou chaque test individuel.
+
+### Utilisation de la fonction `beforeAll`
+
+On peut utiliser la fonction **`beforeAll`** qui permet d'exécuter une fonction avant le début de la suite de tests. Cette fonction permet de mettre en place l'état initial de l'application avant de commencer les tests.  
+Par exemple, nous pourrions avoir une fonction de l'API qui permet de supprimer tous les utilisateurs de la base de données. Cette fonction pourrait être appelée dans la fonction **`beforeAll`** pour s'assurer que la base de données est vide avant de commencer les tests. Attention donc à bien sécuriser cette opération par une authentification JWT et vous assurer que l'opération n'est accessible qu'en environnement de test.
+
+L'avantage de cette méthode est :
+- que vous pouvez être sûr de l'état initial de l'application avant de commencer les tests.
+- que vous pouvez garantir que les tests sont reproductibles et fiables. 
+- que vous pouvez écrire des cas de tests avec des données précises et connues. Il n'est pas nécessaire de générer des données aléatoires pour chaque test.
+
+L'inconvénient de cette méthode est :
+- que vous devez vous assurer que l'état initial de l'application est cohérent avec les tests que vous souhaitez exécuter. Si l'état initial de l'application ne correspond pas aux tests, les tests peuvent échouer.
+- pas si simple à mettre en place si l'application est complexe et que l'état initial dépend de plusieurs facteurs.
+
+### Utilisation de la fonction `afterEach`
+
+Il est possible d'utiliser la fonction **`afterEach`** qui permet d'exécuter une fonction après chaque test. Cette fonction permet de nettoyer l'état de l'application après chaque test.
+
+L'avantage de cette méthode est :
+- que vous pouvez nettoyer l'état de l'application après chaque test pour garantir que les tests sont indépendants les uns des autres.
+- que vous pouvez éviter les effets de bord et les interactions inattendues entre les tests.
+
+L'inconvénient de cette méthode est :
+- que vous devez vous assurer que le nettoyage de l'état de l'application est correctement implémenté. Si le nettoyage n'est pas correct, les tests peuvent échouer.
+- que vous devez gérer les cas où le nettoyage de l'état de l'application échoue. Si le nettoyage échoue, les tests peuvent échouer.
+- pas si simple à mettre en place.
+
+
+## Méthode 2 : Utiliser des scripts de réinitialisation de la base de données
+
+### Introduction
+
+Il est possible d'utiliser des scripts de réinitialisation de la base de données pour réinitialiser l'état de la base de données avant de commencer les tests. Ces scripts peuvent être exécutés manuellement ou automatiquement avant le début des tests.
+
+### Utilisation de scripts de réinitialisation de la base de données
+
+Nous allons maintenant voir comment mettre à jour l'API se trouvant dans le dossier `api` de notre répertoire `e2e-tests` pour réinitialiser la base de données avant de commencer les tests.
+
+#### Fonctionnement actuel de l'initialisation de la DB
+
+Le script **`insert.sql`** dans le répertoire **`src/main/resources`** de l'API : 
+- est exécuté automatiquement par Spring Boot grâce à la configuration de la source de données. 
+- Spring Boot détecte automatiquement les fichiers SQL dans ce répertoire et les exécute au démarrage de l'application.  
+
+Voici comment cela fonctionne :  
+- **Configuration de la source de données** : 
+  - Dans le fichier **`application.properties`**, vous avez configuré les propriétés de la source de données (username, password...), ce qui permet à Spring Boot de se connecter à la base de données.  
+  - **`spring.jpa.generate-ddl=true`** : cette propriété permet à Spring Boot de générer automatiquement le schéma de la base de données à partir des entités JPA.
+- **Exécution automatique des scripts SQL** : 
+  - Spring Boot, par défaut, exécute les scripts SQL trouvés dans **`src/main/resources`** ou **`src/main/resources/db/migration`** au démarrage de l'application **SEULEMENT** pour les bases de données intégrées (par pour PostGres). 
+  - Pour exécuter les scripts SQL à chaque démarrage, il faut ajouter la propriété **`spring.sql.init.mode=always`** dans le fichier **`application.properties`**.
+  - Les fichiers doivent être nommés **`schema.sql`** pour les scripts de création de schéma et **`data.sql`** pour les scripts d'insertion de données.
+  - Cependant, il exécutera également tout autre fichier SQL trouvé dans ce répertoire.
+  - Pour laisser d'abord Spring Boot générer le schéma de la base de données avant d'exécuter **`data.sql`**, il faut ajouter la propriété **`spring.jpa.defer-datasource-initialization=true`** dans le fichier **`application.properties`**.  
+  Si cela n'est pas fait, Spring Boot exécutera **`data.sql`** avant de générer le schéma de la base de données, ce qui peut entraîner des erreurs.
+
+Veuillez donc mettre à jour le fichier **`application.properties`** pour ajouter ces propriétés :
+
+```properties {9-10}
+spring.application.name=demo
+
+server.port=3000
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/cae_db
+spring.datasource.username=cae_user
+spring.datasource.password=cae
+spring.jpa.generate-ddl=true
+spring.sql.init.mode=always
+spring.jpa.defer-datasource-initialization=true
+```
+
+Pour bien faire, renommez le fichier **`src/main/resources/insert.sql`** en **`src/main/resources/data.sql`**.
+
+Démarrez l'API et vérifiez que la base de données est bien initialisée.
+
+Actuellement, à chaque démarrage de l'API, on insert un utilisateur `admin` dans la DB.
+Voici le contenu actuel du fichier **`data.sql`** :
+
+```sql
+INSERT INTO users(username, password) VALUES('admin', '$2y$10$EW75BdcbCfKEA3NbE7in4OiYYacfP3OY4Q2JsVzjxd3jNxxgAEZNu');
+```
+
+Cela va vite devenir problématique car comme la DB est réinitialisée à chaque démarrage de l'API, on va se retrouver avec plusieurs utilisateurs `admin` dans la DB. En effet, `username` n'est pas une clé primaire.
+
+Pour réinitialiser la base de données avant de commencer les tests, nous allons modifier le script SQL pour supprimer tous les utilisateurs de la base de données avant d'en ajouter un.
+
+Veuillez modifier le contenu du fichier **`data.sql`** :
+
+```sql
+TRUNCATE TABLE users;
+
+INSERT INTO users(username, password)
+VALUES ('admin', '$2y$10$EW75BdcbCfKEA3NbE7in4OiYYacfP3OY4Q2JsVzjxd3jNxxgAEZNu');
+```
+
+Le problème avec cette approche, c'est que l'on ne veut pas réinitialiser la DB à chaque démarrage de l'API, mais uniquement avant de commencer les tests.  
+En effet, imaginez que l'API soit utilisée en production, on ne veut pas supprimer tous les utilisateurs à chaque démarrage de l'API 😱.
+
+#### Réinitialisation de la base de données avant de commencer les tests
+
+Pour ce tutoriel, nous allons créer deux configurations pour l'API : une configuration pour l'environnement de production et une configuration pour l'environnement de test.
+
+Pour ce faire, veuillez créer un nouveau fichier **`application-test.properties`** dans le répertoire **`src/main/resources`** :
+
+```properties {9-10}
+spring.application.name=demo
+
+server.port=3000
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/cae_db
+spring.datasource.username=cae_user
+spring.datasource.password=cae
+spring.jpa.generate-ddl=true
+spring.sql.init.mode=always
+spring.jpa.defer-datasource-initialization=true
+```
+
+Nous allons mettre à jour le fichier **`application.properties`** pour qu'il n'utilise jamais de script SQL pour initialiser la base de données :
+
+```properties {9}
+spring.application.name=demo
+
+server.port=3000
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/cae_db
+spring.datasource.username=cae_user
+spring.datasource.password=cae
+spring.jpa.generate-ddl=true
+spring.sql.init.mode=never
+```
+
+Si nous redémarrons l'application maintenant via la configuration nommée **`DemoApplication`** au sein d'IntelliJ, la base de données ne sera pas réinitialisée.
+
+De même, si nous exécutons cette commande :
+
+```bash
+mvn clean spring-boot:run
+```
+
+La base de données ne sera pas réinitialisée.
+
+Pour réinitialiser la base de données avant de commencer les tests, nous pouvons activer le profile de tests dans la commande de lancement de Spring Boot :
+
+```bash
+mvn clean spring-boot:run -Dspring-boot.run.profiles=test
+```
+
+C'est donc cette commande que nous allons utiliser pour démarrer l'API avant de commencer les tests.
+
+Une autre possibilité, c'est de générer un package JAR exécutable et de lancer l'application avec le profile de tests :
+
+```bash
+mvn clean package
+java -jar ./target/cae-exercices-demo-0.0.1-SNAPSHOT.jar --spring.profiles.active=test
+```
+
+Si vous lancez l'application avec le JAR, il est possible que le nom du fichier soit différent. Veuillez vérifier le nom du fichier généré dans le répertoire **`target`**.
+
+# <InternalPageTitle> Comment gérer les duplications de code dans les tests ? </InternalPageTitle>
+
+## Introduction
+
+Il est important de gérer les duplications de code dans les tests pour éviter la répétition et améliorer la maintenabilité des tests. Les duplications de code peuvent rendre les tests difficiles à lire, à maintenir et à déboguer.
+
+Il existe plusieurs techniques pour gérer les duplications de code dans les tests :
+- **Utiliser des fonctions utilitaires** : Créez des fonctions utilitaires pour les actions répétitives dans les tests. Ces fonctions peuvent être réutilisées dans plusieurs tests pour éviter la duplication de code.
+- **Utiliser des fonctions de setup et de teardown** : Utilisez des fonctions de setup et de teardown pour les actions qui doivent être exécutées avant et après les tests. Ces fonctions permettent de réduire la duplication de code en centralisant les actions communes. Ces fonctions sont : **`beforeEach`**, **`afterEach`**, **`beforeAll`** et **`afterAll`**.
+- **Utiliser des fixtures** : Créez des fixtures pour les données et les états de l'application qui sont utilisés dans plusieurs tests. Les fixtures permettent de centraliser les données et les états de l'application pour éviter la duplication de code. N'hésitez pas à consulter la documentation de Playwright pour en savoir plus sur les fixtures : https://playwright.dev/docs/test-fixtures
+
+## Suite des tests pour le register
+
+Nous allons voir comment gérer les duplications de code dans les tests pour le register d'un utilisateur sur une application web.
+
+Nous allons commencer par ce scénario : `Scénario 2 - "Register KO" : L'utilisateur clic sur "Créer un utilisateur", saisit un username déjà existant, puis clique sur le bouton "Créer le compte". Il devrait voir un message d'erreur indiquant que le username est déjà pris.`.
+
+Nous allons commencer par ce cas de test : `Cas de test 2.1 : Saisir un username déjà existant et un mot de passe valide, puis cliquer sur le bouton "Créer un compte". Vérifier que l'utilisateur voit un message d'erreur indiquant que le username est déjà pris.`
+
+Ici, l'UI ne permet actuellement pas d'afficher un message d'erreur si le username est déjà pris. Néanmoins, un message d'erreur est affiché dans la console du navigateur à l'aide de **`console.error()`**. 
+
+Voici le code la **`RegisterPage`** :
+
+```tsx
+const handleSubmit = async (e: SyntheticEvent) => {
+    e.preventDefault();
+    try {
+      await registerUser({ username, password });
+      navigate('/');
+    } catch (err) {
+      console.error('RegisterPage::error: ', err);
+    }
+  };
+```
+
+Nous savons que lorsqu'un utilisateur est déjà présent dans l'API, un message d'erreur est affiché dans la console du navigateur qui affichera le HTTP status code 409.
+
+Nous allons donc vérifier que ce message d'erreur est bien affiché dans la console du navigateur.
+
+Pensez à bien réinitialiser la base de données avant de commencer les tests. Pour ce faire, dans le répertoire `/e2e-tests/api`, veuillez redémarrer l'API avec la commande suivante :
+
+```bash
+mvn clean spring-boot:run -Dspring-boot.run.profiles=test
+```
+
+Pensez aussi a bien garder le frontend de la pizzeria en exécution.
+
+Voici le code de la spécification de test `register.spec.ts` que vous devez mettre à jour pour ce cas de test :
+
+```ts {24-60} showLineNumbers
+import { test, expect } from "@playwright/test";
+import { faker } from "@faker-js/faker";
+
+test.describe("Register", () => {
+  test("TC1.1: should register a new user when valid username & password", async ({
+    page,
+  }) => {
+    const username = faker.internet.username();
+    const password = faker.internet.password();
+
+    await page.goto("http://localhost:5173/");
+
+    await page.getByText("créer un utilisateur").click();
+
+    await expect(page).toHaveURL("http://localhost:5173/register");
+
+    await page.getByRole("textbox", { name: "username" }).fill(username);
+    await page.getByRole("textbox", { name: "password" }).fill(password);
+    await page.getByRole("button", { name: "Créer le compte" }).click();
+
+    await expect(page.getByText(`Hello dear ${username}`)).toBeVisible();
+  });
+
+  test("TC2.1: should not register a new user when existing username", async ({
+    page,
+  }) => {
+    const username = "farina";
+    const password = "farinapwd";
+
+    await page.goto("http://localhost:5173/");
+
+    await page.getByText("créer un utilisateur").click();
+
+    await expect(page).toHaveURL("http://localhost:5173/register");
+
+    await page.getByRole("textbox", { name: "username" }).fill(username);
+    await page.getByRole("textbox", { name: "password" }).fill(password);
+    await page.getByRole("button", { name: "Créer le compte" }).click();
+
+    await expect(page.getByText(`Hello dear ${username}`)).toBeVisible();
+
+    await page.getByText("se déconnecter").click();
+
+    await page.getByText("créer un utilisateur").click();
+
+    await expect(page).toHaveURL("http://localhost:5173/register");
+
+    await page.getByRole("textbox", { name: "username" }).fill(username);
+    await page.getByRole("textbox", { name: "password" }).fill(password);
+    await page.getByRole("button", { name: "Créer le compte" }).click();
+
+    // Check in the console for the error message
+    const message = await page.waitForEvent(
+      "console",
+      (msg) => msg.type() === "error"
+    );
+
+    // Check for specific error message
+    expect(message.text()).toContain("409");
+  });
+});
+```
+
+**`page.waitForEvent`** permet d'attendre un événement donné. Dans notre cas, nous attendons un événement de type **`console`**. Nous vérifions ensuite que le message d'erreur contient le code d'erreur **`409`**.
+
+Nous voyons qu'il y a pas mal de duplications de code dans les tests. Nous allons voir comment gérer ces duplications de code.
+
+Attention, ces deux cas créent deux utilisateurs dans la base de données. Le deuxième scénario de test crée une utilisatrice `farina` et le premier scénario de test crée un utilisateur aléatoire. Il est donc possible que le deuxième scénario de test échoue si l'utilisateur `farina` est déjà présent dans la base de données. Cela va arriver si vous exécutez les tests sur les 3 browsers en même temps. Pour éviter cela, vous pouvez exécuter les tests sur un seul browser à la fois.
+
+## Configuration d'un seul browser
+
+Pour exécuter les tests sur un seul browser, vous pouvez modifier la propriété **`projects`** dans le fichier **`playwright.config.ts`** :
+
+```ts
+//...
+ projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+],
+```
+
+
+## Utilisation de fonctions utilitaires
+
+Nous allons commencer par extraire le code commun dans deux fonctions utilitaires.  
+Pour ce faire, veuillez créer un nouveau fichier `helper.ts` dans le répertoire `tests` de votre projet `e2e` et y ajouter le code suivant :
+
+```ts
+import { Page, expect } from "@playwright/test";
+
+const goFromHomePageToRegisterPage = async (page: Page) => {
+  await page.goto("http://localhost:5173/");
+  await page.getByText("créer un utilisateur").click();
+  await expect(page).toHaveURL("http://localhost:5173/register");
+};
+
+const registerWith = async (page: Page, username: string, password: string) => {
+  await page.getByRole("textbox", { name: "username" }).fill(username);
+  await page.getByRole("textbox", { name: "password" }).fill(password);
+  await page.getByRole("button", { name: "Créer le compte" }).click();
+};
+
+export { registerWith, goFromHomePageToRegisterPage };
+```
+
+Dans ce code, nous avons créé deux fonctions utilitaires :
+- **`goFromHomePageToRegisterPage`** : Cette fonction permet de naviguer de la HomePage à la page de register.
+- **`registerWith`** : Cette fonction permet de remplir les champs de texte pour le username et le mot de passe, puis de cliquer sur le bouton "Créer le compte".
+
+Nous allons maintenant mettre à jour les tests pour utiliser ces fonctions utilitaires. Voici le code mis à jour de la spécification de test `register.spec.ts` :
+
+```ts {3,9,13,21,25,31} showLineNumbers
+import { test, expect } from "@playwright/test";
+import { faker } from "@faker-js/faker";
+import { goFromHomePageToRegisterPage, registerWith } from "./helper";
+
+test.describe("Register", () => {
+  test("TC1.1: should register a new user when valid username & password", async ({
+    page,
+  }) => {
+    goFromHomePageToRegisterPage(page);
+
+    const username = faker.internet.username();
+    const password = faker.internet.password();
+    await registerWith(page, username, password);
+
+    await expect(page.getByText(`Hello dear ${username}`)).toBeVisible();
+  });
+
+  test("TC2.1: should not register a new user when existing username", async ({
+    page,
+  }) => {
+    goFromHomePageToRegisterPage(page);
+
+    const username = "farina";
+    const password = "farinapwd";
+    await registerWith(page, username, password);
+
+    await expect(page.getByText(`Hello dear ${username}`)).toBeVisible();
+
+    await page.getByText("se déconnecter").click();
+
+    goFromHomePageToRegisterPage(page);
+
+    await registerWith(page, username, password);
+
+    // Check in the console for the error message
+    const message = await page.waitForEvent(
+      "console",
+      (msg) => msg.type() === "error"
+    );
+
+    // Check for specific error message
+    expect(message.text()).toContain("409");
+  });
+});
+``` 
+
+## Utilisation de fonctions de setup et de teardown
+
+Nous allons maintenant voir comment utiliser une fonction de setup pour réduire les duplications de code dans les tests.
+
+Dans les deux cas de test que nous avons écrits, et dans tous les cas de tests associé au register, nous devons à chaque fois nous rendre sur la HomePage, cliquer sur "créer un utilisateur", puis nous rendre sur la page de register.
+
+Nous allons donc utiliser une fonction de setup pour effectuer ces actions avant chaque test. Pour ce faire, nous allons utiliser la fonction **`beforeEach`** de Playwright.
+
+Voici le code mis à jour de la spécification de test `register.spec.ts` :
+
+```ts {5-8,12-13,20-23} showLineNumbers
+import { test, expect } from "@playwright/test";
+import { faker } from "@faker-js/faker";
+import { goFromHomePageToRegisterPage, registerWith } from "./helper";
+
+test.describe("Register", () => {
+  test.beforeEach(async ({ page }) => {
+    goFromHomePageToRegisterPage(page);
+  });
+
+  test("TC1.1: should register a new user when valid username & password", async ({
+    page,
+  }) => {
+    const username = faker.internet.username();
+    const password = faker.internet.password();
+    await registerWith(page, username, password);
+
+    await expect(page.getByText(`Hello dear ${username}`)).toBeVisible();
+  });
+
+  test("TC2.1: should not register a new user when existing username", async ({
+    page,
+  }) => {
+    const username = "farina";
+    const password = "farinapwd";
+    await registerWith(page, username, password);
+
+    await expect(page.getByText(`Hello dear ${username}`)).toBeVisible();
+
+    await page.getByText("se déconnecter").click();
+
+    goFromHomePageToRegisterPage(page);
+
+    await registerWith(page, username, password);
+
+    // Check in the console for the error message
+    const message = await page.waitForEvent(
+      "console",
+      (msg) => msg.type() === "error"
+    );
+
+    // Check for specific error message
+    expect(message.text()).toContain("409");
+  });
+});
+```
+
+Dans ce code, nous avons utilisé la fonction **`test.beforeEach`** pour exécuter la fonction **`goFromHomePageToRegisterPage`** avant chaque test. Cette fonction permet de réduire les duplications de code en centralisant les actions communes.
+De plus, elle permet de **garantir que les tests commencent dans un état connu et cohérent**.
+
+# <InternalPageTitle> Comment écrire des tests e2e de qualité ? </InternalPageTitle>
+
+Nous vous conseillons de suivre les bonnes pratiques de développement pour écrire des tests e2e de qualité. Voici quelques conseils pour écrire des tests e2e robustes et fiables :
+- **Utiliser des sélecteurs CSS spécifiques** : Utilisez des sélecteurs CSS spécifiques pour cibler les éléments de l'application que vous souhaitez tester. Évitez d'utiliser des sélecteurs basés sur la position des éléments dans la page, car ils sont plus susceptibles de changer.
+- **Gérer les attentes** : Gérez les attentes dans vos tests e2e en utilisant des fonctions d'attente ou des assertions pour vérifier que les éléments de l'application sont dans l'état attendu.
+- **Nettoyer l'état de l'application** : Assurez-vous de nettoyer l'état de l'application entre chaque test pour éviter les effets de bord et les interactions inattendues entre les tests.
+
+# <InternalPageTitle> Quand exécuter les tests e2e ? </InternalPageTitle>
+
+Les tests e2e sont généralement exécutés à différents moments du cycle de développement pour garantir la qualité de l'application. Voici quelques moments clés où les tests e2e sont exécutés :
+- **De manière régulière** : Les tests e2e peuvent être exécutés de manière régulière, par exemple une fois par semaine, pour s'assurer que l'application est toujours dans un état fonctionnel et pour détecter les régressions qui pourraient survenir au fil du temps.
+- **Après chaque modification majeure** : Les tests e2e sont souvent exécutés après chaque modification majeure de l'application pour s'assurer que les nouvelles fonctionnalités fonctionnent correctement et que les fonctionnalités existantes n'ont pas été affectées.
+- **Avant la mise en production** : Les tests e2e sont souvent exécutés avant de mettre l'application en production pour s'assurer que toutes les fonctionnalités de l'application fonctionnent correctement et que il n'y a pas de régressions.
+- **Dans le cadre d'une intégration continue** : Les tests e2e sont souvent exécutés automatiquement dans le cadre d'une intégration continue pour garantir que l'application est toujours dans un état fonctionnel après chaque commit.
+- **Dans le cadre d'une livraison continue** : Les tests e2e sont souvent exécutés automatiquement dans le cadre d'une livraison continue pour garantir que l'application est toujours dans un état fonctionnel après chaque déploiement.
+
+Dans le cadre de ce projet, nous allons exécuter les tests e2e de manière régulière (quand vous voulez vérifier que l'application est toujours fonctionnelle durant votre développement) et après chaque modification majeure de l'application (avant de créer une merge request) pour garantir la qualité de l'application.
+Nous n'allons pas exécuter les tests e2e dans le cadre de la pipeline d'intégration continue pour ce projet car cela pose quelques problèmes de limites d'utilisation gratuite, mais c'est une bonne pratique à suivre dans un projet professionnel. 
+Nous n'allons pas non plus exécuter les tests e2e dans le cadre d'une livraison continue ou d'une mise en production pour ce projet, mais c'est aussi une bonne pratique à suivre dans un projet professionnel.
