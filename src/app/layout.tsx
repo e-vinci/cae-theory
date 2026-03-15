@@ -10,12 +10,12 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import Footer from "@/components/Footer/Footer";
 
 const siteMetaData: SiteMetaData = {
-  version: "", // "2.0.0",
+  version: "", // "3.0.0",
   title: "CAE",
   description: "siteDescription",
   url: "siteURL",
   youtubeUrl: "youtubeUrl",
-  authorEmail: "raphael.baroni@vinci.be",
+  authorEmail: "sebastien.strebelle@vinci.be",
   facebookUrl: "facebookUrl",
   instagramUrl: "instagramUrl",
   menuLinks: [
@@ -28,7 +28,14 @@ const siteMetaData: SiteMetaData = {
       link: ``,
       subMenu: [
         { name: "Introduction", link: "/part1/intro" },
-        { name: "Qualité générale", link: "/part1/general" },
+        { name: "Qualité générale", link: "/part1/quality" },
+      ],
+    },
+    {
+      name: `Partie 2`,
+      link: ``,
+      subMenu: [
+        { name: "Tests e2e", link: "/part2/e2e" },
       ],
     },
     {
