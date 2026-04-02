@@ -39,6 +39,14 @@ const siteMetaData: SiteMetaData = {
       ],
     },
     {
+      name: `Partie 3`,
+      link: ``,
+      subMenu: [
+        { name: "Gestion des environnements", link: "/part3/env" },
+        { name: "Dockerisation", link: "/part3/docker" },
+      ],
+    },
+    {
       name: `About`,
       link: `/about`,
     },
