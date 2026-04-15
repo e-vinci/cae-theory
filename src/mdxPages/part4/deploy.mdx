@@ -1,0 +1,290 @@
+---
+title: Déploiement
+description: Déploiement d'une application d'entreprise
+date: 15/04/2026
+---
+
+<InternalPageMenu>
+  <PathViewer>
+    <PathViewerItem to="/"> CAE </PathViewerItem>
+    <PathViewerItem> Partie 4 </PathViewerItem>
+    <PathViewerItem selected> Déploiement </PathViewerItem>
+  </PathViewer>
+  <InternalPageMenuItem> Qu'est-ce que le déploiement ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Préparer l'application au déploiement </InternalPageMenuItem>
+  <InternalPageMenuItem> Où déployer son application ? </InternalPageMenuItem>
+  <InternalPageMenuItem> Les services cloud </InternalPageMenuItem>
+  <InternalPageMenuItem> Les serveurs autogérés </InternalPageMenuItem>
+  <InternalPageMenuItem> L'orchestration de conteneurs </InternalPageMenuItem>
+  <InternalPageMenuItem> Le Continuous Deployment </InternalPageMenuItem>
+  <InternalPageMenuItem> Résumé et comparaison </InternalPageMenuItem>
+</InternalPageMenu>
+
+# <InternalPageTitle> Qu'est-ce que le déploiement ? </InternalPageTitle>
+
+## Introduction
+
+> **Note** : Cette section est purement informative. Vous ne devrez pas déployer votre application dans le cadre du projet CAE. L'objectif est de comprendre ce qu'implique un déploiement réel et de connaître les options qui existent.
+
+Jusqu'ici, nous avons travaillé en local : l'application tourne sur votre machine, accessible uniquement par vous via `localhost`. Le **déploiement** consiste à rendre l'application accessible aux utilisateurs finaux, sur un serveur connecté à Internet, avec une URL publique.
+
+C'est l'étape finale du cycle de développement : le code passe du poste du développeur à un environnement de **production** où il doit fonctionner de manière fiable, sécurisée et performante, 24h/24.
+
+## Pourquoi c'est une étape à part ?
+
+Déployer ne se résume pas à copier des fichiers sur un serveur. C'est un ensemble de décisions techniques et organisationnelles :
+
+- **Où** héberger l'application ? Sur quel type d'infrastructure ?
+- **Comment** configurer l'application pour un environnement de production ?
+- **Comment** garantir la sécurité, la disponibilité et les performances ?
+- **Comment** mettre à jour l'application sans interruption de service ?
+
+Les sections suivantes abordent chacun de ces aspects.
+
+# <InternalPageTitle> Préparer l'application au déploiement </InternalPageTitle>
+
+## Ce qui change par rapport au développement
+
+Avant de choisir où déployer, il faut adapter l'application elle-même. Plusieurs éléments qui fonctionnent en développement ne conviennent pas en production.
+
+## La base de données
+
+En développement, nous utilisons `ddl-auto=create-drop` : le schéma est recréé à chaque démarrage et les données sont perdues. En production, c'est évidemment inacceptable.
+
+Il faudrait :
+
+- Passer en mode `ddl-auto=none` pour que Hibernate n'intervienne plus sur le schéma.
+- Maintenir des **scripts de migration** (avec un outil comme **Flyway** ou **Liquibase**) pour faire évoluer le schéma de manière contrôlée sans perdre les données existantes.
+- Utiliser un serveur de base de données dédié et redondant, pas un simple conteneur Docker sans volume persistant.
+- Mettre en place des **sauvegardes automatiques** régulières de la base de données.
+
+## Les secrets et la configuration
+
+En développement, les secrets se trouvent dans un fichier `.env` local. En production, il faudrait des mécanismes plus sécurisés :
+
+- Des **variables d'environnement** gérées par la plateforme d'hébergement.
+- Un **gestionnaire de secrets** comme AWS Secrets Manager, Azure Key Vault, ou HashiCorp Vault.
+- Ne jamais stocker de secrets dans le code source ni dans les images Docker.
+
+## Le HTTPS
+
+En développement, l'application tourne en HTTP sur `localhost`. En production, le **HTTPS est obligatoire** pour protéger les données en transit (mots de passe, tokens JWT, données utilisateur).
+
+Il faudrait :
+
+- Obtenir un **certificat SSL/TLS** (gratuit via Let's Encrypt, ou fourni par le cloud provider).
+- Configurer le reverse proxy (nginx) pour gérer la terminaison SSL.
+- Rediriger automatiquement tout le trafic HTTP vers HTTPS.
+
+## Le nom de domaine
+
+Pour que les utilisateurs accèdent à l'application via une URL lisible (comme `www.mon-app.be` plutôt qu'une adresse IP), il faudrait :
+
+- Acheter un **nom de domaine** auprès d'un registrar (OVH, Cloudflare, Gandi, etc.).
+- Configurer les **enregistrements DNS** pour pointer vers le serveur de production.
+
+## Les logs et le monitoring
+
+En développement, on lit les logs dans le terminal. En production, il faudrait :
+
+- Centraliser les logs dans un système dédié (ELK Stack, Grafana Loki, Datadog, etc.).
+- Mettre en place du **monitoring** pour surveiller la santé de l'application (temps de réponse, erreurs, utilisation mémoire/CPU).
+- Configurer des **alertes** pour être prévenu en cas de problème (service down, erreurs en cascade, disque plein, etc.).
+
+## La sécurité
+
+Au-delà du HTTPS, d'autres aspects de sécurité doivent être gérés en production :
+
+- Configurer un **pare-feu** pour n'exposer que les ports nécessaires (80 et 443).
+- Mettre en place une protection contre les attaques courantes (**rate limiting**, protection DDoS, headers de sécurité).
+- Maintenir les dépendances **à jour** pour corriger les failles de sécurité connues.
+
+## Les performances
+
+Selon le nombre d'utilisateurs attendus, il pourrait être nécessaire de :
+
+- Configurer un **CDN** (Content Delivery Network) pour servir les fichiers statiques du frontend depuis des serveurs proches des utilisateurs.
+- Mettre en place du **caching** à différents niveaux (reverse proxy, application, base de données).
+- Dimensionner correctement les ressources (CPU, RAM) du serveur.
+
+# <InternalPageTitle> Où déployer son application ? </InternalPageTitle>
+
+## Les grandes familles d'options
+
+Il existe plusieurs approches pour héberger une application en production. Chacune offre un niveau différent de contrôle, de complexité et de coût.
+
+On peut les classer en deux grandes familles selon le niveau de gestion qu'on assume soi-même :
+
+- **Les services cloud managés** (AWS, Azure, Google Cloud, etc.) : le fournisseur gère l'infrastructure, vous ne gérez que votre application.
+- **Les serveurs autogérés** (VPS, serveurs dédiés, serveur local) : vous avez un accès complet à la machine et vous gérez tout vous-même.
+
+Plus on délègue la gestion au fournisseur, moins on a de contrôle, mais moins on a de travail de maintenance.
+
+Dans les deux cas, l'**orchestration de conteneurs** (avec Kubernetes, par exemple) peut venir se superposer pour automatiser la gestion des conteneurs Docker à grande échelle.
+
+Les sections suivantes présentent chacune de ces options.
+
+# <InternalPageTitle> Les services cloud </InternalPageTitle>
+
+## Le principe du cloud computing
+
+Le cloud computing consiste à utiliser des ressources informatiques (serveurs, stockage, réseau, bases de données) fournies par un prestataire via Internet, plutôt que de posséder et gérer ses propres machines physiques.
+
+Les trois principaux fournisseurs cloud sont **Amazon Web Services (AWS)**, **Microsoft Azure** et **Google Cloud Platform (GCP)**. Ils proposent des centaines de services, mais pour déployer une application web comme la nôtre, seuls quelques-uns sont pertinents.
+
+## Les différents niveaux de service cloud
+
+Les services cloud se déclinent en plusieurs niveaux d'abstraction :
+
+**IaaS — Infrastructure as a Service** : le fournisseur met à disposition des machines virtuelles (VMs) que vous configurez entièrement. Vous choisissez le système d'exploitation, installez vos logiciels et gérez les mises à jour. C'est le plus flexible mais aussi le plus exigeant en termes de gestion.
+
+Exemples : AWS EC2, Azure Virtual Machines, Google Compute Engine.
+
+**PaaS — Platform as a Service** : le fournisseur gère le serveur, le système d'exploitation et le runtime. Vous ne déployez que votre code ou votre artefact (JAR, site statique). C'est plus simple à utiliser mais offre moins de contrôle.
+
+Exemples : AWS Elastic Beanstalk, Azure App Service, Google App Engine, Heroku, Railway, Render.
+
+**CaaS — Container as a Service** : le fournisseur exécute vos conteneurs Docker sans que vous ayez à gérer les serveurs sous-jacents. Vous fournissez vos images Docker et le service se charge de les exécuter.
+
+Exemples : AWS ECS/Fargate, Azure Container Instances, Google Cloud Run.
+
+## Avantages et inconvénients
+
+Le cloud managé offre une mise en route rapide, une scalabilité automatique (le service adapte les ressources selon le trafic) et une maintenance réduite. En contrepartie, les coûts peuvent augmenter significativement avec l'utilisation, et il y a une dépendance au fournisseur choisit (vendor lock-in) : migrer vers un autre fournisseur demande du travail.
+
+# <InternalPageTitle> Les serveurs autogérés </InternalPageTitle>
+
+## Le principe
+
+Plutôt que d'utiliser des services managés, on peut louer ou posséder un **serveur** sur lequel on installe et configure tout soi-même : le système d'exploitation, les logiciels (Java, nginx, PostgreSQL), les certificats SSL, les pare-feu, les sauvegardes, etc.
+
+## VPS — Virtual Private Server
+
+Un **VPS** est une machine virtuelle louée chez un hébergeur. Vous avez un accès root (administrateur) complet et vous gérez le serveur comme si c'était votre propre machine, mais le matériel physique est partagé avec d'autres clients.
+
+Exemples de fournisseurs : DigitalOcean, OVH, Hetzner, Linode, Scaleway.
+
+Le VPS est souvent le choix le plus économique pour une application de taille modeste. Les prix commencent à quelques euros par mois. Vous installez Docker sur le VPS, copiez votre `docker-compose.yml` et vos images, et lancez `docker compose up`. C'est direct, mais vous êtes responsable de tout : mises à jour du système, sécurité, sauvegardes, monitoring.
+
+## Serveur dédié
+
+Un **serveur dédié** est une machine physique entière louée chez un hébergeur. Contrairement au VPS, vous ne partagez les ressources avec personne. C'est plus performant et plus prévisible, mais aussi plus cher et réservé à des applications avec des besoins importants en termes de performances ou de sécurité.
+
+## Serveur local (on-premise)
+
+Il est aussi possible de déployer sur un **serveur physique** situé dans les locaux de l'entreprise (ou chez soi, pour un projet personnel). C'est ce qu'on appelle le déploiement **on-premise**.
+
+Cette approche donne un contrôle total sur le matériel et les données, ce qui peut être un avantage pour des raisons de conformité réglementaire (certaines entreprises ne peuvent pas stocker leurs données chez un tiers). En revanche, elle demande de gérer l'alimentation électrique, le réseau, la climatisation, les pannes matérielles et l'accès physique au serveur.
+
+Pour un projet personnel, cela peut se faire avec un simple ordinateur ou un Raspberry Pi connecté à Internet, avec une IP fixe ou un service de DNS dynamique. C'est une option éducative intéressante, mais peu adaptée à un usage professionnel sans infrastructure dédiée.
+
+# <InternalPageTitle> L'orchestration de conteneurs </InternalPageTitle>
+
+## Docker Compose suffit-il en production ?
+
+Nous avons déjà conteneurisé notre application avec Docker Compose. Pour un petit déploiement sur un VPS ou un serveur dédié, `docker compose up` peut suffire. Mais pour une application qui doit supporter une charge importante ou garantir une haute disponibilité, Docker Compose atteint ses limites :
+
+- Si un conteneur plante, personne ne le redémarre automatiquement.
+- On ne peut pas facilement répartir la charge sur plusieurs serveurs.
+- Les mises à jour nécessitent un temps d'arrêt (on stoppe les conteneurs, on les recrée).
+
+## Les orchestrateurs de conteneurs
+
+Pour aller plus loin, que ce soit sur un cloud ou sur des serveurs autogérés, on peut ajouter une couche d'**orchestration de conteneurs**. Le plus connu est **Kubernetes** (souvent abrégé K8s), développé à l'origine par Google.
+
+Un orchestrateur gère automatiquement :
+
+- Le **scaling** : augmenter ou réduire le nombre de conteneurs selon la charge.
+- La **haute disponibilité** : si un conteneur ou un serveur tombe, l'orchestrateur redéploie automatiquement les conteneurs ailleurs.
+- Les **mises à jour progressives** (rolling updates) : les conteneurs sont mis à jour un par un, sans interruption de service.
+- Le **load balancing** : la répartition du trafic entre les différents conteneurs.
+
+Kubernetes est extrêmement puissant mais aussi complexe à mettre en place et à maintenir. Pour des projets de taille modeste, il existe des alternatives plus légères comme **Docker Swarm** (intégré à Docker) ou **Nomad** (de HashiCorp).
+
+## Orchestration sur le cloud ou en autogéré
+
+L'orchestration n'est pas une alternative au cloud ou au serveur autogéré : c'est une couche supplémentaire qui peut se combiner avec les deux.
+
+Sur le **cloud**, les fournisseurs proposent des versions managées de Kubernetes où ils gèrent le cluster pour vous : Amazon EKS (AWS), Azure AKS (Azure), Google GKE (Google Cloud). Vous définissez vos conteneurs, le fournisseur se charge du reste. On retrouve ici la logique du cloud managé : moins de contrôle, mais moins de travail.
+
+Sur un **serveur autogéré**, on peut installer Kubernetes soi-même sur un ou plusieurs VPS ou serveurs dédiés. C'est plus exigeant, mais c'est faisable et cela permet de bénéficier de l'orchestration sans passer par un fournisseur cloud.
+
+## Quand utiliser un orchestrateur ?
+
+Pour un projet CAE ou une petite application web, un simple `docker compose up` sur un VPS est largement suffisant. L'orchestration devient pertinente quand :
+
+- L'application doit supporter une charge variable ou très importante.
+- La haute disponibilité est critique (tolérance zéro aux temps d'arrêt).
+- L'architecture est composée de nombreux microservices indépendants.
+- L'équipe a les compétences et les ressources pour gérer un cluster.
+
+# <InternalPageTitle> Le Continuous Deployment </InternalPageTitle>
+
+## De la CI au CD
+
+Dans le cadre du projet CAE, vous avez mis en place une pipeline d'**Intégration Continue (CI)** dans GitLab : à chaque push, les tests sont exécutés et les artefacts sont construits automatiquement. C'est déjà une étape importante pour garantir la qualité du code.
+
+Le **Continuous Deployment (CD)** va plus loin : après que la CI a validé le code et construit les artefacts, la pipeline **déploie automatiquement** l'application sur le serveur de production, sans intervention humaine. Chaque commit qui passe les tests se retrouve en production quelques minutes plus tard.
+
+Il existe une variante intermédiaire, le **Continuous Delivery**, où le déploiement est préparé automatiquement mais nécessite une validation manuelle (un clic sur un bouton, par exemple) avant d'être effectivement mis en production. C'est un bon compromis pour les équipes qui veulent garder un contrôle humain sur ce qui arrive en production.
+
+## Les étapes d'une pipeline CD
+
+Une pipeline complète de CI/CD dans GitLab pourrait ressembler à ceci :
+
+```yaml
+stages:
+  - test
+  - build
+  - images
+  - deploy
+```
+
+Les trois premiers stages (`test`, `build`, `images`) existent déjà dans le projet CAE. Le stage `deploy` viendrait s'ajouter pour pousser l'application vers l'environnement de production.
+
+Ce que fait concrètement le stage `deploy` dépend de la stratégie de déploiement choisie :
+
+- **Sur un VPS avec Docker Compose** : la pipeline se connecte au serveur via SSH, récupère les nouvelles images Docker, et relance `docker compose up`.
+- **Sur un PaaS** (Heroku, Railway, Render) : la pipeline pousse le code ou les artefacts vers la plateforme, qui se charge du redémarrage.
+- **Sur un service cloud** (AWS, Azure, GCP) : la pipeline utilise les outils CLI du fournisseur pour mettre à jour le service (par exemple, `aws ecs update-service` pour un déploiement sur ECS).
+- **Avec Kubernetes** : la pipeline applique les nouvelles configurations via `kubectl apply` ou un outil comme Helm.
+
+## Le registre d'images Docker
+
+Pour déployer des conteneurs sur un serveur distant, il faut un endroit où stocker les images Docker construites par la pipeline. C'est le rôle d'un **registre d'images** (container registry).
+
+GitLab intègre son propre registre d'images. La pipeline peut construire les images, les pousser vers le registre GitLab, et le serveur de production peut ensuite les récupérer. D'autres registres existent : Docker Hub, AWS ECR, Azure Container Registry, Google Artifact Registry.
+
+## Le déploiement dans GitLab CI/CD
+
+GitLab propose des fonctionnalités spécifiques pour le CD :
+
+- Les **environnements** : GitLab permet de définir des environnements (staging, production) et de suivre quelle version du code est déployée sur chacun.
+- Le **déploiement manuel** : on peut configurer un stage `deploy` qui nécessite un clic de validation dans l'interface GitLab avant de s'exécuter, pour garder un contrôle humain.
+- Les **variables protégées** : les secrets nécessaires au déploiement (clés SSH, tokens d'API, identifiants de serveur) sont stockés dans les variables CI/CD de GitLab, accessibles uniquement aux branches protégées.
+- Les **review apps** : GitLab peut déployer automatiquement une version temporaire de l'application pour chaque merge request, permettant de tester les changements dans un environnement réel avant de les fusionner.
+
+# <InternalPageTitle> Résumé et comparaison </InternalPageTitle>
+
+## Vue d'ensemble
+
+| Option | Contrôle | Complexité | Coût | Adapté pour |
+|---|---|---|---|---|
+| **PaaS** (Heroku, Railway, Render) | Faible | Très faible | Variable (gratuit → cher) | Prototypes, petits projets |
+| **Cloud managé** (AWS, Azure, GCP) | Moyen | Moyen | Variable selon l'usage | Projets d'entreprise, scalabilité |
+| **VPS** (OVH, DigitalOcean, Hetzner) | Élevé | Élevé | Faible et prévisible | Petits à moyens projets, budget limité |
+| **Serveur dédié** | Très élevé | Très élevé | Élevé et prévisible | Applications à haute performance |
+| **On-premise** | Total | Très élevé | Matériel + maintenance | Conformité réglementaire, contrôle total |
+| **Kubernetes managé** (EKS, AKS, GKE) | Moyen-élevé | Élevé | Variable | Applications critiques à grande échelle |
+
+## En résumé
+
+Le choix de la stratégie de déploiement dépend de nombreux facteurs : la taille du projet, le budget, les compétences de l'équipe, les exigences de performance et de disponibilité, et les contraintes réglementaires.
+
+Pour un projet comme celui du CAE, si l'on devait aller jusqu'au déploiement, un **VPS avec Docker Compose** et une pipeline GitLab CI/CD serait probablement le meilleur compromis : c'est économique, on réutilise directement le `docker-compose.yml` et la pipeline déjà créés, et c'est suffisant pour une application avec peu d'utilisateurs.
+
+Pour un projet d'entreprise réel avec des exigences de disponibilité et de scalabilité, une approche **cloud managée** (PaaS ou CaaS) combinée à un orchestrateur comme Kubernetes est généralement préférée, car elle permet de se concentrer sur le développement plutôt que sur la gestion d'infrastructure.
+
+Dans tous les cas, la mise en place d'une pipeline de **Continuous Deployment** est essentielle pour automatiser et fiabiliser le processus de déploiement. Sans CD, chaque mise en production est une opération manuelle, source d'erreurs et de stress.
+
+L'important est de comprendre que le déploiement n'est pas une réflexion de dernière minute : les choix d'architecture faits pendant le développement (conteneurisation, gestion des environnements, externalisation de la configuration, pipeline CI) facilitent — ou compliquent — considérablement cette étape. C'est précisément ce que vous avez appris et mis en place dans les parties précédentes de ce cours.

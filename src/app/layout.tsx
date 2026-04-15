@@ -47,6 +47,13 @@ const siteMetaData: SiteMetaData = {
       ],
     },
     {
+      name: `Partie 4`,
+      link: ``,
+      subMenu: [
+        { name: "Déploiement", link: "/part4/deploy" },
+      ],
+    },
+    {
       name: `About`,
       link: `/about`,
     },
